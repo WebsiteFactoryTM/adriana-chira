@@ -11,6 +11,9 @@ const SCRIPT = `
 (function(){
   if (window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')) return;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Abia acum CSS-ul are voie să ascundă elementele: știm sigur că există JS
+  // care le va dezvălui. Fără marcaj, conținutul rămâne vizibil.
+  document.documentElement.setAttribute('data-ac-reveal','js');
   var run = function(){
     var els = document.querySelectorAll('[data-reveal]');
     if (!('IntersectionObserver' in window)) {

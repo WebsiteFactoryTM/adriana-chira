@@ -62,6 +62,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             __html: buildConsentBootstrap(settings.ga4MeasurementId),
           }}
         />
+        {/*
+          În `<head>`, ca marcajul `data-ac-reveal="js"` să existe înainte ca
+          body-ul să se picteze — altfel apare un flash de conținut vizibil,
+          apoi ascuns. Observer-ul propriu-zis pornește la DOMContentLoaded.
+        */}
+        <RevealFallback />
       </head>
       <body className="overflow-x-clip bg-ac-paper text-ac-ink antialiased">
         <a
@@ -89,7 +95,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Footer settings={settings} />
 
         <ConsentBanner policyHref="/politica-de-cookies" />
-        <RevealFallback />
 
         <JsonLd data={graph([personSchema(settings, '/images/adriana-portret.jpg')])} />
       </body>

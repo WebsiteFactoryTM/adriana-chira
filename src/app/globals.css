@@ -427,31 +427,37 @@ details[open] summary [data-plus] {
   }
 }
 
-/* Reveal la scroll — fallback cu IntersectionObserver (vezi RevealFallback). */
+/*
+   Reveal la scroll — fallback cu IntersectionObserver (vezi RevealFallback).
+   Ascunderea inițială se aplică DOAR după ce scriptul marchează `<html>` cu
+   data-ac-reveal="js". Altfel, un browser fără scroll-driven animations ȘI cu
+   JavaScript oprit ar rămâne cu tot conținutul la opacity 0 — inclusiv pentru
+   crawlerele care randează CSS dar nu execută JS.
+*/
 @supports not (animation-timeline: view()) {
-  [data-reveal] {
+  [data-ac-reveal='js'] [data-reveal] {
     opacity: 0;
     transform: translateY(24px);
     transition:
       opacity 600ms var(--ease-ac),
       transform 600ms var(--ease-ac);
   }
-  [data-reveal='up'] {
+  [data-ac-reveal='js'] [data-reveal='up'] {
     transform: translateY(110%);
   }
-  [data-reveal='draw-y'] {
+  [data-ac-reveal='js'] [data-reveal='draw-y'] {
     opacity: 1;
     transform: scaleY(0);
     transform-origin: top;
     transition: transform 800ms var(--ease-ac);
   }
-  [data-reveal='clip'] {
+  [data-ac-reveal='js'] [data-reveal='clip'] {
     opacity: 1;
     transform: none;
     clip-path: inset(0 0 100% 0);
     transition: clip-path 1200ms var(--ease-ac);
   }
-  [data-reveal][data-revealed='true'] {
+  [data-ac-reveal='js'] [data-reveal][data-revealed='true'] {
     opacity: 1;
     transform: none;
     clip-path: inset(0 0 0 0);
