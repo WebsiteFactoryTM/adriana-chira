@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta charset="utf-8">
+<title>Adriana Chira — Consultant în Performanță Umană</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&amp;family=Inter:wght@400;500&amp;display=swap&amp;subset=latin,latin-ext" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #FAF5EC; color: #17140F; font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  h1, h2, h3, p, ul, li, figure, blockquote, table { margin: 0; padding: 0; }
+  ul { list-style: none; }
+  a { color: #17140F; text-decoration: none; }
+  ::selection { background: #E7DBC5; color: #17140F; }
+  :focus-visible { outline: 2px solid #7A6038; outline-offset: 3px; }
+  summary { list-style: none; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  details summary [data-plus] { transition: transform 320ms cubic-bezier(.22,1,.36,1); }
+  details[open] summary [data-plus] { transform: rotate(45deg); }
+  [data-underline] { background-image: linear-gradient(#C0A47B, #C0A47B); background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 1px; transition: background-size 320ms cubic-bezier(.22,1,.36,1); }
+  [data-underline]:hover { background-size: 100% 1px; }
+  [data-grain] { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23g)'/></svg>"); background-size: 160px 160px; }
+  [data-row] { transition: background-color 420ms cubic-bezier(.22,1,.36,1); }
+  [data-row]:hover { background-color: rgba(192,164,123,.1); }
+  [data-row]:hover [data-arrow] { transform: translateX(8px); opacity: 1; }
+  [data-arrow] { transition: transform 420ms cubic-bezier(.22,1,.36,1), opacity 420ms; opacity: .35; }
+  [data-media]:hover [data-zoom] { transform: scale(1.04); }
+  @keyframes acUp { from { transform: translateY(110%); } to { transform: translateY(0); } }
+  @keyframes acFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes acRise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes acDrawX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes acDrawY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes acClip { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes acDrift { from { transform: scale(1.02) translateY(1.5%); } to { transform: scale(1.1) translateY(-1.5%); } }
+  [data-desktop-nav], [data-header-cta] { display: none !important; }
+  [data-burger] { display: flex !important; }
+  @media (min-width: 1000px) {
+    [data-desktop-nav] { display: flex !important; }
+    [data-header-cta] { display: flex !important; }
+    [data-burger] { display: none !important; }
+  }
+  [data-burger] span { transition: transform 320ms cubic-bezier(.22,1,.36,1), opacity 220ms; }
+  [data-burger][aria-expanded="true"] span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+  [data-burger][aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  [data-burger][aria-expanded="true"] span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+  @keyframes acHalo { 0%, 100% { transform: translate(-50%,0) scale(1); opacity: .55; } 50% { transform: translate(-50%,0) scale(1.14); opacity: .95; } }
+  @keyframes acBeam { 0% { transform: scaleY(.25); opacity: .35; } 50% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(.25); opacity: .35; } }
+  @keyframes acComet { 0% { top: -10%; opacity: 0; } 12% { opacity: 1; } 78% { opacity: 1; } 100% { top: 108%; opacity: 0; } }
+  @keyframes acInviteLabel { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+  @keyframes acRingPulse { 0% { transform: scale(.6); opacity: .85; } 70% { transform: scale(2.6); opacity: 0; } 100% { transform: scale(2.6); opacity: 0; } }
+  @keyframes acAccentSweep { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(320%); } }
+  [data-invite]:hover [data-invite-halo] { opacity: 1; }
+  [data-invite]:hover [data-invite-label] { color: #17140F; }
+  [data-sticky-col] { position: static; }
+  @media (min-width: 1000px) { [data-sticky-col] { position: sticky; top: 132px; } }
+  @keyframes acSheet { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</helmet>
+
+<div style="background:#FAF5EC;position:relative;overflow-x:clip">
+
+
+<div aria-hidden="true" style="position:fixed;top:0;left:0;right:0;height:1px;z-index:55;background:#C0A47B;transform-origin:left;animation:acDrawX linear both;animation-timeline:scroll()"></div>
+
+<a href="#continut" style="position:absolute;left:-9999px;top:0;background:#17140F;color:#FAF5EC;padding:16px 24px;z-index:60" onfocus="this.style.left='16px'" onblur="this.style.left='-9999px'">Sari la conținut</a>
+
+<header style="position:sticky;top:0;z-index:50;background:rgba(250,245,236,.82);backdrop-filter:blur(14px) saturate(1.1);border-bottom:1px solid rgba(225,215,198,.9)">
+  <div style="max-width:1560px;margin:0 auto;padding:16px clamp(20px,5vw,88px);display:flex;flex-wrap:nowrap;align-items:center;gap:24px">
+    <a href="#hero" style="display:block">
+      <span style="display:block;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:21px;letter-spacing:.01em;line-height:1.1">Adriana Chira</span>
+      <span style="display:block;margin-top:5px;font-weight:500;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#756E64">Consultant în Performanță Umană</span>
+    </a>
+    <nav data-desktop-nav="" aria-label="Navigație principală" style="flex-wrap:nowrap;align-items:center;gap:clamp(14px,2vw,30px);margin-left:auto">
+      <a data-underline="" href="#despre" style="font-size:14px;letter-spacing:.01em;padding:12px 0;min-height:44px;white-space:nowrap;display:flex;align-items:center">Despre mine</a>
+      <a data-underline="" href="#servicii" style="font-size:14px;letter-spacing:.01em;padding:12px 0;min-height:44px;white-space:nowrap;display:flex;align-items:center">Servicii</a>
+      <a data-underline="" href="#blog" style="font-size:14px;letter-spacing:.01em;padding:12px 0;min-height:44px;white-space:nowrap;display:flex;align-items:center">Perspective</a>
+      <a data-underline="" href="#cta" style="font-size:14px;letter-spacing:.01em;padding:12px 0;min-height:44px;white-space:nowrap;display:flex;align-items:center">Contact</a>
+    </nav>
+    <a data-header-cta="" href="#cta" style="margin-left:20px;border:1px solid #17140F;border-radius:999px;padding:12px 22px;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;min-height:44px;align-items:center;gap:10px;transition:background-color 320ms,color 320ms" style-hover="background:#17140F;color:#FAF5EC">
+      <span style="width:5px;height:5px;border-radius:999px;background:#C0A47B;display:block"></span>Programează
+    </a>
+    <button data-burger="" type="button" onClick="{{ toggleMenu }}" aria-expanded="{{ menuExpanded }}" aria-label="{{ menuLabel }}" style="margin-left:auto;flex:none;width:44px;height:44px;background:none;border:0;padding:0;cursor:pointer;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px">
+      <span style="width:22px;height:1px;background:#17140F;display:block"></span>
+      <span style="width:22px;height:1px;background:#17140F;display:block"></span>
+      <span style="width:16px;height:1px;background:#17140F;display:block"></span>
+    </button>
+  </div>
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div id="meniu-mobil" style="border-top:1px solid #E1D7C6;background:#FAF5EC;max-height:calc(100dvh - 78px);overflow-y:auto;animation:acSheet .38s cubic-bezier(.22,1,.36,1) both">
+      <nav aria-label="Navigație mobilă" style="padding:8px clamp(20px,6vw,32px) 20px;display:grid">
+        <a onClick="{{ closeMenu }}" href="#despre" style="border-bottom:1px solid #E1D7C6;padding:20px 0;min-height:44px;display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.5rem;line-height:1.2">Despre mine</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.18em;color:#7A6038">01</span>
+        </a>
+        <a onClick="{{ closeMenu }}" href="#servicii" style="border-bottom:1px solid #E1D7C6;padding:20px 0;min-height:44px;display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.5rem;line-height:1.2">Servicii</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.18em;color:#7A6038">02</span>
+        </a>
+        <a onClick="{{ closeMenu }}" href="#blog" style="border-bottom:1px solid #E1D7C6;padding:20px 0;min-height:44px;display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.5rem;line-height:1.2">Perspective</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.18em;color:#7A6038">03</span>
+        </a>
+        <a onClick="{{ closeMenu }}" href="#faq" style="border-bottom:1px solid #E1D7C6;padding:20px 0;min-height:44px;display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.5rem;line-height:1.2">Întrebări frecvente</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.18em;color:#7A6038">04</span>
+        </a>
+        <a onClick="{{ closeMenu }}" href="#cta" style="background:#17140F;color:#FAF5EC;border-radius:999px;margin-top:24px;padding:18px 28px;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:flex;align-items:center;justify-content:center;gap:10px">Programează o discuție<span style="display:block">→</span></a>
+        <p style="margin-top:20px;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Timișoara și online · Răspund în 24 h</p>
+      </nav>
+    </div>
+  </sc-if>
+</header>
+
+<main id="continut">
+
+  <section id="hero" style="position:relative;padding:clamp(4rem,11vh,9rem) 0 clamp(5rem,10vw,8rem)">
+    <div style="position:relative;z-index:1;max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(40px,6vw,96px);align-items:end">
+      <div>
+        <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038;animation:acFade 1s ease both">
+          <span style="width:40px;height:1px;background:#C0A47B;display:block;transform-origin:left;animation:acDrawX .9s cubic-bezier(.22,1,.36,1) both"></span>Consultant în performanță umană
+        </p>
+        <h1 style="margin-top:clamp(28px,4vw,48px);font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2.5rem,4.9vw,4.5rem);line-height:1.02;letter-spacing:-.022em;max-width:19ch">
+          <span style="display:block;overflow:hidden;padding-bottom:.06em"><span style="display:block;animation:acUp 1.1s cubic-bezier(.22,1,.36,1) both">Unele decizii nu sunt</span></span>
+          <span style="display:block;overflow:hidden;padding-bottom:.06em"><span style="display:block;animation:acUp 1.1s cubic-bezier(.22,1,.36,1) both;animation-delay:110ms">grele pentru că nu știi</span></span>
+          <span style="display:block;overflow:hidden;padding-bottom:.06em"><span style="display:block;animation:acUp 1.1s cubic-bezier(.22,1,.36,1) both;animation-delay:220ms">ce ai de făcut.</span></span>
+        </h1>
+        <p style="margin-top:clamp(24px,3vw,36px);max-width:30ch;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.3rem,1.9vw,1.75rem);line-height:1.3;color:#4A443C;animation:acRise 1.1s cubic-bezier(.22,1,.36,1) both;animation-delay:380ms">Sunt grele pentru că ești prea aproape ca să mai vezi limpede.</p>
+        <p style="margin-top:clamp(32px,4vw,48px);max-width:52ch;font-size:1.0625rem;line-height:1.78;color:#4A443C;animation:acRise 1.1s cubic-bezier(.22,1,.36,1) both;animation-delay:500ms">Lucrez cu antreprenori, profesioniști independenți și oameni care conduc afaceri de familie — oameni care nu mai au nevoie de încă o opinie, ci de un spațiu în care să poată gândi clar.</p>
+        <div style="margin-top:clamp(36px,4vw,56px);display:flex;flex-wrap:wrap;gap:14px;animation:acRise 1.1s cubic-bezier(.22,1,.36,1) both;animation-delay:620ms">
+          <a href="#cta" style="background:#17140F;color:#FAF5EC;border:1px solid #17140F;border-radius:999px;padding:18px 34px;font-weight:500;font-size:14px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:flex;align-items:center;transition:transform 320ms,background-color 320ms" style-hover="background:#000000;transform:translateY(-2px)">Programează o discuție</a>
+          <a href="#metoda" style="border:1px solid #E1D7C6;border-radius:999px;padding:18px 34px;font-weight:500;font-size:14px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:flex;align-items:center;transition:border-color 320ms,transform 320ms" style-hover="border-color:#17140F;transform:translateY(-2px)">Vezi cum lucrăm împreună</a>
+        </div>
+        <div style="margin-top:clamp(48px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:24px;border-top:1px solid #E1D7C6;padding-top:24px;animation:acFade 1.2s ease both;animation-delay:740ms">
+          <span style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">Psihologie și strategie</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">Lucru 1:1</span>
+          <span style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">Timișoara și online</span>
+        </div>
+      </div>
+      <sc-if value="{{ usePhoto }}" hint-placeholder-val="{{ true }}">
+        <figure data-media="" style="position:relative;justify-self:end;width:100%;max-width:520px">
+          <div data-image-slot="hero-portrait" style="aspect-ratio:3/4;background:#E7DBC5;overflow:hidden;animation:acClip 1.3s cubic-bezier(.22,1,.36,1) both;animation-delay:200ms">
+            <img data-zoom="" src="assets/adriana-portret.jpg" alt="Portret Adriana Chira" width="1200" height="1600" style="width:100%;height:100%;object-fit:cover;object-position:50% 26%;display:block;filter:contrast(1.04) saturate(.95);transition:transform 900ms cubic-bezier(.22,1,.36,1);animation:acDrift linear both;animation-timeline:view();animation-range:cover 0% cover 100%">
+          </div>
+          <figcaption style="margin-top:16px;display:flex;justify-content:space-between;gap:16px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">
+            <span><br></span><span>ADRIANA CHIRA</span>
+          </figcaption>
+        </figure>
+      </sc-if>
+      <sc-if value="{{ usePlaceholder }}" hint-placeholder-val="{{ false }}">
+        <div data-image-slot="hero-portrait" style="justify-self:end;width:100%;max-width:520px;aspect-ratio:3/4;background:#E7DBC5;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top right,transparent 49.9%,#C0A47B 49.9%,#C0A47B 50.1%,transparent 50.1%);opacity:.25"></div>
+          <span style="position:relative;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B5430">Portret · Hero</span>
+        </div>
+      </sc-if>
+    </div>
+  <div data-grain="" aria-hidden="true" style="position: fixed; inset: 0; z-index: 46; pointer-events: none; opacity: .045; mix-blend-mode: multiply; left: -21px; top: 653px"></div></section>
+
+  
+
+  <section id="problema" style="background:#F2EBDD;padding:clamp(6rem,14vw,12rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:clamp(48px,6vw,104px);align-items:start">
+      <div data-sticky-col="">
+        <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span aria-hidden="true" style="position:relative;display:flex;align-items:center;gap:10px">
+            <span style="position:relative;width:7px;height:7px;display:block">
+              <span style="position:absolute;inset:0;border-radius:999px;background:#7A6038;box-shadow:0 0 8px 1px rgba(192,164,123,.75)"></span>
+              <span style="position:absolute;inset:0;border-radius:999px;border:1px solid #C0A47B;animation:acRingPulse 3.6s cubic-bezier(.22,1,.36,1) infinite both"></span>
+            </span>
+            <span style="position:relative;width:52px;height:1px;background:#E1D7C6;display:block;overflow:hidden">
+              <span style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(192,164,123,0),#7A6038,rgba(192,164,123,0));animation:acAccentSweep 4.2s cubic-bezier(.4,0,.4,1) infinite both"></span>
+            </span>
+          </span>Punctul în care intervin</p>
+        <h2 style="margin-top:32px;max-width:22ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.875rem,3.4vw,3rem);line-height:1.1;letter-spacing:-.02em;animation:acRise 1s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 30%">Când tu ești omul care decide totul, e greu să găsești pe cineva cu care să poți vorbi fără să pari puternic.</h2>
+        <p style="margin-top:32px;max-width:46ch;font-size:1rem;line-height:1.8;color:#4A443C">De cele mai multe ori, problema nu este lipsa de competență. Este presiunea. Implicarea emoțională. Frica de consecințe. Loialitatea față de familie. Nevoia de control. Sau, pur și simplu, incapacitatea de a-ți vedea propriile tipare de decizie.</p>
+      </div>
+      <ul>
+        <li style="border-top:1px solid #E1D7C6;padding:clamp(28px,3vw,40px) 0;display:grid;grid-template-columns:56px 1fr;gap:20px;align-items:baseline;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <span style="font-weight:500;font-size:11px;letter-spacing:.2em;color:#7A6038">01</span>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.2vw,1.875rem);line-height:1.28">Știi ce ai de făcut, dar nu reușești să acționezi.</p>
+        </li>
+        <li style="border-top:1px solid #E1D7C6;padding:clamp(28px,3vw,40px) 0;display:grid;grid-template-columns:56px 1fr;gap:20px;align-items:baseline;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <span style="font-weight:500;font-size:11px;letter-spacing:.2em;color:#7A6038">02</span>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.2vw,1.875rem);line-height:1.28">O decizie de business e influențată de o relație personală.</p>
+        </li>
+        <li style="border-top:1px solid #E1D7C6;padding:clamp(28px,3vw,40px) 0;display:grid;grid-template-columns:56px 1fr;gap:20px;align-items:baseline;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <span style="font-weight:500;font-size:11px;letter-spacing:.2em;color:#7A6038">03</span>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.2vw,1.875rem);line-height:1.28">Îți protejezi oamenii atât de mult încât îți sabotezi propria afacere.</p>
+        </li>
+        <li style="border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6;padding:clamp(28px,3vw,40px) 0;display:grid;grid-template-columns:56px 1fr;gap:20px;align-items:baseline;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <span style="font-weight:500;font-size:11px;letter-spacing:.2em;color:#7A6038">04</span>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.2vw,1.875rem);line-height:1.28">Ai succes în ceea ce faci, dar te simți blocat.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="metoda" style="padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1100px;margin:0 auto;padding:0 clamp(24px,5vw,88px);text-align:center">
+      <p style="font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038">Cum lucrez</p>
+      <h2 style="margin:clamp(32px,4vw,56px) auto 0;max-width:26ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.022em;animation:acRise 1s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 32%">Nu iau deciziile în locul tău. Te ajut să devii suficient de clar încât să le poți lua singur.</h2>
+      <p style="margin:clamp(32px,4vw,48px) auto 0;max-width:60ch;font-size:1.0625rem;line-height:1.8;color:#4A443C">Prin evaluare, analiză comportamentală, conversație strategică și instrumente psihologice și de dezvoltare, te ajut să separi faptele de emoții, loialitatea de responsabilitate, frica de risc și nevoia de control de ceea ce este cu adevărat necesar.</p>
+    </div>
+    <div style="max-width:1560px;margin:clamp(64px,8vw,112px) auto 0;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:clamp(32px,4vw,64px)">
+      <div style="border-top:1px solid #E1D7C6;padding-top:32px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#7A6038">01</p>
+        <h3 style="margin-top:24px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem)">Clarificăm omul</h3>
+        <p style="margin-top:16px;font-size:1rem;line-height:1.8;color:#4A443C">Cum gândești, cum decizi, ce tipare repeți, cum reacționezi sub presiune.</p>
+      </div>
+      <div style="border-top:1px solid #E1D7C6;padding-top:32px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#7A6038">02</p>
+        <h3 style="margin-top:24px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem)">Clarificăm situația</h3>
+        <p style="margin-top:16px;font-size:1rem;line-height:1.8;color:#4A443C">Ce este fapt și ce este interpretare. Ce e urgent și ce e important.</p>
+      </div>
+      <div style="border-top:1px solid #E1D7C6;padding-top:32px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#7A6038">03</p>
+        <h3 style="margin-top:24px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem)">Clarificăm decizia</h3>
+        <p style="margin-top:16px;font-size:1rem;line-height:1.8;color:#4A443C">Ce te împiedică să iei decizia pe care știi deja că trebuie să o iei.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pentru-cine" style="padding:0 0 clamp(7rem,16vw,14rem)">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px)">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:32px">
+        <div>
+          <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Pentru cine</p>
+          <h2 style="margin-top:32px;max-width:22ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,3.6vw,3.25rem);line-height:1.08;letter-spacing:-.022em">Oameni obișnuiți să se descurce singuri</h2>
+        </div>
+        <span style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">Patru contexte</span>
+      </div>
+      <ul style="margin-top:clamp(48px,6vw,88px)">
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px clamp(32px,4vw,72px);align-items:baseline">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.6vw,2.25rem);line-height:1.15">Antreprenori și soloprenori</h3>
+          <p style="max-width:52ch;font-size:1rem;line-height:1.8;color:#4A443C">Ai construit de la zero și decizi singur tot. Ai ajuns într-un punct în care aceleași unelte nu te mai duc mai departe.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px clamp(32px,4vw,72px);align-items:baseline">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.6vw,2.25rem);line-height:1.15">Profesioniști independenți</h3>
+          <p style="max-width:52ch;font-size:1rem;line-height:1.8;color:#4A443C">Medici, avocați, specialiști. Ești foarte bun în domeniul tău și totuși te simți blocat.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px clamp(32px,4vw,72px);align-items:baseline">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.6vw,2.25rem);line-height:1.15">Lideri și manageri</h3>
+          <p style="max-width:52ch;font-size:1rem;line-height:1.8;color:#4A443C">Porți responsabilitatea pentru alții și îți dai seama că vechiul tău mod de a conduce nu mai funcționează.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px clamp(32px,4vw,72px);align-items:baseline">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.6vw,2.25rem);line-height:1.15">Afaceri de familie</h3>
+          <p style="max-width:52ch;font-size:1rem;line-height:1.8;color:#4A443C">Relațiile personale au început să dicteze deciziile profesionale, iar loialitatea intră în conflict cu responsabilitatea.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="univers" style="background:#F2EBDD;padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(48px,6vw,104px);align-items:start">
+      <div data-sticky-col="">
+        <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Instrumente și modele</p>
+        <h2 style="margin-top:32px;max-width:20ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.875rem,3.4vw,3rem);line-height:1.1;letter-spacing:-.02em">Un ecosistem de gândire construit în jurul performanței umane</h2>
+        <p style="margin-top:32px;max-width:44ch;font-size:1rem;line-height:1.8;color:#4A443C">Munca mea nu se oprește la o sesiune de consultanță. În timp, construiesc un sistem coerent de instrumente prin care oamenii pot ajunge singuri la claritate.</p>
+        <p style="margin-top:32px;font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Un ecosistem în construcție</p>
+      </div>
+      <ul>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,20px);display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1;color:#C0A47B">i</span>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.3vw,1.875rem)">CHIRA Framework<sup style="font-size:.5em;color:#756E64">™</sup></h3>
+            <p style="margin-top:16px;max-width:56ch;font-size:1rem;line-height:1.8;color:#4A443C">Modelul meu de înțelegere a performanței umane: cum se leagă între ele identitatea, gândirea, decizia și rezultatul.</p>
+          </div>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,20px);display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1;color:#C0A47B">ii</span>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.3vw,1.875rem)">CLAR<sup style="font-size:.5em;color:#756E64">™</sup></h3>
+            <p style="margin-top:16px;max-width:56ch;font-size:1rem;line-height:1.8;color:#4A443C">Procesul prin care transformăm complexitatea într-o perspectivă clară asupra situației, a deciziei și a direcției.</p>
+          </div>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,20px);display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1;color:#C0A47B">iii</span>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.3vw,1.875rem)">Strategic Performance Assessment</h3>
+            <p style="margin-top:16px;max-width:56ch;font-size:1rem;line-height:1.8;color:#4A443C">Evaluare aprofundată prin care identificăm profilul, resursele, riscurile, blocajele și prioritățile de dezvoltare.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="despre" style="padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(48px,6vw,104px);align-items:start">
+      <sc-if value="{{ usePhoto }}" hint-placeholder-val="{{ true }}">
+        <figure data-media="" style="width:100%;max-width:520px">
+          <div data-image-slot="about-portrait" style="aspect-ratio:4/5;background:#E7DBC5;overflow:hidden;animation:acClip 1.2s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 34%">
+            <img data-zoom="" src="assets/adriana-portret.jpg" alt="Adriana Chira, portret" width="1200" height="1500" style="width:100%;height:100%;object-fit:cover;object-position:50% 42%;display:block;transition:transform 900ms cubic-bezier(.22,1,.36,1);animation:acDrift linear both;animation-timeline:view();animation-range:cover 0% cover 100%">
+          </div>
+          <figcaption style="margin-top:16px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#756E64">Sociologie · Strategie · Psihologie</figcaption>
+        </figure>
+      </sc-if>
+      <sc-if value="{{ usePlaceholder }}" hint-placeholder-val="{{ false }}">
+        <div data-image-slot="about-portrait" style="width:100%;max-width:520px;aspect-ratio:4/5;background:#E7DBC5;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top right,transparent 49.9%,#C0A47B 49.9%,#C0A47B 50.1%,transparent 50.1%);opacity:.25"></div>
+          <span style="position:relative;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B5430">Portret · Despre</span>
+        </div>
+      </sc-if>
+      <div>
+        <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Despre mine</p>
+        <h2 style="margin-top:32px;max-width:24ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.875rem,3.4vw,3rem);line-height:1.1;letter-spacing:-.02em;animation:acRise 1s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 30%">Nu am ajuns să lucrez cu oamenii pentru că am găsit o metodă.</h2>
+        <div style="margin-top:36px;display:grid;gap:24px;max-width:62ch">
+          <p style="font-size:1.0625rem;line-height:1.8;color:#4A443C">Am ajuns aici pentru că am înțeles, în timp, cât de mult poate schimba un om felul în care își vede propriile decizii.</p>
+          <p style="font-size:1.0625rem;line-height:1.8;color:#4A443C">Am început cu sociologia, care mi-a dat perspectiva asupra oamenilor și a sistemelor în care funcționează. Am continuat cu management strategic și business, pentru că am vrut să înțeleg și mediul în care omul ia decizii. Ulterior, drumul m-a apropiat tot mai mult de psihologie, de comportament și de procesele profunde care influențează alegerile noastre.</p>
+          <p style="font-size:1.0625rem;line-height:1.8;color:#4A443C">Nu consider diplomele partea cea mai importantă a poveștii mele. Ele îmi oferă instrumentele. Experiența m-a învățat când și cum să le folosesc.</p>
+        </div>
+        <ul style="margin-top:48px;padding:28px 0;border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6;display:flex;flex-wrap:wrap;gap:12px 28px">
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Sociologie</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Management strategic</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Psihologie clinică și psihoterapie</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">NLP</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Time Line Therapy®</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Coaching</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">Hipnoză</li>
+          <li style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">În formare: psihoterapie integrativă</li>
+        </ul>
+        <p style="margin-top:36px"><a data-underline="" href="#despre" style="font-size:1.0625rem">Citește povestea completă →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="valori" style="padding:0 0 clamp(7rem,16vw,14rem)">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px)">
+      <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Valori</p>
+      <ul style="margin-top:clamp(48px,6vw,80px)">
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px clamp(32px,4vw,72px);align-items:start">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.75rem);line-height:1;color:#C0A47B">01</span>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem)">Claritate</h3>
+          </div>
+          <p style="max-width:54ch;font-size:1rem;line-height:1.8;color:#4A443C">Înainte de a căuta soluții, trebuie să înțelegem corect problema. Separăm faptele de interpretări și ceea ce este urgent de ceea ce este important.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px clamp(32px,4vw,72px);align-items:start">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.75rem);line-height:1;color:#C0A47B">02</span>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem)">Obiectivitate</h3>
+          </div>
+          <p style="max-width:54ch;font-size:1rem;line-height:1.8;color:#4A443C">Nu îți spun ceea ce vrei să auzi. Îți ofer perspectiva pe care nu o poți avea atunci când ești prea implicat în situație.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px clamp(32px,4vw,72px);align-items:start">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.75rem);line-height:1;color:#C0A47B">03</span>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem)">Responsabilitate</h3>
+          </div>
+          <p style="max-width:54ch;font-size:1rem;line-height:1.8;color:#4A443C">Nu îți iau deciziile. Te ajut să îți asumi deciziile și consecințele lor.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px clamp(32px,4vw,72px);align-items:start">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.75rem);line-height:1;color:#C0A47B">04</span>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem)">Integritate</h3>
+          </div>
+          <p style="max-width:54ch;font-size:1rem;line-height:1.8;color:#4A443C">Respect omul din spatele afacerii, dar nu protejez comportamentele care îi sabotează performanța. Putem avea empatie fără să renunțăm la adevăr.</p>
+        </li>
+        <li data-row="" style="border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6;padding:clamp(32px,3.4vw,48px) clamp(12px,2vw,24px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px clamp(32px,4vw,72px);align-items:start">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.75rem);line-height:1;color:#C0A47B">05</span>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem)">Evoluție</h3>
+          </div>
+          <p style="max-width:54ch;font-size:1rem;line-height:1.8;color:#4A443C">Scopul nu este să rezolvăm doar problema de astăzi. Scopul este să construim un om mai conștient, mai autonom și mai capabil să gestioneze nivelul următor.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="citat" style="background:#17140F;padding:clamp(8rem,18vw,16rem) 0">
+    <div style="max-width:1100px;margin:0 auto;padding:0 clamp(24px,5vw,88px);text-align:center">
+      <span aria-hidden="true" style="display:block;width:1px;height:clamp(48px,7vw,88px);margin:0 auto clamp(40px,5vw,64px);background:#C0A47B;transform-origin:top;animation:acDrawY 1s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 34%"></span>
+      <blockquote style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.875rem,4vw,3.5rem);line-height:1.16;letter-spacing:-.02em;color:#FAF5EC">
+        <span style="display:block;overflow:hidden;padding-bottom:.08em"><span style="display:block;animation:acUp 1.2s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 34%">Eu nu lucrez doar cu ceea ce faci.</span></span>
+        <span style="display:block;overflow:hidden;padding-bottom:.08em"><span style="display:block;animation:acUp 1.2s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 6% cover 40%">Lucrez cu omul care trebuie</span></span>
+        <span style="display:block;overflow:hidden;padding-bottom:.08em"><span style="display:block;animation:acUp 1.2s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 12% cover 46%">să facă acel lucru.</span></span>
+      </blockquote>
+      <p style="margin-top:clamp(40px,5vw,64px);font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#C0A47B">Adriana Chira</p>
+    </div>
+  </section>
+
+  <section id="servicii" style="padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px)">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:32px">
+        <div>
+          <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span aria-hidden="true" style="position:relative;display:flex;align-items:center;gap:10px">
+            <span style="position:relative;width:7px;height:7px;display:block">
+              <span style="position:absolute;inset:0;border-radius:999px;background:#7A6038;box-shadow:0 0 8px 1px rgba(192,164,123,.75)"></span>
+              <span style="position:absolute;inset:0;border-radius:999px;border:1px solid #C0A47B;animation:acRingPulse 3.6s cubic-bezier(.22,1,.36,1) infinite both"></span>
+            </span>
+            <span style="position:relative;width:52px;height:1px;background:#E1D7C6;display:block;overflow:hidden">
+              <span style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(192,164,123,0),#7A6038,rgba(192,164,123,0));animation:acAccentSweep 4.2s cubic-bezier(.4,0,.4,1) infinite both"></span>
+            </span>
+          </span>Moduri de a lucra împreună</p>
+          <h2 style="margin-top:32px;max-width:20ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,3.6vw,3.25rem);line-height:1.08;letter-spacing:-.022em">Trei feluri în care putem începe</h2>
+        </div>
+        <p style="max-width:44ch;font-size:1rem;line-height:1.8;color:#4A443C">Fiecare pachet spune clar ce conține, cât durează și pentru cine este potrivit. Poți achiziționa direct din pagină, cu plata securizată prin card.</p>
+      </div>
+      <div style="margin-top:clamp(48px,6vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(20px,2.4vw,32px);align-items:stretch">
+        <article data-card="" style="border:1px solid #E1D7C6;border-radius:2px;padding:clamp(28px,3vw,40px);display:flex;flex-direction:column;gap:28px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#7A6038">I</p>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1.15;color:#4A443C" data-placeholder="true">[ Nume pachet ]</h3>
+            <p style="margin-top:14px;font-size:1rem;line-height:1.8;color:#4A443C" data-placeholder="true">[ O frază despre ce rezolvă acest pachet ]</p>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <div style="display:grid;gap:24px">
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Pentru cine</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ profilul clientului potrivit ]</p>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Ce include</p>
+              <ul style="margin-top:8px;display:grid;gap:6px">
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+              </ul>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Durată</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ x sesiuni · y săptămâni ]</p>
+            </div>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.5rem);line-height:1;color:#4A443C" data-placeholder="true">[ 000 ] EUR</p>
+          <a href="#cta" style="border:1px solid #17140F;border-radius:999px;padding:16px 28px;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;transition:background-color 320ms,color 320ms,transform 320ms" style-hover="background:#17140F;color:#FAF5EC">Detalii și achiziție<span data-arrow="" style="display:block">→</span></a>
+        </article>
+        <article data-card="" style="background:#F2EBDD;border:1px solid #C0A47B;border-radius:2px;padding:clamp(28px,3vw,40px);display:flex;flex-direction:column;gap:28px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 4% cover 30%">
+          <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#6B5430">II</p>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1.15;color:#4A443C" data-placeholder="true">[ Nume pachet ]</h3>
+            <p style="margin-top:14px;font-size:1rem;line-height:1.8;color:#4A443C" data-placeholder="true">[ O frază despre ce rezolvă acest pachet ]</p>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <div style="display:grid;gap:24px">
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6B5430">Pentru cine</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ profilul clientului potrivit ]</p>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6B5430">Ce include</p>
+              <ul style="margin-top:8px;display:grid;gap:6px">
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+              </ul>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6B5430">Durată</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ x sesiuni · y săptămâni ]</p>
+            </div>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.5rem);line-height:1;color:#4A443C" data-placeholder="true">[ 000 ] EUR</p>
+          <a href="#cta" style="background:#17140F;color:#FAF5EC;border:1px solid #17140F;border-radius:999px;padding:16px 28px;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;transition:background-color 320ms,color 320ms,transform 320ms" style-hover="transform:translateY(-2px)">Detalii și achiziție<span data-arrow="" style="display:block">→</span></a>
+        </article>
+        <article data-card="" style="border:1px solid #E1D7C6;border-radius:2px;padding:clamp(28px,3vw,40px);display:flex;flex-direction:column;gap:28px;animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 8% cover 34%">
+          <p style="font-weight:500;font-size:11px;letter-spacing:.22em;color:#7A6038">III</p>
+          <div>
+            <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1.15;color:#4A443C" data-placeholder="true">[ Nume pachet ]</h3>
+            <p style="margin-top:14px;font-size:1rem;line-height:1.8;color:#4A443C" data-placeholder="true">[ O frază despre ce rezolvă acest pachet ]</p>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <div style="display:grid;gap:24px">
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Pentru cine</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ profilul clientului potrivit ]</p>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Ce include</p>
+              <ul style="margin-top:8px;display:grid;gap:6px">
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+                <li style="font-size:.9375rem;line-height:1.7;color:#4A443C" data-placeholder="true">[ element ]</li>
+              </ul>
+            </div>
+            <div>
+              <p style="font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7A6038">Durată</p>
+              <p style="margin-top:8px;font-size:.9375rem;line-height:1.75;color:#4A443C" data-placeholder="true">[ x sesiuni · y săptămâni ]</p>
+            </div>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <p style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.75rem,3vw,2.5rem);line-height:1;color:#4A443C" data-placeholder="true">[ 000 ] EUR</p>
+          <a href="#cta" style="border:1px solid #17140F;border-radius:999px;padding:16px 28px;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;transition:background-color 320ms,color 320ms,transform 320ms" style-hover="background:#17140F;color:#FAF5EC">Detalii și achiziție<span data-arrow="" style="display:block">→</span></a>
+        </article>
+      </div>
+      <div style="margin-top:clamp(40px,5vw,64px);display:flex;flex-wrap:wrap;gap:16px 40px;justify-content:space-between;align-items:center">
+        <div style="display:flex;flex-wrap:wrap;gap:12px 32px;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#756E64">
+          <span>Plată securizată prin Stripe</span>
+          <span>Confirmare automată pe email</span>
+          <span>Politică de retur publicată</span>
+        </div>
+        <a data-underline="" href="#cta" style="font-size:1rem">Nu ești sigur ce ți se potrivește? Programează întâi o discuție →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="blog" style="background:#F2EBDD;padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px)">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:32px">
+        <div>
+          <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Blog</p>
+          <h2 style="margin-top:32px;max-width:24ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,3.6vw,3.25rem);line-height:1.08;letter-spacing:-.022em">Perspective despre performanță, decizie și oameni</h2>
+        </div>
+        <a data-underline="" href="#blog" style="font-size:1rem">Toate articolele →</a>
+      </div>
+      <div style="margin-top:clamp(48px,6vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(32px,4vw,56px)">
+        <article data-media="" style="animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 26%">
+          <div data-image-slot="post-cover" style="aspect-ratio:4/3;background:#E7DBC5;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <div data-zoom="" style="position:absolute;inset:0;background:linear-gradient(to top right,transparent 49.9%,#C0A47B 49.9%,#C0A47B 50.1%,transparent 50.1%);opacity:.25;transition:transform 700ms cubic-bezier(.22,1,.36,1)"></div>
+            <span style="position:relative;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B5430">Articol</span>
+          </div>
+          <p style="margin-top:24px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#7A6038">Performanță</p>
+          <h3 style="margin-top:14px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem);line-height:1.2"><a data-underline="" href="#blog">Ce înseamnă, de fapt, performanța umană</a></h3>
+          <p style="margin-top:16px;font-size:.9375rem;line-height:1.8;color:#4A443C">Potențialul nu este performanță. Cunoașterea nu este performanță. Munca multă nu este performanță.</p>
+          <p style="margin-top:20px;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#4A443C">12 august 2026 · 6 min</p>
+        </article>
+        <article data-media="" style="animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 4% cover 30%">
+          <div data-image-slot="post-cover" style="aspect-ratio:4/3;background:#E7DBC5;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <div data-zoom="" style="position:absolute;inset:0;background:linear-gradient(to top right,transparent 49.9%,#C0A47B 49.9%,#C0A47B 50.1%,transparent 50.1%);opacity:.25;transition:transform 700ms cubic-bezier(.22,1,.36,1)"></div>
+            <span style="position:relative;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B5430">Articol</span>
+          </div>
+          <p style="margin-top:24px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#7A6038">Decizie</p>
+          <h3 style="margin-top:14px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem);line-height:1.2"><a data-underline="" href="#blog">Obiectivul e SMART. Dar omul care trebuie să-l atingă?</a></h3>
+          <p style="margin-top:16px;font-size:.9375rem;line-height:1.8;color:#4A443C">Uneori nu obiectivul este prea mare. Omul care încearcă să-l atingă nu este încă pregătit pentru nivelul lui.</p>
+          <p style="margin-top:20px;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#4A443C">5 august 2026 · 7 min</p>
+        </article>
+        <article data-media="" style="animation:acRise .9s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 8% cover 34%">
+          <div data-image-slot="post-cover" style="aspect-ratio:4/3;background:#E7DBC5;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <div data-zoom="" style="position:absolute;inset:0;background:linear-gradient(to top right,transparent 49.9%,#C0A47B 49.9%,#C0A47B 50.1%,transparent 50.1%);opacity:.25;transition:transform 700ms cubic-bezier(.22,1,.36,1)"></div>
+            <span style="position:relative;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B5430">Articol</span>
+          </div>
+          <p style="margin-top:24px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#7A6038">Perspectivă</p>
+          <h3 style="margin-top:14px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.375rem,2.1vw,1.75rem);line-height:1.2"><a data-underline="" href="#blog">Când locurile se schimbă, dar perspectiva rămâne a ta</a></h3>
+          <p style="margin-top:16px;font-size:.9375rem;line-height:1.8;color:#4A443C">M-am întors în stațiunea adolescenței mele și am găsit un loc pe care nu-l mai văzusem niciodată.</p>
+          <p style="margin-top:20px;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#4A443C">29 iulie 2026 · 8 min</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding:clamp(7rem,16vw,14rem) 0">
+    <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(48px,6vw,104px);align-items:start">
+      <div data-sticky-col="">
+        <p style="display:flex;align-items:center;gap:14px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#7A6038"><span style="width:40px;height:1px;background:#C0A47B;display:block"></span>Întrebări frecvente</p>
+        <h2 style="margin-top:32px;max-width:20ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.875rem,3.4vw,3rem);line-height:1.1;letter-spacing:-.02em">Ce vor să știe oamenii înainte de prima discuție</h2>
+      </div>
+      <div>
+        <details open="" style="border-top:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">Ce înseamnă „consultant în performanță umană"?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <p style="padding:0 0 32px;max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Consultantul în performanță umană lucrează la intersecția dintre om, strategie și rezultat. Analizează nu doar ce faci, ci și cum gândești, cum iei decizii, ce tipare repeți și cum reacționezi sub presiune. Pentru că orice strategie este executată de un om, iar oamenii nu decid exclusiv rațional.</p>
+        </details>
+        <details style="border-top:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">Cu ce este diferit de coaching sau de psihoterapie?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <div style="padding:0 0 32px">
+            <p style="max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Psihoterapia se ocupă în principal de vindecare și de istoria personală. Coachingul se ocupă de obiective și de acțiune. Munca mea începe cu claritatea: separăm faptele de interpretări și înțelegem omul care trebuie să producă rezultatul, înainte de a construi planul. Folosesc instrumente psihologice, dar contextul este profesional și decizional.</p>
+            <div style="margin-top:32px;overflow-x:auto">
+              <table style="width:100%;min-width:600px;border-collapse:collapse;text-align:left">
+                <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Comparație între psihoterapie, coaching și consultanță în performanță umană</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" style="padding:14px 14px 14px 0;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6038"></th>
+                    <th scope="col" style="padding:14px;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6038">Psihoterapie</th>
+                    <th scope="col" style="padding:14px;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6038">Coaching</th>
+                    <th scope="col" style="padding:14px;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6038">Performanță umană</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row" style="padding:14px 14px 14px 0;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:.9375rem">Punctul de plecare</th>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Istoria personală</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Obiectivul</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Claritatea asupra situației</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="padding:14px 14px 14px 0;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:.9375rem">Întrebarea centrală</th>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">De ce sunt așa?</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Cum ajung acolo?</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Ce se întâmplă cu adevărat și cine trebuie să devii?</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="padding:14px 14px 14px 0;border-bottom:1px solid #E1D7C6;font-weight:500;font-size:.9375rem">Contextul</th>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Personal, clinic</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Personal sau profesional</td>
+                    <td style="padding:14px;border-bottom:1px solid #E1D7C6;font-size:.9375rem;line-height:1.65;color:#4A443C">Profesional și decizional</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="padding:14px 14px 14px 0;font-weight:500;font-size:.9375rem">Rezultatul urmărit</th>
+                    <td style="padding:14px;font-size:.9375rem;line-height:1.65;color:#4A443C">Vindecare, echilibru</td>
+                    <td style="padding:14px;font-size:.9375rem;line-height:1.65;color:#4A443C">Atingerea obiectivului</td>
+                    <td style="padding:14px;font-size:.9375rem;line-height:1.65;color:#4A443C">Decizii pe care le poți lua singur</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+        <details style="border-top:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">Cu cine lucrezi de obicei?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <p style="padding:0 0 32px;max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Cu antreprenori, soloprenori, profesioniști independenți — medici, avocați, specialiști — cu lideri de echipă și cu oameni care conduc afaceri de familie. În general, oameni obișnuiți să se descurce singuri, ajunși într-un blocaj sau într-un punct de creștere.</p>
+        </details>
+        <details style="border-top:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">Cum decurge o colaborare?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <p style="padding:0 0 32px;max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Începem cu o discuție inițială în care stabilim împreună dacă este potrivit să lucrăm. Urmează o etapă de evaluare și analiză, apoi sesiuni de lucru structurate în jurul situației și a deciziei tale. Durata și formatul depind de pachetul ales.</p>
+        </details>
+        <details style="border-top:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">Sesiunile sunt online sau față în față?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <p style="padding:0 0 32px;max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Ambele. Sesiunile se pot desfășura online sau față în față, în Timișoara. Alegerea îți aparține și se poate schimba pe parcursul colaborării.</p>
+        </details>
+        <details style="border-top:1px solid #E1D7C6;border-bottom:1px solid #E1D7C6">
+          <summary style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:28px 0;min-height:44px">
+            <span style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.25">În cât timp se văd rezultate?</span>
+            <span data-plus="" aria-hidden="true" style="font-size:20px;line-height:1;color:#C0A47B">+</span>
+          </summary>
+          <p style="padding:0 0 32px;max-width:64ch;font-size:1rem;line-height:1.8;color:#4A443C">Claritatea apare de obicei repede, de multe ori chiar din prima sesiune de analiză. Rezultatele de business urmează deciziilor pe care le iei după. Scopul nu este să devii dependent de un consultant, ci să îți construiești propriul sistem de claritate și decizie.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" style="background:#E7DBC5;padding:clamp(8rem,18vw,15rem) 0">
+    <div style="max-width:1000px;margin:0 auto;padding:0 clamp(24px,5vw,88px);text-align:center">
+      <p style="display:flex;justify-content:center;align-items:center;gap:12px;font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#6B5430">
+        <span aria-hidden="true" style="position:relative;width:7px;height:7px;display:block">
+          <span style="position:absolute;inset:0;border-radius:999px;background:#7A6038;box-shadow:0 0 8px 1px rgba(192,164,123,.8)"></span>
+          <span style="position:absolute;inset:0;border-radius:999px;border:1px solid #7A6038;animation:acRingPulse 3.6s cubic-bezier(.22,1,.36,1) infinite both"></span>
+        </span>Primul pas
+      </p>
+      <h2 style="margin:clamp(32px,4vw,56px) auto 0;max-width:22ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.022em;animation:acRise 1s cubic-bezier(.22,1,.36,1) both;animation-timeline:view();animation-range:entry 0% cover 32%">Dacă ai ajuns până aici, probabil ai deja o decizie în minte.</h2>
+      <p style="margin:32px auto 0;max-width:52ch;font-size:1.0625rem;line-height:1.8;color:#4A443C">Prima discuție este despre situația ta, nu despre pachete. Dacă nu este potrivit să lucrăm împreună, îți spun.</p>
+      <div style="margin-top:clamp(40px,5vw,64px);display:flex;justify-content:center">
+        <a href="#cta" style="background:#17140F;color:#FAF5EC;border:1px solid #17140F;border-radius:999px;padding:20px 40px;font-weight:500;font-size:14px;letter-spacing:.06em;text-transform:uppercase;min-height:44px;display:flex;align-items:center;gap:12px;transition:transform 320ms,background-color 320ms" style-hover="background:#000000;transform:translateY(-2px)">Programează o discuție<span data-arrow="" style="display:block">→</span></a>
+      </div>
+      <p style="margin-top:24px;font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#4A443C">Răspund în maximum 24 de ore lucrătoare</p>
+    </div>
+  </section>
+</main>
+
+<footer style="background:#17140F;color:#E7DBC5;padding:clamp(5rem,10vw,8rem) 0 32px">
+  <div style="max-width:1560px;margin:0 auto;padding:0 clamp(24px,5vw,88px)">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:clamp(40px,5vw,72px)">
+      <div>
+        <p style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.5rem,2.4vw,2rem);color:#FAF5EC">Adriana Chira</p>
+        <p style="margin-top:14px;font-weight:500;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#C0A47B">Consultant în Performanță Umană</p>
+        <p style="margin-top:28px;max-width:26ch;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.375rem;line-height:1.35;color:#E7DBC5">Claritate înainte de decizie.</p>
+      </div>
+      <nav aria-label="Navigare footer">
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#C0A47B">Navigare</p>
+        <ul style="margin-top:24px;display:grid;gap:12px">
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5">Acasă</a></li>
+          <li><a data-underline="" href="#despre" style="font-size:.9375rem;color:#E7DBC5">Despre mine</a></li>
+          <li><a data-underline="" href="#servicii" style="font-size:.9375rem;color:#E7DBC5">Servicii</a></li>
+          <li><a data-underline="" href="#blog" style="font-size:.9375rem;color:#E7DBC5">Blog</a></li>
+          <li><a data-underline="" href="#cta" style="font-size:.9375rem;color:#E7DBC5">Contact</a></li>
+        </ul>
+      </nav>
+      <div>
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#C0A47B">Contact</p>
+        <ul style="margin-top:24px;display:grid;gap:12px">
+          <li style="font-size:.9375rem;color:#E7DBC5" data-placeholder="true">[ email ]</li>
+          <li style="font-size:.9375rem;color:#E7DBC5" data-placeholder="true">[ telefon ]</li>
+          <li style="font-size:.9375rem;color:#E7DBC5">Timișoara, România</li>
+        </ul>
+        <ul style="margin-top:24px;display:flex;flex-wrap:wrap;gap:16px">
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5" data-placeholder="true">[ LinkedIn ]</a></li>
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5" data-placeholder="true">[ Instagram ]</a></li>
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5" data-placeholder="true">[ Facebook ]</a></li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#C0A47B">Legal</p>
+        <ul style="margin-top:24px;display:grid;gap:12px">
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5">Politica de confidențialitate</a></li>
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5">Politica de cookie-uri</a></li>
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5">Termeni și condiții</a></li>
+          <li><a data-underline="" href="#hero" style="font-size:.9375rem;color:#E7DBC5">Politica de retur</a></li>
+          <li><button type="button" onClick="{{ openConsent }}" style="background:none;border:0;padding:0;font-family:Inter,sans-serif;font-size:.9375rem;color:#E7DBC5;text-decoration:underline;text-decoration-color:#C0A47B;text-underline-offset:4px;cursor:pointer;min-height:44px">Setări cookie-uri</button></li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:clamp(56px,7vw,88px);padding-top:32px;border-top:1px solid rgba(250,245,236,.12);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:24px;align-items:center">
+      <div style="font-size:12px;line-height:1.8;color:rgba(250,245,236,.55)">
+        <p>© 2026 Adriana Chira. Toate drepturile rezervate.</p>
+        <p data-placeholder="true">[ Denumire firmă · CUI · Reg. Com. ]</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">
+        <a href="https://anpc.ro/ce-este-sal/" style="border:1px solid rgba(250,245,236,.22);border-radius:999px;padding:12px 18px;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,245,236,.75);min-height:44px;display:flex;align-items:center;text-align:center">ANPC · SAL</a>
+        <a href="https://ec.europa.eu/consumers/odr" style="border:1px solid rgba(250,245,236,.22);border-radius:999px;padding:12px 18px;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,245,236,.75);min-height:44px;display:flex;align-items:center;text-align:center">SOL · Litigii online</a>
+      </div>
+      <p style="font-size:12px;color:rgba(250,245,236,.55);text-align:center">Website Factory</p>
+    </div>
+  </div>
+</footer>
+
+<sc-if value="{{ consentOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="region" aria-label="Preferințe cookie-uri" style="position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(250,245,236,.96);backdrop-filter:blur(14px);border-top:1px solid #E1D7C6;box-shadow:0 -10px 40px rgba(23,20,15,.07);animation:acRise .45s cubic-bezier(.22,1,.36,1) both">
+    <div style="max-width:1560px;margin:0 auto;padding:24px clamp(24px,5vw,88px)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px;align-items:center">
+        <p style="font-size:.9375rem;line-height:1.8;color:#4A443C">Folosim cookie-uri pentru a înțelege cum este folosit site-ul. Analiza ne ajută să îmbunătățim conținutul. Poți accepta, refuza sau alege ce permiți. <a data-underline="" href="#hero">Politica de cookie-uri</a></p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;align-items:center">
+          <button type="button" onClick="{{ refuseAll }}" style="border:1px solid #17140F;background:none;border-radius:999px;padding:14px 24px;font-family:Inter,sans-serif;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#17140F;cursor:pointer;min-height:44px">Refuz toate</button>
+          <button type="button" onClick="{{ toggleSettings }}" style="background:none;border:0;padding:14px 8px;font-family:Inter,sans-serif;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#17140F;text-decoration:underline;text-decoration-color:#C0A47B;text-underline-offset:4px;cursor:pointer;min-height:44px">Setări</button>
+          <button type="button" onClick="{{ acceptAll }}" style="background:#17140F;border:1px solid #17140F;border-radius:999px;padding:14px 24px;font-family:Inter,sans-serif;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#FAF5EC;cursor:pointer;min-height:44px">Accept toate</button>
+        </div>
+      </div>
+      <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid #E1D7C6;display:grid;gap:16px">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:baseline">
+            <div>
+              <p style="font-weight:500;font-size:.9375rem">Necesare</p>
+              <p style="margin-top:4px;font-size:13px;color:#756E64">Fără ele site-ul nu funcționează.</p>
+            </div>
+            <span style="font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6038">Mereu active</span>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+            <p style="font-weight:500;font-size:.9375rem">Analiză</p>
+            <button type="button" onClick="{{ toggleAnalytics }}" aria-pressed="{{ analytics }}" style="border:1px solid #17140F;background:none;border-radius:999px;padding:12px 22px;font-family:Inter,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#17140F;cursor:pointer;min-height:44px">{{ analyticsLabel }}</button>
+          </div>
+          <div style="height:1px;background:#E1D7C6"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+            <p style="font-weight:500;font-size:.9375rem">Marketing</p>
+            <button type="button" onClick="{{ toggleMarketing }}" aria-pressed="{{ marketing }}" style="border:1px solid #17140F;background:none;border-radius:999px;padding:12px 22px;font-family:Inter,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#17140F;cursor:pointer;min-height:44px">{{ marketingLabel }}</button>
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <button type="button" onClick="{{ savePrefs }}" style="background:#17140F;border:1px solid #17140F;border-radius:999px;padding:14px 24px;font-family:Inter,sans-serif;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#FAF5EC;cursor:pointer;min-height:44px">Salvează preferințele</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;imagini&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Fotografie&quot;,&quot;Placeholder&quot;],&quot;default&quot;:&quot;Fotografie&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = { consentOpen: false, settingsOpen: false, analytics: false, marketing: false, decided: false, menuOpen: false };
+
+  componentDidMount() {
+    this._t = setTimeout(() => {
+      if (!this.state.decided) this.setState({ consentOpen: true });
+    }, 900);
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  renderVals() {
+    const usePhoto = (this.props.imagini ?? "Fotografie") === "Fotografie";
+    return {
+      usePhoto,
+      usePlaceholder: !usePhoto,
+      menuOpen: this.state.menuOpen,
+      menuExpanded: this.state.menuOpen ? "true" : "false",
+      menuLabel: this.state.menuOpen ? "Închide meniul" : "Deschide meniul",
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      closeMenu: () => this.setState({ menuOpen: false }),
+      consentOpen: this.state.consentOpen,
+      settingsOpen: this.state.settingsOpen,
+      analytics: this.state.analytics,
+      marketing: this.state.marketing,
+      analyticsLabel: this.state.analytics ? "Activ" : "Oprit",
+      marketingLabel: this.state.marketing ? "Activ" : "Oprit",
+      openConsent: () => this.setState({ consentOpen: true, settingsOpen: true }),
+      toggleSettings: () => this.setState(s => ({ settingsOpen: !s.settingsOpen })),
+      toggleAnalytics: () => this.setState(s => ({ analytics: !s.analytics })),
+      toggleMarketing: () => this.setState(s => ({ marketing: !s.marketing })),
+      acceptAll: () => this.setState({ analytics: true, marketing: true, consentOpen: false, settingsOpen: false, decided: true }),
+      refuseAll: () => this.setState({ analytics: false, marketing: false, consentOpen: false, settingsOpen: false, decided: true }),
+      savePrefs: () => this.setState({ consentOpen: false, settingsOpen: false, decided: true })
+    };
+  }
+}
+
+</script>
+</body>
+</html>
