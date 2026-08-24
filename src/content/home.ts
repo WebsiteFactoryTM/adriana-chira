@@ -314,7 +314,6 @@ export const homeContent: HomeContent = {
         question: 'Ce înseamnă „consultant în performanță umană"?',
         answer:
           'Consultantul în performanță umană lucrează la intersecția dintre om, strategie și rezultat. Analizează nu doar ce faci, ci și cum gândești, cum iei decizii, ce tipare repeți și cum reacționezi sub presiune. Pentru că orice strategie este executată de un om, iar oamenii nu decid exclusiv rațional.',
-        defaultOpen: true,
       },
       {
         question: 'Cu ce este diferit de coaching sau de psihoterapie?',

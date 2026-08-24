@@ -89,7 +89,7 @@ function ComparisonGrid({ table }: { table: ComparisonTable }) {
               <tr key={row.label}>
                 <th
                   scope="row"
-                  className={`py-[14px] pr-[14px] font-medium text-body-sm ${border}`}
+                  className={`py-[14px] pr-[14px] font-medium text-body-sm leading-[normal] ${border}`}
                 >
                   {row.label}
                 </th>

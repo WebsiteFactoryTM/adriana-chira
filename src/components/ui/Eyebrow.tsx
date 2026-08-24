@@ -11,7 +11,11 @@ import type { Eyebrow as EyebrowContent } from '@/content/types'
 
 type Props = {
   content: EyebrowContent
-  /** Pe fundal crem accentul are nevoie de varianta mai închisă (AA). */
+  /**
+   * Doar pe `cream-100` (#E7DBC5), unde `ac-accent-ink` dă 4.31:1 și pică AA.
+   * Pe `cream-50` dă 4.98:1 și designul aprobat folosește acolo accent-ink —
+   * varianta închisă e o abatere, deci se aplică strict unde e necesară.
+   */
   tone?: 'default' | 'onCream'
   className?: string
   center?: boolean

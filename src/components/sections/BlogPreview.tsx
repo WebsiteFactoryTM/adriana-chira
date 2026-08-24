@@ -14,7 +14,7 @@ export function BlogPreview({ content }: { content: BlogContent }) {
       <Shell>
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div>
-            <Eyebrow content={content.eyebrow} tone="onCream" />
+            <Eyebrow content={content.eyebrow} />
             <h2 id="blog-titlu" className="mt-8 max-w-[24ch] font-display text-h2-wide font-light">
               {content.heading}
             </h2>
@@ -38,7 +38,7 @@ export function BlogPreview({ content }: { content: BlogContent }) {
                 sizes="(max-width: 700px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
 
-              <p className="mt-6 font-medium text-label uppercase text-ac-accent-deep">
+              <p className="mt-6 font-medium text-label uppercase text-ac-accent-ink">
                 {post.category}
               </p>
 

@@ -46,7 +46,9 @@ export function MobileNav({ items, cta, availability, children }: Props) {
 
   return (
     <>
-      <div className="ac-shell flex flex-nowrap items-center gap-6 py-4">
+      {/* Header-ul e singurul loc unde designul aprobat coboară gutter-ul la 20px
+          sub 480px; restul secțiunilor rămân pe 24px. */}
+      <div className="ac-shell flex flex-nowrap items-center gap-6 px-[clamp(20px,5vw,88px)] py-4">
         {children}
         <button
           ref={triggerRef}

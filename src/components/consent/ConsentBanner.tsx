@@ -107,7 +107,7 @@ export function ConsentBanner({ policyHref }: { policyHref: string }) {
           <p className="text-body-sm text-ac-ink-70">
             Folosim cookie-uri pentru a înțelege cum este folosit site-ul. Analiza ne ajută să
             îmbunătățim conținutul. Poți accepta, refuza sau alege ce permiți.{' '}
-            <a href={policyHref} className="ac-underline">
+            <a href={policyHref} className="ac-underline text-ac-ink">
               Politica de cookie-uri
             </a>
           </p>

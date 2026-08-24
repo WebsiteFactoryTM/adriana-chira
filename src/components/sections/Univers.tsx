@@ -12,12 +12,12 @@ export function Univers({ content }: { content: UniversContent }) {
     <Section id="univers" tone="cream" aria-labelledby="univers-titlu">
       <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-col-gap">
         <StickyColumn>
-          <Eyebrow content={content.eyebrow} tone="onCream" />
+          <Eyebrow content={content.eyebrow} />
           <h2 id="univers-titlu" className="mt-8 max-w-[20ch] font-display text-h2-col font-light">
             {content.heading}
           </h2>
           <p className="mt-8 max-w-[44ch] text-body text-ac-ink-70">{content.body}</p>
-          <p className="mt-8 font-medium text-[11px] tracking-[0.2em] uppercase text-ac-accent-deep">
+          <p className="mt-8 font-medium text-[11px] tracking-[0.2em] uppercase text-ac-accent-ink">
             {content.note}
           </p>
         </StickyColumn>

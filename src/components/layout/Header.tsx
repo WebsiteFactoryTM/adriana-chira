@@ -15,7 +15,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(225,215,198,.9)] bg-[rgba(250,245,236,.82)] backdrop-blur-[14px] backdrop-saturate-[1.1]">
       <MobileNav items={settings.mobileNav} cta={cta} availability={settings.availability}>
-        <a href="#hero" className="block shrink-0">
+        <a href="#hero" className="block">
           <span className="block font-display text-[21px] leading-[1.1] font-normal tracking-[0.01em]">
             {settings.siteName}
           </span>

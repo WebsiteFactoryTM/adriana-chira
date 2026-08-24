@@ -83,17 +83,22 @@
   --text-body-sm: 0.9375rem;
   --text-body-sm--line-height: 1.8;
 
-  /* Etichete versale */
+  /* Etichete versale.
+     Designul aprobat nu pune line-height pe niciuna dintre aceste mărimi:
+     toate cele 63 de etichete de 11px, cele de 12px, butoanele de 13/14px și
+     link-urile de navigație rulează pe `normal`. Valorile explicite le făceau
+     cu ~3px mai înalte și deplasau tot ce urma. Vezi STATUS §6. */
   --text-eyebrow: 12px;
-  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--line-height: normal;
   --text-eyebrow--letter-spacing: 0.26em;
   --text-label: 11px;
-  --text-label--line-height: 1.5;
+  --text-label--line-height: normal;
   --text-label--letter-spacing: 0.22em;
   --text-nav: 14px;
-  --text-nav--line-height: 1.4;
+  --text-nav--line-height: normal;
+  --text-nav--letter-spacing: 0.01em;
   --text-btn: 13px;
-  --text-btn--line-height: 1;
+  --text-btn--line-height: normal;
   --text-btn--letter-spacing: 0.06em;
 
   /* --- Ritm și grilă ---------------------------------------------------- */
@@ -139,6 +144,10 @@
 
 @layer base {
   html {
+    /* Preflight pune line-height: 1.5 pe html. Resetul designului aprobat nu
+       pune nimic, deci tot ce moștenește rulează pe `normal`. Fără asta,
+       fiecare etichetă mică moștenea 1.5 și era cu ~3px mai înaltă. */
+    line-height: normal;
     scroll-behavior: smooth;
     /* Header sticky de ~78px: ancorele nu mai intră sub el. */
     scroll-padding-top: 96px;

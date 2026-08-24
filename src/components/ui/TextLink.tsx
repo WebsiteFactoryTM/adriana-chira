@@ -15,7 +15,10 @@ type Props = {
 }
 
 export function TextLink({ href, children, className, arrow = false }: Props) {
-  const classes = cn('ac-underline', className)
+  // Designul aprobat nu pune line-height pe niciun link de text: toate rulează
+  // pe `normal`. Fără asta, tokenii text-body* aduc 1.8 și link-ul devine
+  // cu ~7px mai înalt decât în design.
+  const classes = cn('ac-underline leading-[normal]', className)
   const content = (
     <>
       {children}

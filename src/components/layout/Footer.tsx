@@ -33,7 +33,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
 
           <nav aria-label="Navigare footer">
             <FooterHeading>Navigare</FooterHeading>
-            <ul className="mt-6 grid gap-3">
+            <ul className="mt-6 grid gap-3 leading-[normal]">
               {settings.footerNav.map((item) => (
                 <li key={item.href}>
                   <TextLink href={item.href} className="text-body-sm text-ac-cream-100">
@@ -46,7 +46,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
 
           <div>
             <FooterHeading>Contact</FooterHeading>
-            <ul className="mt-6 grid gap-3 text-body-sm">
+            <ul className="mt-6 grid gap-3 text-body-sm leading-[normal]">
               <li>
                 {settings.email ? (
                   <TextLink href={`mailto:${settings.email}`} className="text-ac-cream-100">
@@ -70,11 +70,13 @@ export function Footer({ settings }: { settings: SiteSettings }) {
               </li>
             </ul>
 
-            <ul className="mt-6 flex flex-wrap gap-4 text-body-sm">
+            <ul className="mt-6 flex flex-wrap gap-4 leading-[normal]">
               {settings.social.map((item) =>
                 item.pending ? (
                   <li key={item.label}>
-                    <Placeholder>[ {item.label} ]</Placeholder>
+                    <span className="text-body-sm leading-[normal]">
+                      <Placeholder>[ {item.label} ]</Placeholder>
+                    </span>
                   </li>
                 ) : (
                   <li key={item.label}>
@@ -82,7 +84,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
                       href={item.href}
                       rel="me noopener"
                       target="_blank"
-                      className="ac-underline text-ac-cream-100"
+                      className="ac-underline text-body-sm leading-[normal] text-ac-cream-100"
                     >
                       {item.label}
                     </a>
@@ -94,10 +96,10 @@ export function Footer({ settings }: { settings: SiteSettings }) {
 
           <div>
             <FooterHeading>Legal</FooterHeading>
-            <ul className="mt-6 grid gap-3 text-body-sm">
+            <ul className="mt-6 grid gap-3 leading-[normal]">
               {settings.legalNav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="ac-underline text-ac-cream-100">
+                  <Link href={item.href} className="ac-underline text-body-sm leading-[normal] text-ac-cream-100">
                     {item.label}
                   </Link>
                 </li>
@@ -112,7 +114,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
                 <button
                   type="button"
                   data-consent-open
-                  className="min-h-11 cursor-pointer border-0 bg-transparent p-0 text-left font-sans text-body-sm text-ac-cream-100 underline decoration-ac-accent underline-offset-4"
+                  className="min-h-11 cursor-pointer border-0 bg-transparent p-0 text-left font-sans text-body-sm leading-[normal] text-ac-cream-100 underline decoration-ac-accent underline-offset-4"
                 >
                   Setări cookie-uri
                 </button>
@@ -153,7 +155,7 @@ function FooterHeading({ children }: { children: ReactNode }) {
 
 function Placeholder({ children }: { children: ReactNode }) {
   return (
-    <span data-placeholder className="text-[rgba(231,219,197,.65)]">
+    <span data-placeholder>
       {children}
     </span>
   )

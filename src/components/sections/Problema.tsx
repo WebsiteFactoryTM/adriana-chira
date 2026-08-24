@@ -12,7 +12,7 @@ export function Problema({ content }: { content: ProblemaContent }) {
     <Section id="problema" tone="cream" padding="tight" aria-labelledby="problema-titlu">
       <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] items-start gap-col-gap">
         <StickyColumn>
-          <Eyebrow content={content.eyebrow} tone="onCream" />
+          <Eyebrow content={content.eyebrow} />
           <Reveal
             as="h2"
             id="problema-titlu"
