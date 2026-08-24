@@ -7,9 +7,9 @@ e următorul pas concret.
 | | |
 |---|---|
 | Ultima actualizare | **24 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · aura de secțiune adăugată · fazele 4–7 neîncepute |
+| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · aura de secțiune și lumina paginii adăugate · fazele 4–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
-| Ultimul commit | `a9f4db2` — Aura de secțiune: un sistem de atenție peste designul aprobat |
+| Ultimul commit | `a49f8b4` — Lumina paginii: un corp de lumină care traversează pagina la derulare |
 
 ---
 
