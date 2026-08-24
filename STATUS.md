@@ -52,7 +52,7 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 8. **TypeScript strict.** Zero `any`, zero `@ts-ignore`.
 9. **Admin Payload în română.** Fiecare etichetă, descriere, mesaj de eroare.
 10. **Diacritice cu virgulă:** `ș` (U+0219), `ț` (U+021B). Niciodată sedila `ş`/`ţ`.
-    Verifică înainte de commit: `grep -rn "ş\|ţ" src/` trebuie să dea zero.
+    Verifică înainte de commit: `grep -rn "ş\|ţ" src/ scripts/` trebuie să dea zero.
 11. **Fără date reale de client** în seed sau fixtures.
 12. La final de fază: **oprește-te, rulează verificările fazei, raportează.**
 
