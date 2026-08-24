@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { type AuraVariant, SectionAura } from '@/components/ui/SectionAura'
 import { cn } from '@/lib/cn'
 
 /**
@@ -28,6 +29,13 @@ type Props = {
   tone?: Tone
   /** Secțiunile care continuă vizual precedenta nu au padding sus. */
   padding?: 'default' | 'tight' | 'wide' | 'cta' | 'bottom-only' | 'none'
+  /**
+   * Aura de atenție. Pusă doar pe cele cinci secțiuni în care cititorul
+   * trebuie să încetinească — vezi `SectionAura`. `isolate` e obligatoriu:
+   * ține stratul de `z-index: -1` deasupra fundalului secțiunii, dar sub
+   * conținut, fără să atingem markup-ul niciunei secțiuni.
+   */
+  aura?: AuraVariant
   className?: string
   'aria-labelledby'?: string
   children: ReactNode
@@ -46,12 +54,18 @@ export function Section({
   id,
   tone = 'paper',
   padding = 'default',
+  aura,
   className,
   children,
   ...rest
 }: Props) {
   return (
-    <section id={id} className={cn(TONES[tone], PADDING[padding], className)} {...rest}>
+    <section
+      id={id}
+      className={cn(TONES[tone], PADDING[padding], aura && 'relative isolate', className)}
+      {...rest}
+    >
+      {aura && <SectionAura variant={aura} />}
       {children}
     </section>
   )

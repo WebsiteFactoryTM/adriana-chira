@@ -5,7 +5,7 @@ import type { MetodaContent } from '@/content/types'
 /** Metoda pe scurt: trei pași de clarificare. Bloc centrat, singurul din pagină. */
 export function Metoda({ content }: { content: MetodaContent }) {
   return (
-    <Section id="metoda" aria-labelledby="metoda-titlu">
+    <Section id="metoda" aura="metoda" aria-labelledby="metoda-titlu">
       <div className="mx-auto max-w-narrow px-gutter text-center">
         <p className="font-medium text-eyebrow uppercase text-ac-accent-ink">
           {content.eyebrow.text}

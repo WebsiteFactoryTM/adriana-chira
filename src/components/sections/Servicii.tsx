@@ -12,7 +12,7 @@ import type { ServiciiContent } from '@/content/types'
  */
 export function Servicii({ content }: { content: ServiciiContent }) {
   return (
-    <Section id="servicii" aria-labelledby="servicii-titlu">
+    <Section id="servicii" aura="servicii" aria-labelledby="servicii-titlu">
       <Shell>
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div>

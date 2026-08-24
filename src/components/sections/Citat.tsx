@@ -8,7 +8,7 @@ import type { CitatContent } from '@/content/types'
  */
 export function Citat({ content }: { content: CitatContent }) {
   return (
-    <Section id="citat" tone="ink" padding="wide">
+    <Section id="citat" tone="ink" padding="wide" aura="citat">
       <div className="mx-auto max-w-narrow px-gutter text-center">
         <span
           data-reveal="draw-y"

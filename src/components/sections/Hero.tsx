@@ -9,7 +9,7 @@ const LINE_DELAY = 110
 
 export function Hero({ content }: { content: HeroContent }) {
   return (
-    <Section id="hero" padding="none" className="relative pt-[clamp(4rem,11vh,9rem)] pb-[clamp(5rem,10vw,8rem)]">
+    <Section id="hero" padding="none" aura="hero" className="pt-[clamp(4rem,11vh,9rem)] pb-[clamp(5rem,10vw,8rem)]">
       <Shell className="relative z-[1] grid grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))] items-end gap-[clamp(40px,6vw,96px)]">
         <div>
           <p

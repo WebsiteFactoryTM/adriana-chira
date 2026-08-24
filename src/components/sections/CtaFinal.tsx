@@ -7,7 +7,7 @@ import type { CtaContent } from '@/content/types'
 /** „Prima discuție e despre tine, nu despre pachete." Ultimul pas din §4.1. */
 export function CtaFinal({ content }: { content: CtaContent }) {
   return (
-    <Section id="cta" tone="cream-100" padding="cta" aria-labelledby="cta-titlu">
+    <Section id="cta" tone="cream-100" padding="cta" aura="cta" aria-labelledby="cta-titlu">
       <div className="mx-auto max-w-cta px-gutter text-center">
         <Eyebrow content={content.eyebrow} tone="onCream" center />
 

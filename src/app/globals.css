@@ -602,6 +602,166 @@ details[open] summary [data-plus] {
   }
 }
 
+/* ==========================================================================
+   AURĂ DE SECȚIUNE — sistemul de atenție
+   Singurul strat vizual din acest fișier care NU vine din designul aprobat.
+   Nu atinge nicio literă: e un strat `position:absolute`, în afara fluxului,
+   deci înălțimile secțiunilor rămân la pixel cele verificate în STATUS §6.
+
+   Ce face: un câmp de lumină caldă se aprinde pe măsură ce o secțiune urcă
+   spre centrul ecranului, ține un platou, apoi se stinge. Atenția coboară
+   odată cu cititorul, secțiune cu secțiune. Pe hero se trezește la încărcare.
+
+   Trei reguli care nu se încalcă:
+   1. Miez de lumină, halou de culoare. Miezul RIDICĂ luminanța fundalului,
+      deci contrastul textului crește. Haloul în accent stă sub ~6% efectiv pe
+      fundalurile deschise — peste, `--ac-ink-50` la 11px pică sub 4.5:1.
+   2. Gradient radial, niciodată `filter: blur()`. Se compune pe GPU și nu
+      costă nimic pe telefon.
+   3. Zero JavaScript. Pe browserele cu scroll-driven animations e animat de
+      poziția paginii; pe restul rămâne o aură statică. Decorul nu are voie să
+      depindă de JS.
+   ========================================================================== */
+
+:root {
+  /* Raza de bază a unui câmp. Scalează cu ecranul: pe telefon rămâne aură,
+     nu spălare de fundal. */
+  --ac-aura-size: clamp(300px, 66vw, 1120px);
+  /* Regulator global. `0` stinge aura pe tot site-ul, dintr-un singur loc. */
+  --ac-aura-gain: 1;
+  /* Miezul: alb cald, din aceeași familie ca `--ac-paper`. */
+  --ac-aura-core: #fffdf6;
+}
+
+[data-aura] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Taie câmpul la marginile secțiunii ȘI scutește pictarea cât e în afara
+     ecranului. `overflow` pe <section> nu e o opțiune: ar rupe StickyColumn. */
+  contain: paint;
+}
+
+/* Stratul de focalizare: ce se aprinde și se stinge. Poziția vine din
+   preseturile componentei, în procente din secțiune. */
+[data-aura-focus] {
+  position: absolute;
+  left: var(--fx, 50%);
+  top: var(--fy, 50%);
+  width: calc(var(--ac-aura-size) * var(--fs, 1));
+  aspect-ratio: 1;
+  /* Centrarea se face din margini negative, NU din `translate`. `view()` își
+     calculează progresul din caseta de layout și ignoră complet `translate`:
+     cu centrare din `translate` aura se aprindea cu o jumătate de rază mai
+     jos decât secțiunea. Marginile intră în layout, deci timeline-ul le vede.
+     `transform` rămâne astfel liber pentru animații. */
+  margin-left: calc(var(--ac-aura-size) * var(--fs, 1) * -0.5);
+  margin-top: calc(var(--ac-aura-size) * var(--fs, 1) * -0.5);
+}
+
+/* Câmpul propriu-zis: intensitatea și deriva lentă care îl țin viu. */
+[data-aura-field] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: calc(var(--fp, 0.24) * var(--ac-aura-gain));
+  /*
+    Miez de lumină, halou de culoare, cu greutăți separate.
+
+    `--fk` (miez) și `--fa` (halou) există separat pentru că au efecte opuse
+    asupra contrastului. Miezul e alb cald: pe fundal deschis RIDICĂ luminanța,
+    deci textul închis câștigă contrast — poate fi generos. Haloul e accentul:
+    întunecă fundalul, deci îl pierde. De aceea pe hârtie `--fa` coboară la
+    ~0.45, iar aurul e lăsat să conteze acolo unde există marjă: pe blocul
+    întunecat de citat și, moderat, pe CTA-ul crem.
+
+    Măsura care fixează plafonul: `--ac-ink-50` la 11px stă pe `--ac-paper` la
+    4.64:1, adică la 0.14 peste pragul AA. Orice încălzire a fundalului sub
+    acele etichete le scoate din normă — de aceea preseturile din `SectionAura`
+    țin etichetele în afara inelului de accent, nu doar la intensitate mică.
+  */
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--fc, var(--ac-aura-core)) calc(90% * var(--fk, 1)), transparent) 0%,
+    color-mix(in srgb, var(--fc, var(--ac-aura-core)) calc(42% * var(--fk, 1)), transparent) 28%,
+    color-mix(in srgb, var(--ac-accent) calc(26% * var(--fa, 1)), transparent) 50%,
+    color-mix(in srgb, var(--ac-accent) calc(9% * var(--fa, 1)), transparent) 66%,
+    transparent 82%
+  );
+  animation: acAuraDrift var(--fdur, 26s) cubic-bezier(0.45, 0, 0.55, 1) infinite both;
+  animation-delay: var(--fdelay, 0s);
+}
+
+/* Pe telefon câmpurile se repoziționează: layout-ul trece pe o coloană, deci
+   un câmp calibrat pentru coloana din dreapta ar cădea pe nimic. */
+@media (max-width: 767px) {
+  [data-aura-focus] {
+    left: var(--fx-sm, var(--fx, 50%));
+    top: var(--fy-sm, var(--fy, 50%));
+    width: calc(var(--ac-aura-size) * var(--fs-sm, var(--fs, 1)));
+    margin-left: calc(var(--ac-aura-size) * var(--fs-sm, var(--fs, 1)) * -0.5);
+    margin-top: calc(var(--ac-aura-size) * var(--fs-sm, var(--fs, 1)) * -0.5);
+  }
+}
+
+@keyframes acAuraDrift {
+  0% {
+    transform: translate3d(-3%, 2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -2.5%, 0) scale(1.07);
+  }
+  100% {
+    transform: translate3d(-3%, 2%, 0) scale(1);
+  }
+}
+
+/* Trezirea la încărcarea paginii — doar hero. */
+@keyframes acAuraWake {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Focalizarea la scroll. Platoul dintre 42% și 60% e „pauza": secțiunea stă
+   în lumină plină cât traversează centrul ecranului, apoi lumina pleacă mai
+   departe. Asta e ce face ochiul să se oprească — nu blocarea derulării. */
+@keyframes acAuraFocus {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 7%, 0) scale(0.86);
+  }
+  42%,
+  60% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -7%, 0) scale(0.92);
+  }
+}
+
+[data-aura-mode='wake'] [data-aura-focus] {
+  animation: acAuraWake 1800ms var(--ease-ac) both;
+  animation-delay: calc(260ms + var(--fdelay, 0s));
+}
+
+@supports (animation-timeline: view()) {
+  [data-aura-mode='focus'] [data-aura-focus] {
+    animation: acAuraFocus linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+}
+
 /* „prefers-reduced-motion" oprește complet mișcarea (brief §5.6, §9.3). */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -614,5 +774,11 @@ details[open] summary [data-plus] {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+  }
+  /* Aura rămâne ca atmosferă, dar nemișcată și la jumătate: regula de mai sus
+     i-a oprit deja ambele animații, deci ar sta la intensitatea de vârf pe
+     toată pagina. Cine cere mai puțină mișcare primește și mai puțin decor. */
+  [data-aura-field] {
+    opacity: calc(var(--fp, 0.24) * var(--ac-aura-gain) * 0.5) !important;
   }
 }

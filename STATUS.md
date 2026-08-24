@@ -7,7 +7,7 @@ e următorul pas concret.
 | | |
 |---|---|
 | Ultima actualizare | **24 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de markup · fazele 4–7 neîncepute |
+| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · aura de secțiune adăugată · fazele 4–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
 | Ultimul commit | `2bf70d2` — Faza 3b: paginile interioare, de la /despre la cele patru pagini legale |
 
@@ -164,6 +164,7 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `Section`, `Shell`, `StickyColumn`, `Rule` | învelișul de secțiune, coloana de 1560px, coloana sticky, hairline |
 | `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei |
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
+| `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
 
@@ -193,6 +194,32 @@ a patra, `CopyLinkButton`, nu este — de aceea are justificarea din §9.10:
 Header-ul a rămas pe server pentru că designul v3 nu are stare de scroll.
 Link-ul „Setări cookie-uri" din footer funcționează prin delegare pe
 `[data-consent-open]`, deci footerul rămâne Server Component.
+
+### Aura de secțiune ✅
+
+Singurul strat vizual din site care **nu** vine din designul aprobat. E un sistem de
+atenție, nu decor: un câmp de lumină caldă se aprinde când secțiunea urcă spre centrul
+ecranului, ține un platou cât o traversează, apoi se stinge — atenția coboară odată cu
+cititorul. Pe hero se trezește la încărcare, cu ~260ms după primul rând de titlu.
+
+- `src/components/ui/SectionAura.tsx` — Server Component, **zero JavaScript**.
+  Preseturile (poziție, rază, intensitate, greutatea aurului) sunt date, nu CSS.
+- Blocul „AURĂ DE SECȚIUNE" din `globals.css` — gradient radial, niciodată
+  `filter: blur()`. Mișcarea vine din `animation-timeline: view()` unde există; pe
+  restul browserelor rămâne aură statică. Decorul nu depinde de JS.
+- Pusă pe **cinci** secțiuni, nu pe toate: `hero`, `metoda`, `citat`, `servicii`,
+  `cta`. Un semnal folosit peste tot nu mai e semnal.
+- Se stinge pe tot site-ul dintr-un singur loc: `--ac-aura-gain: 0`.
+- `prefers-reduced-motion` o lasă ca atmosferă, nemișcată și la jumătate din
+  intensitate.
+
+Regula de contrast care fixează plafoanele: miezul e alb cald și **ridică** luminanța,
+deci textul închis câștigă contrast; haloul e accentul și o **scade**. De aceea pe
+hârtie greutatea aurului stă la ~0.3–0.6, iar la greutate plină merge doar pe blocul
+întunecat de citat, unde textul are ~17:1 de cheltuit. Măsura care dă plafonul e
+`--ac-ink-50` la 11px: stă pe `--ac-paper` la 4.64:1, adică la 0.14 peste AA.
+Preseturile țin acele etichete **în afara** inelului de accent, nu doar la intensitate
+mică.
 
 ### SEO / AEO pentru homepage ✅
 
@@ -533,6 +560,25 @@ git stash pop
 
 ---
 
+### ✅ Aura nu a mișcat niciun text — verificat prin diff
+
+Aura e singura adăugire peste designul verificat la pixel, deci trebuia dovedit că nu
+atinge nimic. Metoda din §12.5: build de producție pe `HEAD`, build de producție cu
+aura, `curl` pe `/` în ambele, diff după normalizarea payload-ului RSC și a hash-urilor
+de chunk.
+
+**Rezultat: 44 de linii diferite, toate nodurile de aură** — pe cele cinci secțiuni,
+`class` primește `relative isolate` și apare un `<div aria-hidden>` cu câmpurile.
+Niciun nod de text nu s-a mutat: **text vizibil identic la caracter, 9692 în ambele.**
+Stratul e `position: absolute`, în afara fluxului, deci înălțimile secțiunilor rămân
+cele din comparația de mai sus și **aceasta nu trebuie refăcută.**
+
+Verificat și în browser, pe build de producție, la 1440px: hero, citat, servicii și
+CTA se aprind cum sunt descrise, iar `CSS.supports('animation-timeline: view()')` e
+`true` pe Chrome-ul de pe mașina de lucru.
+
+---
+
 ## 7. Blocaje și decizii care așteaptă clienta
 
 Din brief §13. **Toate se completează acum din panoul de administrare**, fără cod și
@@ -611,7 +657,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Cincisprezece, toate documentate în cod prin comentarii:
+Șaisprezece, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -703,6 +749,13 @@ Cincisprezece, toate documentate în cod prin comentarii:
     `LEGAL_DRAFT`. Datele de firmă NU sunt inventate — vin din `site-settings` și
     până atunci se afișează ca placeholdere.
 
+16. **Aura de secțiune — adăugire, nu abatere** (`src/components/ui/SectionAura.tsx`).
+    Singurul strat vizual care nu există în designul aprobat, descris în §4. E
+    proiectat ca să nu atingă designul: în afara fluxului, `z-index: -1`, sub o
+    secțiune cu `isolation: isolate`. Diff-ul din §6 arată zero text mutat. Dacă
+    clienta o refuză, se stinge dintr-un singur loc — `--ac-aura-gain: 0` — fără să
+    se atingă nicio secțiune.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -734,6 +787,9 @@ pe homepage și nu au pagină proprie.
 | Măsurătoarea de buget dă cifre prea mici, fără nicio eroare | Server vechi + `.next` reconstruit: HTML-ul servit trimite la chunk-uri cu alt hash, care nu mai există pe disc, iar scriptul de măsurare le sare | Oprește serverul ÎNAINTE de rebuild (vezi capcana de mai sus) și numără fișierele lipsă, nu doar octeții. Scriptul din §8 o face |
 | Erori de sintaxă la scrierea fișierelor mari cu `cat > … <<'EOF'` | Heredoc-urile lungi, cu diacritice și ghilimele, se rup înainte de delimitator | Fișierele mari se scriu cu unealta de scriere a fișierelor sau cu un script `.mjs` pus în directorul temporar, nu prin heredoc |
 | Ghilimelele de închidere arată altfel decât în restul textului | Convenția proiectului este `„text"` — U+201E la deschidere, ASCII `"` la închidere. U+201D nu apare nicăieri în designul aprobat | `grep -rn $'”' src/` trebuie să dea zero. Într-un atribut JSX delimitat cu `"`, un `"` în text rupe oricum compilarea |
+| Aura se aprindea cu o jumătate de rază mai jos decât secțiunea | `animation-timeline: view()` își calculează progresul din **caseta de layout** și ignoră complet `transform`. Centrarea câmpului prin `translate(-50%,-50%)` era deci invizibilă pentru timeline | Centrarea se face din margini negative (`margin-left/top: -50%` din lățime), care intră în layout. `transform` rămâne liber pentru animație |
+| Un strat decorativ tăiat cu `overflow: hidden` pe `<section>` | Ar rupe `StickyColumn` — poziționarea `sticky` nu funcționează într-un strămoș cu `overflow` | `contain: paint` pe stratul decorativ: taie la marginile secțiunii **și** scutește pictarea cât e în afara ecranului |
+| Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---
 
