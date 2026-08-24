@@ -9,7 +9,7 @@ e următorul pas concret.
 | Ultima actualizare | **24 august 2026** |
 | Stadiu general | Fazele 1 și 2 complete · homepage verificat vizual · **conținutul vine din Payload**, cu fallback pe design · fazele 3–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
-| Ultimul commit | `afd19f8` — Documentație: rezultatul comparației vizuale și harnessul de rulare |
+| Ultimul commit | `4f8f1b0` — Faza 2: Payload CMS conectat, cu designul aprobat ca fallback |
 
 ---
 
