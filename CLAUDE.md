@@ -7,8 +7,10 @@ ce e blocat și care e următorul pas. Acest fișier e doar indexul.
 
 Site de prezentare și vânzare pentru Adriana Chira, consultant în performanță umană.
 Română, un singur locale. Next 16 · React 19 · Tailwind v4 · TypeScript 7 strict ·
-Payload 3.88 (instalat, faza 2 completă) · Stripe 22.5 (doar sincronizarea prețurilor) ·
-Postgres · Vercel.
+Payload 3.88 (faza 2 completă) · Zod 4 (**doar `zod/mini`**) · Stripe 22.5 (doar
+sincronizarea prețurilor) · Postgres · Vercel.
+
+Fazele 1, 2 și 3b sunt complete: cele 15 rute publice există. Urmează faza 4 (Stripe).
 
 ## Surse de adevăr, în ordine
 
@@ -24,8 +26,12 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
-  Astăzi există exact două: `MobileNav`, `ConsentBanner`.
-- Zero bibliotecă de animație. Zero bibliotecă de componente.
+  Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
+  `CopyLinkButton`.
+- Zero bibliotecă de animație. Zero bibliotecă de componente. Zero SDK acolo unde
+  ajunge un `fetch` (vezi `src/lib/email.ts`).
+- Rich text-ul se randează pe server, cu `ui/RichText`, nu cu pachetul React al
+  Payload — acela intră în bundle-ul de client.
 - Zero valori Tailwind implicite (`gray-900`, `rounded-lg`). Totul din tokenii
   din `src/app/globals.css`.
 - Fără terți înainte de consimțământ. Verifici în Network, nu presupui.
@@ -52,12 +58,19 @@ Windows: dacă `pnpm` lipsește din PATH, e la `$HOME/AppData/Roaming/npm`
 `src/lib/content.ts` — singurul loc care știe de unde vine conținutul. Componentele
 primesc mereu tipurile din `src/content/types.ts`.
 
+**API-ul local al Payload rulează cu `overrideAccess: true`**, adică ignoră regulile
+din `src/access/`. Filtrele `_status: 'published'` și `active: true` din
+`content.ts` sunt singurul lucru care ține ciornele și pachetele ascunse în afara
+paginilor publice. Nu le scoate.
+
 **Regula de îmbinare:** CMS-ul are întâietate, dar numai unde chiar a fost completat.
 Orice câmp gol, `null` sau listă goală cade pe `src/content/*.ts`, adică pe textul
 verificat la px față de designul aprobat. Acele fișiere **nu se șterg**: sunt și
 fallback-ul, și sursa din care `pnpm seed` populează CMS-ul.
 
 Atingi UI-ul sau stratul de conținut? Refă diff-ul CMS ↔ fallback din `STATUS.md` §6.
+Atingi o componentă folosită și de homepage? Refă și diff-ul HEAD ↔ acum, tot §6 —
+homepage-ul e verificat la pixel și nu are voie să se schimbe pe tăcute.
 
 ## Înainte de commit
 

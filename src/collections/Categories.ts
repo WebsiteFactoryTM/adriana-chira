@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminOrEditor } from '@/access'
-import { revalidateHome, revalidateHomeAfterDelete } from '@/hooks/revalidate'
+import { revalidateCategory, revalidateCategoryAfterDelete } from '@/hooks/revalidate'
 import { slugField } from '@/fields/slug'
 
 /**
@@ -28,8 +28,8 @@ export const Categories: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
-    afterChange: [revalidateHome],
-    afterDelete: [revalidateHomeAfterDelete],
+    afterChange: [revalidateCategory],
+    afterDelete: [revalidateCategoryAfterDelete],
   },
   fields: [
     {

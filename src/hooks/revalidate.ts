@@ -31,14 +31,41 @@ function revalidate(paths: string[]): void {
   }
 }
 
-/** Homepage-ul, dintr-o colecție: întrebări frecvente, categorii. */
+/**
+ * Întrebările frecvente apar pe homepage ȘI pe pagina de servicii, în funcție
+ * de câmpul „Unde apare". Invalidăm ambele: e mai ieftin decât să citim
+ * documentul ca să aflăm care dintre ele s-a schimbat.
+ */
+const FAQ_PATHS = ['/', '/servicii']
+
 export const revalidateHome: CollectionAfterChangeHook = ({ doc }) => {
-  revalidate(['/'])
+  revalidate(FAQ_PATHS)
   return doc
 }
 
 export const revalidateHomeAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
-  revalidate(['/'])
+  revalidate(FAQ_PATHS)
+  return doc
+}
+
+/**
+ * Categoriile apar în filtrele blogului, pe pagina proprie și pe cardurile de
+ * articol. O redenumire atinge tot blogul, nu doar o pagină.
+ */
+export const revalidateCategory: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
+  const paths = new Set(['/', '/blog', '/sitemap.xml'])
+  if (typeof doc?.slug === 'string') paths.add(`/blog/categorie/${doc.slug}`)
+  if (typeof previousDoc?.slug === 'string' && previousDoc.slug !== doc?.slug) {
+    paths.add(`/blog/categorie/${previousDoc.slug}`)
+  }
+  revalidate([...paths])
+  return doc
+}
+
+export const revalidateCategoryAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  const paths = new Set(['/', '/blog', '/sitemap.xml'])
+  if (typeof doc?.slug === 'string') paths.add(`/blog/categorie/${doc.slug}`)
+  revalidate([...paths])
   return doc
 }
 
@@ -61,6 +88,16 @@ export const revalidateAbout: GlobalAfterChangeHook = ({ doc }) => {
  */
 export const revalidatePost: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
   const paths = new Set(['/', '/blog', '/sitemap.xml'])
+
+  // Pagina categoriei își schimbă lista și numărătoarea la fiecare publicare.
+  for (const source of [doc, previousDoc]) {
+    const category = source?.category
+    const slug =
+      typeof category === 'object' && category !== null
+        ? (category as { slug?: unknown }).slug
+        : null
+    if (typeof slug === 'string') paths.add(`/blog/categorie/${slug}`)
+  }
 
   if (typeof doc?.slug === 'string') paths.add(`/blog/${doc.slug}`)
   // Slug schimbat: vechea adresă trebuie să afle că a devenit 404.

@@ -158,6 +158,11 @@ export type PostPreview = {
   title: string
   href: string
   category: string
+  /**
+   * Ruta categoriei. Lipsește pe cardurile din designul aprobat — demo-ul nu
+   * are pagini de categorie — și apare pe cele venite din CMS.
+   */
+  categoryHref?: string
   excerpt: string
   publishedAt: string
   readingTime: number
@@ -211,4 +216,110 @@ export type HomeContent = {
   blog: BlogContent
   faq: FaqContent
   cta: CtaContent
+}
+
+/* -------------------------------------------------------------------------- */
+/* Paginile interioare (faza 3b)                                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Conținut Lexical, așa cum îl livrează Payload.
+ *
+ * `unknown` intenționat: `RichText` parcurge arborele defensiv, iar contractul
+ * de conținut nu trebuie să depindă de forma internă a editorului — s-a
+ * schimbat deja între versiuni de Lexical.
+ */
+export type RichTextDocument = { root?: unknown } | null
+
+/** Suprascrierile de SEO per document. Gol = se folosesc titlul și rezumatul. */
+export type SeoOverrides = {
+  metaTitle: string | null
+  metaDescription: string | null
+  ogImage: string | null
+  noIndex: boolean
+}
+
+export type Credential = {
+  text: string
+  detail: string | null
+}
+
+export type Principle = {
+  index: string
+  title: string
+  body: string
+}
+
+export type AboutContent = {
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  /** Narațiunea din CMS. Lipsă → se randează `paragraphs`, textul din design. */
+  narrative: RichTextDocument
+  paragraphs: string[]
+  portrait: ImageSlotContent
+  credentials: Credential[]
+  principles: Principle[]
+  seo: SeoOverrides
+}
+
+export type CategorySummary = {
+  name: string
+  slug: string
+  description: string | null
+  /** Câte articole publicate are. Categoriile goale nu se afișează în filtre. */
+  count: number
+}
+
+export type PostSummary = {
+  title: string
+  slug: string
+  href: string
+  excerpt: string
+  category: { name: string; slug: string } | null
+  publishedAt: string
+  readingTime: number
+  cover: ImageSlotContent
+}
+
+export type QaItem = {
+  question: string
+  answer: string
+}
+
+export type PostDetail = PostSummary & {
+  content: RichTextDocument
+  updatedAt: string
+  faq: QaItem[]
+  related: PostSummary[]
+  seo: SeoOverrides
+}
+
+export type PackageDetail = {
+  numeral: string
+  slug: string
+  href: string
+  name: string | null
+  tagline: string | null
+  forWho: string | null
+  includes: (string | null)[]
+  duration: string | null
+  format: 'online' | 'fata-in-fata' | 'hibrid'
+  price: number | null
+  currency: string
+  featured: boolean
+  longDescription: RichTextDocument
+  faq: QaItem[]
+  seo: SeoOverrides
+}
+
+/** O pagină cu text fix: legalele, mulțumirile, comanda anulată. */
+export type StaticPage = {
+  slug: string
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  /** Data ultimei revizuiri, afișată pe paginile legale. */
+  updatedAt: string | null
+  sections: { heading: string; paragraphs: string[]; list?: string[] }[]
 }

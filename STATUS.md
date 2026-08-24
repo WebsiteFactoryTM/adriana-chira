@@ -7,7 +7,7 @@ e următorul pas concret.
 | | |
 |---|---|
 | Ultima actualizare | **24 august 2026** |
-| Stadiu general | Fazele 1 și 2 complete · homepage verificat vizual · **conținutul vine din Payload**, cu fallback pe design · fazele 3–7 neîncepute |
+| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de markup · fazele 4–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
 | Ultimul commit | `4f8f1b0` — Faza 2: Payload CMS conectat, cu designul aprobat ca fallback |
 
@@ -42,7 +42,7 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 1. **Designul aprobat este lege.** Vezi ceva ce ai face altfel? Notează
    `// NOTĂ DESIGN:` și implementează varianta aprobată.
 2. **Server Components implicit.** `use client` cere justificare scrisă în comentariu,
-   în fișier. Astăzi există exact două componente de client (vezi §4).
+   în fișier. Astăzi există exact PATRU componente de client în tot site-ul (vezi §4).
 3. **Zero bibliotecă de animație.** CSS + un singur IntersectionObserver global.
 4. **Zero bibliotecă de componente.** Fără shadcn, MUI, Radix. Se scriu de mână.
 5. **Zero valori Tailwind implicite** (`gray-900`, `rounded-lg`, `shadow-md`).
@@ -63,8 +63,11 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 ```
 Next 16.3.1 · React 19.2.8 · Tailwind 4.3.3 · TypeScript 7 · pnpm 10.34.5
 Payload 3.88.0 (+ db-postgres, next, richtext-lexical, storage-vercel-blob,
-translations) · Stripe 22.5.0 · Postgres 17
+translations) · Stripe 22.5.0 · Zod 4.4.3 · Postgres 17
 ```
+
+Zod se importă **exclusiv ca `zod/mini`**, niciodată ca `zod` — vezi §9.11.
+Emailurile nu au SDK: `src/lib/email.ts` cheamă API-ul HTTP al Resend cu `fetch`.
 
 Versiunile `next`, `react`, `react-dom`, `tailwindcss`, `stripe` și **toate** pachetele
 `payload*` sunt **fixate exact**, fără caret — compatibilitatea Payload ↔ Next este
@@ -176,12 +179,16 @@ hero → problema → metoda → pentru-cine → univers → despre
 
 Layout: `src/components/layout/` — `Header`, `MobileNav`, `Footer`.
 
-**Componente de client — exact două.** Dacă adaugi a treia, justifică în comentariu:
+**Componente de client — exact patru în tot site-ul.** Dacă adaugi a cincea,
+justifică în comentariu, în fișier. Trei dintre ele sunt pe lista din promptul §5.1;
+a patra, `CopyLinkButton`, nu este — de aceea are justificarea din §9.10:
 
-| Componentă | De ce nu poate fi pe server |
-|---|---|
-| `MobileNav` | stare deschis/închis, Escape, blocare de scroll |
-| `ConsentBanner` | scrie cookie și schimbă starea Consent Mode |
+| Componentă | Unde | De ce nu poate fi pe server |
+|---|---|---|
+| `MobileNav` | pe toate paginile | stare deschis/închis, Escape, blocare de scroll |
+| `ConsentBanner` | pe toate paginile | scrie cookie și schimbă starea Consent Mode |
+| `ContactForm` | `/contact` | validare pe client, stări de trimitere, `aria-live` |
+| `CopyLinkButton` | `/blog/[slug]` | `navigator.clipboard`; ~700 B, vezi §9.10 |
 
 Header-ul a rămas pe server pentru că designul v3 nu are stare de scroll.
 Link-ul „Setări cookie-uri" din footer funcționează prin delegare pe
@@ -296,52 +303,109 @@ Două lucruri sunt intenționat **ascunse**, ca pagina să rămână identică c
 Pachetele și articolele se creează o singură dată (`createOnly`): a doua rulare nu
 suprascrie ce a început clienta să completeze.
 
+### Faza 3b — Paginile interioare ✅
+
+Site-ul are acum **15 rute publice**. Navigația a trecut de la ancore la rute reale,
+dintr-un singur loc (`src/content/site.ts`).
+
+| Rută | Ce e | Randare |
+|---|---|---|
+| `/despre` | narațiune + repere + 4 principii + CTA dublu | static |
+| `/servicii` | grila de pachete, bandă de reasigurare, FAQ comercial | ISR 1h |
+| `/servicii/[slug]` | detaliu, coloană de achiziție sticky, FAQ, pachete conexe | SSG + ISR |
+| `/blog` · `/blog/pagina/[numar]` | grilă, filtre de categorie, paginare la 9 | SSG + ISR |
+| `/blog/[slug]` | articol pe 68ch, cuprins, semnătură, share, conexe | SSG + ISR |
+| `/blog/categorie/[slug]` (+ `/pagina/[numar]`) | aceeași grilă, filtrată | SSG + ISR |
+| `/contact` | formular + date de contact + programare | dinamic (`?pachet=`) |
+| `/multumim` · `/comanda-anulata` | confirmare și anulare, ambele `noindex` | dinamic |
+| 4 pagini legale | cuprins lateral, secțiuni, date de identificare | static |
+
+**Componente noi, toate pe server:** `PageHeader`, `PageCta`, `Breadcrumb`,
+`Pagination`, `BlogIndex`, `LegalDocument`, `RichText`, `ShareRow`.
+
+**Trei componente au fost EXTRASE din secțiunile de homepage**, ca `/servicii`,
+`/blog` și paginile de articol să randeze exact același card: `ui/PackageCard`,
+`ui/FaqList`, `ui/PostCard`. Markup-ul nu s-a schimbat cu un caracter — verificat
+prin diff, vezi §6.
+
+**`RichText`** (`src/components/ui/RichText.tsx`) randează Lexical → JSX pe server.
+Payload livrează un pachet gata făcut (`@payloadcms/richtext-lexical/react`), dar
+acela intră în bundle-ul de client; aici arborele e doar JSON și transformarea lui
+nu costă niciun octet în browser. Nodurile necunoscute nu aruncă: li se randează
+copiii. Tipografia de articol e `@utility ac-prose` din `globals.css` — singurul
+bloc de stil care NU vine din designul aprobat, pentru că designul e o pagină unică
+și nu conține corp de articol.
+
+**Cuprinsul articolelor** apare de la 4 titluri `h2` în sus. Ancorele se calculează
+de aceeași funcție care le pune pe titluri (`headingAnchors` / `RichText`), deci nu
+pot devia.
+
+**Legăturile interne obligatorii** (brief §9.3): fiecare articol trebuie să trimită
+cel puțin o dată spre un pachet și o dată spre `/despre`. `collectLinkTargets()`
+citește arborele Lexical; ce lipsește din text, componenta adaugă în blocul „Mai
+departe" de la final. Nu e opțional — e mecanismul prin care blogul aduce conversii.
+
+**Formularul de contact** — `src/components/contact/ContactForm.tsx` +
+`src/app/api/contact/route.ts`:
+
+- Schemă unică, `src/lib/validation/contact.ts`, importată și de client, și de rută.
+- Câmpuri: nume, email, telefon opțional, mesaj, bifă **neprebifată**. Nimic în plus.
+- Anti-spam: honeypot + limitare de rată 5 cereri / 10 minute pe IP. **Fără reCAPTCHA.**
+- Ordinea pe server: limitare → validare → **salvare în `submissions`** → notificare
+  pe email. Emailul e ultimul intenționat: dacă pică, mesajul e deja în siguranță.
+- Stări accesibile: `aria-invalid` + `aria-describedby` pe câmpuri, `aria-live` pe
+  mesajul de răspuns, focus mutat pe primul câmp greșit, buton dezactivat la trimitere.
+
+**Al patrulea Client Component** din tot site-ul este `CopyLinkButton` (~700 B), pentru
+butonul „Copiază adresa" din blocul de partajare. Restul butoanelor de share sunt
+`<a>`-uri obișnuite, randate pe server, fără niciun script terț. Vezi §9.10.
+
+**SEO:** `src/lib/seo.ts` — `pageMetadata()` este singurul loc care știe regula
+„valorile din admin au întâietate, restul din document", inclusiv `noindex`. Fiecare
+pagină are canonical, OG, breadcrumb vizibil ȘI `BreadcrumbList` construit din
+aceeași listă.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
 
-### Faza 3b — Paginile interioare ⏳ **următorul pas recomandat**
+### Faza 4 — Stripe ⏳ **următorul pas recomandat**
 
-Nu există: `/despre`, `/servicii`, `/servicii/[slug]`, `/blog`, `/blog/[slug]`,
-`/blog/categorie/[slug]`, `/contact`, `/multumim`, `/comanda-anulata` și cele patru
-pagini legale.
-
-**La crearea lor, schimbă ancorele în rute reale** — dintr-un singur loc,
-`src/content/site.ts`: `nav`, `mobileNav`, `footerNav`. Astăzi sunt `#despre`,
-`#servicii`, `#blog`, `#cta` pentru că demo-ul aprobat e o pagină unică.
-
-Datele există deja: colecțiile `posts`, `categories`, `packages` și globalul
-`about-page` sunt populate și tipate (`src/payload-types.ts`). Se adaugă resolvere
-noi în `src/lib/content.ts`, după același tipar de îmbinare cu fallback, și rutele
-de invalidare din `src/hooks/revalidate.ts` sunt deja scrise pentru `/blog`,
-`/blog/[slug]`, `/servicii`, `/servicii/[slug]` și `/despre`.
-
-Un detaliu care așteaptă acolo: `mergeHome()` lasă azi `blog.posts` pe valorile din
-design, cu un comentariu explicit. Când apar paginile de blog, se citesc din `posts`.
-
-Formularul de contact: Zod pe client și pe server, honeypot + rate limiting,
-**fără reCAPTCHA**. Colecția `submissions` există deja, cu `create` închis prin API —
-ruta o va scrie cu `overrideAccess`.
-
-### Faza 4 — Stripe ⏳
-
-Lipsesc `/api/stripe/checkout`, `/api/stripe/webhook` și emailurile Resend. Există
-deja: clientul Stripe (`src/lib/stripe.ts`), sincronizarea prețurilor, colecția
+Lipsesc `/api/stripe/checkout`, `/api/stripe/webhook` și emailurile de comandă.
+Există deja: clientul Stripe (`src/lib/stripe.ts`), sincronizarea prețurilor, colecția
 `orders` cu `stripeSessionId` **unic la nivel de bază de date** — cheia de idempotență
 a webhook-ului, pentru că Stripe reîncearcă livrarea evenimentelor — și câmpurile
 `packageNameSnapshot` / `amount`, copii, nu relații live.
 
 Prețul se citește **doar pe server**, din `packages.price`, niciodată din client.
 
+Trei lucruri sunt deja pregătite pentru faza 4 și așteaptă doar cheia:
+
+- `src/lib/email.ts` — trimite prin API-ul HTTP al Resend, fără SDK. Fără
+  `RESEND_API_KEY` se întoarce `skipped`, nu aruncă.
+- `/multumim` verifică `session_id` la Stripe, pe server. Fără cheie, afișează
+  varianta neutră: nu pretinde niciodată o plată neconfirmată.
+- `/comanda-anulata` citește `?pachet=` și trimite înapoi exact la pachetul respectiv.
+
+**Un singur loc de înlocuit în UI:** butonul „Vreau acest pachet" din
+`src/app/(frontend)/servicii/[slug]/page.tsx` duce azi la `/contact?pachet=<slug>`.
+Acolo intră `CheckoutButton`. Comentariul e în fișier.
+
 ### Faza 5b — SEO pentru restul site-ului ⏳
 
-`sitemap.ts` trebuie extins cu articolele și pachetele, cu `lastModified` real din
-baza de date. Lipsesc `rss.xml`, `Article`, `Service`, `BreadcrumbList`.
+Făcute la faza 3b: `sitemap.ts` cu articole, categorii, pachete și paginile legale
+(`lastModified` real din `updatedAt`), plus `Article`, `Service`, `BreadcrumbList`,
+`ProfilePage`, `ContactPage`, `CollectionPage` în `src/lib/schema.ts`.
+
+**Rămâne `rss.xml`.**
 
 ### Faza 6b — Conformitate ⏳
 
-Cele patru pagini legale, cu conținut real, validate de un jurist.
-Evenimentele GA4 (`view_package`, `begin_checkout`, `purchase`, …).
+Cele patru pagini legale **există și au conținut**, dar textul e un draft nevalidat
+juridic — vezi §7.10 și comutatorul `LEGAL_DRAFT` din `src/content/pages.ts`.
+
+Rămân: validarea de către un jurist, completarea datelor de firmă și evenimentele
+GA4 (`view_package`, `begin_checkout`, `purchase`, …).
 
 ### Faza 7 — Performanță, accesibilitate, lansare ⏳
 
@@ -372,6 +436,13 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | `pnpm seed` rulat de trei ori la rând | ✅ zero duplicate, zero suprascrieri |
 | Migrație aplicată pe bază de date curată, apoi seed | ✅ |
 | **Pagina randată din CMS vs. pagina din fallback** | ✅ HTML identic, vezi mai jos |
+| **Homepage, HEAD vs. faza 3b** | ✅ 11 diferențe, toate ancore→rute; text identic la caracter |
+| Cele 15 rute publice răspund 200 | ✅ |
+| `/blog/inexistent`, `/servicii/inexistent`, `/blog/pagina/1` | ✅ 404 |
+| Formularul de contact, în browser, pe build de producție | ✅ trimite, salvează, confirmă |
+| Formular: date invalide, honeypot, limitare de rată | ✅ 400 / 400 / 429 |
+| Ordinea de tabulare pe o pagină interioară | ✅ 28 elemente, fără capcane |
+| `/sitemap.xml`, `/llms.txt` după faza 3b | ✅ toate rutele noi |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -434,6 +505,32 @@ DATABASE_URI="" pnpm build && DATABASE_URI="" pnpm start -p 3211
 # apoi curl pe ambele și diff, ignorând <script>self.__next_f.push(...)</script>
 ```
 
+### ✅ Faza 3b nu a atins homepage-ul — verificat prin diff
+
+Faza 3b a scos trei componente din secțiunile de homepage (`PackageCard`, `FaqList`,
+`PostCard`) ca să fie folosite și de paginile noi. O extragere „curată" care mută o
+virgulă de spațiere ar strica fidelitatea la pixel obținută anterior, fără ca nimeni
+să observe.
+
+Metoda: build de producție pe `HEAD`, build de producție pe faza 3b, `curl` pe `/`
+în ambele, diff după normalizarea payload-ului RSC și a hash-urilor de chunk.
+
+**Rezultat: 901 linii în ambele, 11 diferențe — toate cele 11 sunt schimbarea
+ancoră → rută din navigație și subsol** (`#despre` → `/despre` etc.), plus ordinea
+atributelor pe care o schimbă `next/link`. Textul vizibil este identic la caracter:
+**9621 de caractere în ambele**, exact cifra din verificarea anterioară.
+
+Cu alte cuvinte: comparația la pixel de mai sus rămâne valabilă, nu trebuie refăcută.
+
+Reproducere:
+
+```bash
+pnpm build && pnpm start -p 3210 && curl -s http://127.0.0.1:3210/ -o dupa.html
+git stash -u && pnpm build && pnpm start -p 3211 && curl -s http://127.0.0.1:3211/ -o inainte.html
+git stash pop
+# apoi diff, ignorând <script>self.__next_f.push(...)</script> și /_next/static/*
+```
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
@@ -444,19 +541,20 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 
 | # | Element | Cum se manifestă în cod acum | Blochează |
 |---|---|---|---|
-| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Cardurile randează placeholderele din design. Se completează în admin și se bifează „Vizibil pe site". | Faza 4 (Stripe), pagina Servicii |
+| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Homepage-ul și `/servicii` randează placeholderele din design. **Cât timp sunt ascunse, `/servicii/[slug]` nu are nicio rută** — `generateStaticParams` întoarce listă goală și orice slug dă 404, corect. Prima bifă „Vizibil pe site" aduce pachetul și în listă, și pe pagina lui. | Faza 4 (Stripe), paginile de pachet |
 | 2 | **Portret profesional** | Se folosește `public/images/adriana-portret.jpg` din pachetul de design. `ImageSlot` fixează raportul → CLS 0 la înlocuire. | Calitatea hero-ului |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
-| 4 | Email, telefon | Footerul afișează `[ email ]`, `[ telefon ]` | Contact, schema |
+| 4 | Email, telefon | Footerul, pagina de contact, `/multumim` și paginile legale afișează `[ email ]`, `[ telefon ]`. Formularul funcționează oricum: mesajele ajung în `submissions`, în admin | Contact, schema, notificarea pe email |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
 | 7 | Regim TVA, PFA sau SRL | — | Configurarea Stripe |
 | 8 | Cont Stripe | — | Faza 4 |
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
-| 10 | Validare juridică a paginilor legale | — | Lansare |
+| 10 | **Validare juridică a paginilor legale** | Cele patru pagini EXISTĂ, cu text scris pe situația reală a site-ului, dar marcat vizibil ca draft. Nota se scoate din `LEGAL_DRAFT`, în `src/content/pages.ts` | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
-| 12 | **Textul celor 3 articole de lansare** | Titlurile, rezumatele și categoriile din design sunt în CMS, ca **ciorne**; corpul e `[ DE COMPLETAT ]` | Pagina de blog, RSS |
+| 12 | **Textul celor 3 articole de lansare** | Titlurile, rezumatele și categoriile din design sunt în CMS, ca **ciorne**; corpul e `[ DE COMPLETAT ]`. `/blog` afișează starea goală („Primele articole sunt în lucru"), iar secțiunea Blog de pe homepage rămâne cea din design. Prima publicare le aduce automat în ambele | Conținutul blogului, RSS |
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
+| 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
 | 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile s-ar pierde la fiecare deploy** | Încărcarea de imagini în producție |
 | 15 | **Postgres pentru producție** (Neon / Vercel Postgres, string POOLED) | Local rulează în Docker. Producția are nevoie de o bază proprie și de `pnpm build:deploy` ca build command | Deploy |
 
@@ -476,10 +574,18 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | | gzip |
 |---|---|
 | Buget din brief §10.1 | ≤ 110 KB |
-| **Măsurat** (Turbopack) | **~142 KB** |
+| **Măsurat pe `/`** (Turbopack) | **142.8 KB** |
 | Măsurat (webpack, comparație) | ~140 KB |
 | din care codul aplicației | ~12 KB |
 | din care React 19 + runtime App Router | ~126 KB |
+
+Faza 3b **nu a mișcat cifra de pe `/`**. Celelalte rute, măsurate la fel:
+
+| Rută | gzip |
+|---|---|
+| `/`, `/blog`, `/despre` | 142.8 KB |
+| `/contact` | 150.1 KB — cele 7 KB în plus sunt formularul și schema de validare |
+| `/servicii` | 137.3 KB |
 
 Chunk-ul de polyfill-uri (39 KB gz) are `noModule` — browserele moderne nu îl descarcă
 și nu intră în calcul.
@@ -505,7 +611,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Nouă, toate documentate în cod prin comentarii:
+Cincisprezece, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -556,8 +662,50 @@ Nouă, toate documentate în cod prin comentarii:
    citabil din pagină pentru AEO. L-am modelat ca grup opțional; resolverul îl afișează
    doar dacă are titlu, coloane și rânduri complete pe toate coloanele.
 
-De asemenea: ancorele din navigație reproduc demo-ul aprobat, care este o pagină unică.
-Se înlocuiesc cu rutele reale la faza 3b.
+10. **`CopyLinkButton` este al patrulea Client Component** (`src/components/ui/CopyLinkButton.tsx`).
+    Promptul §5.1 enumeră componentele de client permise; aceasta nu e pe listă.
+    Copierea în clipboard nu are echivalent declarativ — cere `navigator.clipboard`,
+    deci un handler. Costă ~700 B și se randează abia după hidratare: fără JavaScript
+    nu apare deloc, pentru că un buton mort e mai rău decât unul absent. Restul
+    butoanelor de partajare sunt `<a>`-uri pe server.
+
+11. **`zod/mini`, nu `zod`** (`src/lib/validation/contact.ts`).
+    Promptul §5.4 cere Zod pe client și pe server. Schema ajunge în bundle-ul de
+    client, iar varianta clasică adăuga **61 KB gzipped** paginii de contact — mai
+    mult decât jumătate din bugetul întregului site, exact pe pagina care trebuie să
+    convertească. `zod/mini` are aceleași verificări și același `safeParse`, sub 3 KB.
+    Costul e sintaxa mai verbosă (`.check(z.minLength(...))`). Măsurat înainte și
+    după: 203.5 KB → 150.1 KB pe `/contact`.
+
+12. **Formularul are exact 5 câmpuri** (`src/content/pages.ts`).
+    Un câmp „Despre ce vrei să vorbim" ar fi cerut o coloană nouă în `submissions`,
+    deci o migrație — pentru o informație care se află oricum în prima frază a
+    mesajului. Promptul §5.3 enumeră exact nume, email, telefon opțional, mesaj și
+    bifă. Am rămas la ele. Cine vine de pe pagina unui pachet primește mesajul
+    precompletat cu numele pachetului, prin `?pachet=<slug>`.
+
+13. **Paginare pe rute, nu pe `?pagina=`** (`src/lib/routes.ts`).
+    `/blog/pagina/2`, `/blog/categorie/decizie/pagina/2`. Un parametru de căutare ar
+    fi făcut `/blog` dinamică, iar ea trebuie să rămână prerandată. `/blog/pagina/1`
+    nu există: ar fi un duplicat al lui `/blog`, deci dă 404.
+
+14. **Butonul de programare este un link, nu un widget încărcat în pagină**
+    (`src/app/(frontend)/contact/page.tsx`). Brief §10.2 cere ca widgetul de calendar
+    să se încarce „doar la click". Un link către pagina furnizorului satisface
+    cerința literal și complet, fără script terț și fără încă un Client Component.
+    Se schimbă ușor dacă clienta vrea calendarul încorporat în pagină.
+
+15. **Paginile legale au conținut, marcat vizibil ca draft** (`src/content/pages.ts`).
+    Promptul le trimite la faza 6b, „validate de un jurist". Patru pagini goale nu
+    ajută pe nimeni, iar textul depinde de cum funcționează chiar acest site — ce
+    date se colectează, ce cookie-uri există. Am scris draftul acum, pe situația
+    reală, cu o notă vizibilă pe fiecare pagină. Nota se scoate dintr-un singur loc:
+    `LEGAL_DRAFT`. Datele de firmă NU sunt inventate — vin din `site-settings` și
+    până atunci se afișează ca placeholdere.
+
+De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
+Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
+pe homepage și nu au pagină proprie.
 
 ---
 
@@ -582,6 +730,10 @@ Se înlocuiesc cu rutele reale la faza 3b.
 | `pnpm seed` pare blocat, fără niciun mesaj | După o schimbare de schemă, `push` din drizzle pune o întrebare interactivă (coloană creată sau redenumită?) și așteaptă la `stdin` | Rulează comanda fără pipe, ca să vezi întrebarea; sau resetează baza locală și aplică migrațiile: e oricum calea din producție |
 | Erori TS pe `importMap.js` | Fișierul e generat ca JavaScript, iar `allowJs` e `false` (regula 8) | `src/app/(payload)/admin/importMap.d.ts`, scris de mână. Generatorul atinge doar `.js`-ul de alături |
 | Panoul de admin nu autentifică pe alt host decât cel din `serverURL` | Nu e un bug al site-ului: cu un token pus manual pe cookie, Payload refuză. Autentificarea normală, prin formular, nu e afectată | Deschide adminul pe hostul din `NEXT_PUBLIC_SITE_URL`. Vezi și capcana cu `localhost` de mai sus |
+| `pkill -f "next start"` nu oprește serverul, pe Windows | Procesul real e `node`, iar `pkill` din Git Bash nu vede arborele de procese Windows. Serverul rămâne pe port, iar comanda următoare pare că a pornit unul nou | `netstat -ano \| grep :PORT`, apoi `taskkill //F //PID <pid>`. **Verifică mereu portul**, nu presupune că `pkill` a reușit |
+| Măsurătoarea de buget dă cifre prea mici, fără nicio eroare | Server vechi + `.next` reconstruit: HTML-ul servit trimite la chunk-uri cu alt hash, care nu mai există pe disc, iar scriptul de măsurare le sare | Oprește serverul ÎNAINTE de rebuild (vezi capcana de mai sus) și numără fișierele lipsă, nu doar octeții. Scriptul din §8 o face |
+| Erori de sintaxă la scrierea fișierelor mari cu `cat > … <<'EOF'` | Heredoc-urile lungi, cu diacritice și ghilimele, se rup înainte de delimitator | Fișierele mari se scriu cu unealta de scriere a fișierelor sau cu un script `.mjs` pus în directorul temporar, nu prin heredoc |
+| Ghilimelele de închidere arată altfel decât în restul textului | Convenția proiectului este `„text"` — U+201E la deschidere, ASCII `"` la închidere. U+201D nu apare nicăieri în designul aprobat | `grep -rn $'”' src/` trebuie să dea zero. Într-un atribut JSX delimitat cu `"`, un `"` în text rupe oricum compilarea |
 
 ---
 
@@ -606,11 +758,17 @@ adriana-chira-repo/
 │  │  ├─ (frontend)/
 │  │  │  ├─ layout.tsx             ← layout rădăcină al site-ului
 │  │  │  ├─ page.tsx               ← homepage
+│  │  │  ├─ despre/ · contact/ · multumim/ · comanda-anulata/
+│  │  │  ├─ servicii/{page,[slug]}
+│  │  │  ├─ blog/{page,[slug],pagina/[numar],categorie/[slug]/…}
+│  │  │  ├─ politica-de-confidentialitate/ · politica-de-cookies/
+│  │  │  ├─ termeni-si-conditii/ · politica-de-retur/
 │  │  │  ├─ not-found.tsx
 │  │  │  ├─ [...notFound]/page.tsx
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
 │  │  │  └─ opengraph-image.tsx
+│  │  ├─ api/contact/route.ts      ← formularul; `/api/stripe/*` intră la faza 4
 │  │  └─ (payload)/                ← generat de Payload, nu se editează manual
 │  │     ├─ layout.tsx             ← layout rădăcină al panoului
 │  │     ├─ admin/[[...segments]]/ + importMap.js · importMap.d.ts
@@ -623,18 +781,20 @@ adriana-chira-repo/
 │  ├─ hooks/                       revalidate.ts
 │  ├─ migrations/                  ← schema pentru producție
 │  ├─ seed/index.ts                ← pnpm seed
-│  ├─ components/{layout,sections,ui,consent,seo}/
-│  ├─ content/                     types.ts · site.ts · home.ts  ← fallback ȘI sursa seed-ului
+│  ├─ components/{layout,sections,ui,consent,contact,seo}/
+│  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
+│  │                               ← fallback ȘI sursa seed-ului
 │  ├─ lib/                         content.ts · payload.ts · stripe.ts · lexical.ts
-│  │                               consent.ts · schema.ts · cn.ts
+│  │                               consent.ts · schema.ts · seo.ts · routes.ts
+│  │                               email.ts · rate-limit.ts · cn.ts
+│  │                               validation/contact.ts
 │  ├─ payload.config.ts
 │  └─ payload-types.ts             ← generat, se comite
 ├─ README.md                       ← prezentare pentru echipă
 └─ STATUS.md                       ← acest fișier
 ```
 
-Directoare care **vor** apărea la fazele următoare: `src/emails/`,
-`src/app/api/{stripe,contact}/`.
+Directoare care **vor** apărea la fazele următoare: `src/app/api/stripe/`.
 
 ---
 
@@ -647,6 +807,9 @@ Directoare care **vor** apărea la fazele următoare: `src/emails/`,
    `pnpm migrate:fix`, apoi `pnpm seed` de două ori la rând.
 5. Dacă ai atins UI-ul sau stratul de conținut: refă diff-ul CMS ↔ fallback din §6.
    Costă două build-uri și prinde exact regresia pe care n-o vezi cu ochiul.
+   Ai atins o componentă folosită și de homepage? Refă și diff-ul HEAD ↔ acum, tot
+   §6 — homepage-ul e verificat la pixel și orice diferență trebuie să fie una pe
+   care ai vrut-o.
 6. **Actualizează acest fișier:** mută ce ai făcut din §5 în §4, actualizează data și
    commit-ul din antet, adaugă în §10 orice capcană nouă pe care ai rezolvat-o.
 7. Commit mic, cu mesaj descriptiv în română.

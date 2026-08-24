@@ -259,6 +259,132 @@
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   TIPOGRAFIE DE ARTICOL
+   Designul aprobat este o pagină unică și nu conține corp de articol. Blocul
+   de mai jos e singura tipografie care NU vine din el; folosește exclusiv
+   tokenii de mai sus și valorile din promptul §5.3 (coloană de 68ch,
+   line-height 1.75, titluri în Cormorant).
+   ========================================================================== */
+
+@utility ac-prose {
+  max-width: var(--ac-prose-width, 68ch);
+  font-size: var(--text-body-lg);
+  line-height: 1.75;
+  color: var(--ac-ink-70);
+
+  & > * + * {
+    margin-top: 1.55em;
+  }
+
+  & h2,
+  & h3,
+  & h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ac-ink);
+    letter-spacing: -0.01em;
+  }
+
+  & h2 {
+    font-size: var(--text-h3);
+    margin-top: 2.4em;
+  }
+  & h3 {
+    font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+    margin-top: 2em;
+  }
+  & h4 {
+    font-size: 1.125rem;
+    margin-top: 1.8em;
+  }
+
+  & h2 + *,
+  & h3 + *,
+  & h4 + * {
+    margin-top: 0.75em;
+  }
+
+  & strong {
+    font-weight: 500;
+    color: var(--ac-ink);
+  }
+
+  & a {
+    color: var(--ac-ink);
+  }
+
+  & ul,
+  & ol {
+    padding-left: 1.4em;
+  }
+  & ul {
+    list-style: none;
+  }
+  & ol {
+    list-style: decimal;
+  }
+  & li + li {
+    margin-top: 0.6em;
+  }
+  & ul > li {
+    position: relative;
+  }
+  & ul > li::before {
+    content: '';
+    position: absolute;
+    left: -1.15em;
+    top: 0.75em;
+    width: 14px;
+    height: 1px;
+    background: var(--ac-accent);
+  }
+  & ol > li::marker {
+    color: var(--ac-accent-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  & blockquote {
+    border-left: 1px solid var(--ac-accent);
+    padding-left: clamp(20px, 3vw, 32px);
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--text-statement);
+    line-height: 1.3;
+    color: var(--ac-ink);
+    letter-spacing: -0.01em;
+  }
+  & blockquote p + p {
+    margin-top: 0.5em;
+  }
+
+  & hr {
+    border: 0;
+    border-top: 1px solid var(--ac-line);
+    margin-block: 2.6em;
+  }
+
+  & code {
+    font-size: 0.9em;
+    background: var(--ac-cream-50);
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-card);
+  }
+
+  & figure > figcaption {
+    margin-top: 12px;
+    font-size: var(--text-label);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    color: var(--ac-ink-50);
+  }
+
+  & :is(h2, h3):target {
+    scroll-margin-top: 120px;
+  }
+}
+
 /* Burger → X. */
 [data-burger][data-open='true'] span:nth-child(1) {
   transform: translateY(5px) rotate(45deg);

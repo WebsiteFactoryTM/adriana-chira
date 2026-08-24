@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-import type { HomeSectionId } from '@/content/site'
 
 /**
  * Învelișul unei secțiuni de homepage.
@@ -20,7 +19,12 @@ const TONES: Record<Tone, string> = {
 }
 
 type Props = {
-  id: HomeSectionId
+  /**
+   * Ancora secțiunii. Pe homepage sunt cele 12 `id`-uri din designul aprobat;
+   * paginile interioare își aleg singure ancorele, iar unele secțiuni nu au
+   * nevoie de niciuna.
+   */
+  id?: string
   tone?: Tone
   /** Secțiunile care continuă vizual precedenta nu au padding sus. */
   padding?: 'default' | 'tight' | 'wide' | 'cta' | 'bottom-only' | 'none'

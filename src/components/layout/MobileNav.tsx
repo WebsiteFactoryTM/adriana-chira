@@ -7,6 +7,7 @@
  * deci brandul și navigația desktop NU intră în bundle-ul de client.
  */
 
+import Link from 'next/link'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { NavItem } from '@/content/types'
@@ -77,7 +78,7 @@ export function MobileNav({ items, cta, availability, children }: Props) {
             className="grid px-[clamp(20px,6vw,32px)] pt-2 pb-5"
           >
             {items.map((item, index) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
@@ -87,10 +88,10 @@ export function MobileNav({ items, cta, availability, children }: Props) {
                 <span className="font-medium text-[11px] tracking-[0.18em] text-ac-accent-ink">
                   {String(index + 1).padStart(2, '0')}
                 </span>
-              </a>
+              </Link>
             ))}
 
-            <a
+            <Link
               href={cta.href}
               onClick={() => setOpen(false)}
               className="mt-6 flex min-h-11 items-center justify-center gap-[10px] rounded-pill bg-ac-ink px-7 py-[18px] font-medium text-btn uppercase text-ac-paper"
@@ -99,7 +100,7 @@ export function MobileNav({ items, cta, availability, children }: Props) {
               <span aria-hidden="true" className="block">
                 →
               </span>
-            </a>
+            </Link>
 
             <p className="mt-5 font-medium text-[11px] tracking-[0.18em] uppercase text-ac-ink-50">
               {availability}

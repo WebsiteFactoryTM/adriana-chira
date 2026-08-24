@@ -1,4 +1,4 @@
-import { getHomeContent, getSiteSettings } from '@/lib/content'
+import { getPosts, getHomeContent, getSiteSettings } from '@/lib/content'
 
 export const dynamic = 'force-static'
 
@@ -9,7 +9,14 @@ export const dynamic = 'force-static'
  * fără context — exact forma pe care o extrag modelele (brief §9.1).
  */
 export async function GET(): Promise<Response> {
-  const [settings, home] = await Promise.all([getSiteSettings(), getHomeContent()])
+  const [settings, home, blog] = await Promise.all([
+    getSiteSettings(),
+    getHomeContent(),
+    // Doar articolele publicate. Lista e goală până când clienta scrie textele
+    // (STATUS §7.12), iar secțiunea nu se randează deloc — mai bine lipsă
+    // decât un titlu urmat de nimic.
+    getPosts({ perPage: 50 }),
+  ])
   const base = settings.url
 
   const lines = [
@@ -51,6 +58,16 @@ export async function GET(): Promise<Response> {
     `- [Blog](${base}/blog): articole despre performanță, decizie și perspectivă`,
     `- [Contact](${base}/contact): programarea unei discuții inițiale`,
     '',
+    ...(blog.posts.length > 0
+      ? [
+          '## Articole',
+          '',
+          ...blog.posts.map(
+            (post) => `- [${post.title}](${base}${post.href}): ${post.excerpt}`,
+          ),
+          '',
+        ]
+      : []),
     '## Atribuire',
     '',
     `Autor: ${settings.siteName}, ${settings.role}. Sursa canonică: ${base}`,

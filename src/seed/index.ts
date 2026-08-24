@@ -2,6 +2,7 @@ import config from '@payload-config'
 import { getPayload, type Payload } from 'payload'
 
 import { homeContent } from '@/content/home'
+import { aboutFallback } from '@/content/pages'
 import { siteSettings } from '@/content/site'
 import { slugify } from '@/fields/slug'
 
@@ -485,9 +486,12 @@ async function seedAboutPage(payload: Payload): Promise<void> {
     depth: 0,
   })
 
-  // Pagina Despre intră la faza 3b și textul ei nu e livrat. Punem doar ce
-  // există deja în teaserul aprobat de pe homepage, și doar dacă e gol —
-  // altfel am rescrie ce a scris clienta între timp.
+  // Textul lung al paginii Despre nu a fost livrat (STATUS §7). Punem ce
+  // există deja în teaserul aprobat de pe homepage — titlu, frază de intrare,
+  // repere, cele patru principii — și doar dacă globalul e gol: altfel am
+  // rescrie ce a scris clienta între timp. `narrative` rămâne necompletat
+  // intenționat, ca pagina să randeze paragrafele aprobate până când apare
+  // povestea completă.
   if (existing?.title) {
     record('about-page', 'skip')
     return
@@ -498,9 +502,10 @@ async function seedAboutPage(payload: Payload): Promise<void> {
     overrideAccess: true,
     depth: 0,
     data: {
-      title: homeContent.despre.heading,
-      lead: homeContent.despre.paragraphs[0] ?? '',
-      credentials: homeContent.despre.credentials.map((text) => ({ text, detail: null })),
+      title: aboutFallback.title,
+      lead: aboutFallback.lead,
+      credentials: aboutFallback.credentials.map(({ text, detail }) => ({ text, detail })),
+      principles: aboutFallback.principles.map(({ title, body }) => ({ title, body })),
     },
   })
   record('about-page', 'update')

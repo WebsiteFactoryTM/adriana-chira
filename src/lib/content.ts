@@ -1,9 +1,12 @@
 import { cache } from 'react'
 
 import { homeContent } from '@/content/home'
+import { aboutFallback } from '@/content/pages'
 import { siteSettings } from '@/content/site'
 import type {
+  AboutContent,
   BlogContent,
+  CategorySummary,
   CitatContent,
   CtaContent,
   DespreContent,
@@ -11,18 +14,33 @@ import type {
   FaqContent,
   FaqItem,
   HomeContent,
+  ImageSlotContent,
   MetodaContent,
   NavItem,
+  PackageDetail,
   PackagePreview,
   PentruCineContent,
+  PostDetail,
+  PostSummary,
   ProblemaContent,
+  RichTextDocument,
+  SeoOverrides,
   ServiciiContent,
   SiteSettings,
   UniversContent,
   ValoriContent,
 } from '@/content/types'
 import { getPayloadClientSafe } from '@/lib/payload'
-import type { Faq, HomePage, Media, Package, SiteSetting } from '@/payload-types'
+import type {
+  AboutPage,
+  Category,
+  Faq,
+  HomePage,
+  Media,
+  Package,
+  Post,
+  SiteSetting,
+} from '@/payload-types'
 
 /**
  * Stratul de acces la conținut.
@@ -221,9 +239,24 @@ function mergeFaqItems(docs: Faq[], fallback: FaqItem[]): FaqItem[] {
   })
 }
 
+/** Un articol publicat, în forma cerută de cardul de pe homepage. */
+function toPostPreview(doc: Post) {
+  const category = categoryOf(doc.category)
+  return {
+    title: doc.title,
+    href: `/blog/${doc.slug}`,
+    category: category?.name ?? '',
+    ...(category ? { categoryHref: `/blog/categorie/${category.slug}` } : {}),
+    excerpt: doc.excerpt,
+    publishedAt: doc.publishedAt,
+    readingTime: typeof doc.readingTime === 'number' ? doc.readingTime : 1,
+    cover: coverSlot(doc.cover),
+  }
+}
+
 function mergeHome(
   cms: HomePage | null,
-  collections: { faqs: Faq[]; packages: Package[] },
+  collections: { faqs: Faq[]; packages: Package[]; posts: Post[] },
 ): HomeContent {
   const fallback = homeContent
   if (!cms) {
@@ -232,6 +265,13 @@ function mergeHome(
       servicii: {
         ...fallback.servicii,
         packages: mergePackages(collections.packages, fallback.servicii.packages),
+      },
+      blog: {
+        ...fallback.blog,
+        posts:
+          collections.posts.length > 0
+            ? collections.posts.slice(0, 3).map(toPostPreview)
+            : fallback.blog.posts,
       },
       faq: { ...fallback.faq, items: mergeFaqItems(collections.faqs, fallback.faq.items) },
     }
@@ -369,9 +409,13 @@ function mergeHome(
     eyebrow: eyebrow(cms.blog?.eyebrow, fallback.blog.eyebrow),
     heading: text(cms.blog?.heading, fallback.blog.heading),
     link: link(cms.blog?.link, fallback.blog.link),
-    // Articolele intră la faza 3b, odată cu paginile de blog. Până atunci,
-    // cardurile rămân cele din designul aprobat.
-    posts: fallback.blog.posts,
+    // Cele mai recente trei articole PUBLICATE. Cât timp toate sunt ciorne —
+    // titlurile există, textul nu (STATUS §7.12) — lista e goală și secțiunea
+    // rămâne cea din designul aprobat.
+    posts:
+      collections.posts.length > 0
+        ? collections.posts.slice(0, 3).map(toPostPreview)
+        : fallback.blog.posts,
   }
 
   const faq: FaqContent = {
@@ -414,7 +458,7 @@ export async function getHomeContent(): Promise<HomeContent> {
   if (!payload) return homeContent
 
   try {
-    const [cms, faqs, packages] = await Promise.all([
+    const [cms, faqs, packages, posts] = await Promise.all([
       fetchHomeGlobal(),
       payload.find({
         collection: 'faqs',
@@ -430,9 +474,18 @@ export async function getHomeContent(): Promise<HomeContent> {
         limit: 6,
         depth: 0,
       }),
+      payload.find({
+        collection: 'posts',
+        // Vezi nota despre `overrideAccess` de la §„Paginile interioare":
+        // filtrul e singurul lucru care ține ciornele în afara homepage-ului.
+        where: { _status: { equals: 'published' } },
+        sort: '-publishedAt',
+        limit: 3,
+        depth: 1,
+      }),
     ])
 
-    return mergeHome(cms, { faqs: faqs.docs, packages: packages.docs })
+    return mergeHome(cms, { faqs: faqs.docs, packages: packages.docs, posts: posts.docs })
   } catch {
     return homeContent
   }
@@ -500,4 +553,434 @@ export function formatDateRo(iso: string): string {
 /** Construiește un URL absolut pornind de la `NEXT_PUBLIC_SITE_URL`. */
 export function absoluteUrl(path: string, base: string): string {
   return new URL(path, base).toString()
+}
+
+/* ========================================================================== */
+/* PAGINILE INTERIOARE (faza 3b)                                              */
+/* ========================================================================== */
+
+/**
+ * O notă despre acces.
+ *
+ * API-ul local al Payload rulează implicit cu `overrideAccess: true`, adică
+ * IGNORĂ regulile din `src/access/`. Filtrele `_status: 'published'` și
+ * `active: true` de mai jos nu sunt redundante cu acele reguli — sunt singurul
+ * lucru care ține ciornele și pachetele ascunse în afara paginilor publice.
+ * Nu le scoate.
+ */
+
+/** Suprascrierile de SEO ale unui document. */
+function seoOf(value: unknown): SeoOverrides {
+  const source = value as
+    | {
+        metaTitle?: string | null
+        metaDescription?: string | null
+        ogImage?: number | Media | null
+        noIndex?: boolean | null
+      }
+    | null
+    | undefined
+
+  return {
+    metaTitle: nullableText(source?.metaTitle, null),
+    metaDescription: nullableText(source?.metaDescription, null),
+    ogImage: mediaUrl(source?.ogImage),
+    noIndex: source?.noIndex === true,
+  }
+}
+
+/** Coperta unui articol. Fără fișier, rămâne placeholderul crem din design. */
+function coverSlot(value: number | Media | null | undefined): ImageSlotContent {
+  const url = mediaUrl(value)
+  const media = value && typeof value !== 'number' ? value : null
+
+  return {
+    slot: 'post-cover',
+    src: url,
+    alt: url ? mediaAlt(value, '') : '',
+    width: typeof media?.width === 'number' ? media.width : 1200,
+    height: typeof media?.height === 'number' ? media.height : 900,
+    placeholderLabel: 'Articol',
+  }
+}
+
+/** Categoria unui articol, dacă relația a fost populată (`depth >= 1`). */
+function categoryOf(value: number | Category | null | undefined) {
+  if (!value || typeof value === 'number') return null
+  return { name: value.name, slug: value.slug }
+}
+
+function toPostSummary(doc: Post): PostSummary {
+  return {
+    title: doc.title,
+    slug: doc.slug,
+    href: `/blog/${doc.slug}`,
+    excerpt: doc.excerpt,
+    category: categoryOf(doc.category),
+    publishedAt: doc.publishedAt,
+    readingTime: typeof doc.readingTime === 'number' ? doc.readingTime : 1,
+    cover: coverSlot(doc.cover),
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Despre mine                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function mergeAbout(cms: AboutPage | null): AboutContent {
+  const fallback = aboutFallback
+  if (!cms) return fallback
+
+  return {
+    eyebrow: fallback.eyebrow,
+    title: text(cms.title, fallback.title),
+    lead: text(cms.lead, fallback.lead),
+    // Narațiunea din CMS ÎNLOCUIEȘTE paragrafele din design, nu se adaugă la
+    // ele: altfel pagina ar spune același lucru de două ori. Cât timp e goală,
+    // se randează `paragraphs`, adică textul aprobat.
+    narrative: hasRichText(cms.narrative) ? cms.narrative : null,
+    paragraphs: fallback.paragraphs,
+    portrait: {
+      ...fallback.portrait,
+      src: mediaUrl(cms.portrait) ?? fallback.portrait.src,
+      alt: mediaAlt(cms.portrait, fallback.portrait.alt),
+    },
+    credentials: list(
+      cms.credentials,
+      (item) => ({ text: item.text, detail: item.detail ?? null }),
+      fallback.credentials,
+    ),
+    principles: list(
+      cms.principles,
+      // Numerotarea e parte din design și se recalculează după ordinea reală.
+      (item, index) => ({
+        index: String(index + 1).padStart(2, '0'),
+        title: item.title,
+        body: item.body,
+      }),
+      fallback.principles,
+    ),
+    seo: seoOf(cms.seo),
+  }
+}
+
+/** Un document Lexical are conținut dacă rădăcina lui are cel puțin un copil. */
+function hasRichText(value: unknown): value is RichTextDocument {
+  const root = (value as { root?: { children?: unknown } } | null)?.root
+  return Array.isArray(root?.children) && root.children.length > 0
+}
+
+export async function getAboutContent(): Promise<AboutContent> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return aboutFallback
+
+  try {
+    const cms = await payload.findGlobal({ slug: 'about-page', depth: 1 })
+    return mergeAbout(cms)
+  } catch {
+    return aboutFallback
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Pachete                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function toPackageDetail(doc: Package, index: number): PackageDetail {
+  return {
+    numeral: ROMAN[index] ?? String(index + 1),
+    slug: doc.slug,
+    href: `/servicii/${doc.slug}`,
+    name: nullableText(doc.name, null),
+    tagline: nullableText(doc.tagline, null),
+    forWho: nullableText(doc.forWho, null),
+    includes:
+      Array.isArray(doc.includes) && doc.includes.length > 0
+        ? doc.includes.map((entry) => nullableText(entry.item, null))
+        : [null, null, null],
+    duration: nullableText(doc.duration, null),
+    format: doc.format ?? 'hibrid',
+    price: typeof doc.price === 'number' ? doc.price : null,
+    currency: 'EUR',
+    featured: doc.featured === true,
+    longDescription: hasRichText(doc.longDescription) ? doc.longDescription : null,
+    faq: list(doc.faq, (item) => ({ question: item.question, answer: item.answer }), []),
+    seo: seoOf(doc.seo),
+  }
+}
+
+/**
+ * Pachetele vizibile, în ordinea din admin.
+ *
+ * Lista goală este o stare normală, nu o eroare: azi niciun pachet nu are nume
+ * și preț, deci toate sunt ascunse (STATUS §7.1). Pagina `/servicii` randează
+ * atunci cardurile-placeholder din designul aprobat, ca pe homepage.
+ */
+export async function getPackages(): Promise<PackageDetail[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return []
+
+  try {
+    const result = await payload.find({
+      collection: 'packages',
+      where: { active: { equals: true } },
+      sort: 'order',
+      limit: 12,
+      depth: 1,
+    })
+    return result.docs.map(toPackageDetail)
+  } catch {
+    return []
+  }
+}
+
+export async function getPackageBySlug(slug: string): Promise<PackageDetail | null> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return null
+
+  try {
+    // Numerotarea romană din design vine din poziția pachetului în listă, nu
+    // din document. Ca pagina de detaliu să arate același numeral ca pe
+    // homepage, citim lista și alegem din ea.
+    const packages = await getPackages()
+    return packages.find((item) => item.slug === slug) ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Întrebările frecvente ale unei pagini.
+ *
+ * `ambele` înseamnă „și pe homepage, și pe servicii", deci intră în ambele
+ * liste. Fără CMS, homepage-ul are întrebările din design, iar pagina de
+ * servicii rămâne fără secțiunea de FAQ — nu inventăm întrebări comerciale.
+ */
+export async function getFaqs(page: 'homepage' | 'servicii'): Promise<FaqItem[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return page === 'homepage' ? homeContent.faq.items : []
+
+  try {
+    const result = await payload.find({
+      collection: 'faqs',
+      where: { page: { in: [page, 'ambele'] } },
+      sort: 'order',
+      limit: 30,
+      depth: 0,
+    })
+
+    if (result.docs.length === 0) {
+      return page === 'homepage' ? homeContent.faq.items : []
+    }
+    return mergeFaqItems(result.docs, [])
+  } catch {
+    return page === 'homepage' ? homeContent.faq.items : []
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Articole                                                                    */
+/* -------------------------------------------------------------------------- */
+
+const PUBLISHED = { _status: { equals: 'published' } } as const
+
+export type PostsPage = {
+  posts: PostSummary[]
+  total: number
+  page: number
+  totalPages: number
+}
+
+export async function getPosts({
+  page = 1,
+  perPage = 9,
+  categorySlug,
+}: { page?: number; perPage?: number; categorySlug?: string } = {}): Promise<PostsPage> {
+  const empty: PostsPage = { posts: [], total: 0, page: 1, totalPages: 0 }
+
+  const payload = await getPayloadClientSafe()
+  if (!payload) return empty
+
+  try {
+    const result = await payload.find({
+      collection: 'posts',
+      where: categorySlug
+        ? { and: [PUBLISHED, { 'category.slug': { equals: categorySlug } }] }
+        : PUBLISHED,
+      sort: '-publishedAt',
+      page,
+      limit: perPage,
+      depth: 1,
+    })
+
+    return {
+      posts: result.docs.map(toPostSummary),
+      total: result.totalDocs,
+      page: result.page ?? 1,
+      totalPages: result.totalPages,
+    }
+  } catch {
+    return empty
+  }
+}
+
+export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return null
+
+  try {
+    const result = await payload.find({
+      collection: 'posts',
+      where: { and: [PUBLISHED, { slug: { equals: slug } }] },
+      limit: 1,
+      // depth 2: articolele conexe au nevoie și de categoria lor, pentru card.
+      depth: 2,
+    })
+
+    const doc = result.docs[0]
+    if (!doc) return null
+
+    return {
+      ...toPostSummary(doc),
+      content: doc.content,
+      updatedAt: doc.updatedAt,
+      faq: list(doc.faq, (item) => ({ question: item.question, answer: item.answer }), []),
+      related: await relatedPosts(payload, doc),
+      seo: seoOf(doc.seo),
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Cele trei articole conexe.
+ *
+ * Întâi cele alese manual; dacă nu ajung la trei, se completează din aceeași
+ * categorie, cele mai recente. Un articol fără conexe ar rămâne o fundătură —
+ * exact opusul a ce cere brief-ul de la blog.
+ */
+async function relatedPosts(
+  payload: NonNullable<Awaited<ReturnType<typeof getPayloadClientSafe>>>,
+  doc: Post,
+): Promise<PostSummary[]> {
+  const manual = (doc.relatedPosts ?? [])
+    .filter((item): item is Post => typeof item === 'object' && item !== null)
+    .filter((item) => item._status === 'published')
+    .map(toPostSummary)
+
+  if (manual.length >= 3) return manual.slice(0, 3)
+
+  const categoryId = typeof doc.category === 'object' ? doc.category.id : doc.category
+
+  const result = await payload.find({
+    collection: 'posts',
+    where: {
+      and: [
+        PUBLISHED,
+        { category: { equals: categoryId } },
+        { id: { not_equals: doc.id } },
+        { slug: { not_in: manual.map((item) => item.slug) } },
+      ],
+    },
+    sort: '-publishedAt',
+    limit: 3 - manual.length,
+    depth: 1,
+  })
+
+  return [...manual, ...result.docs.map(toPostSummary)].slice(0, 3)
+}
+
+/** Slug-urile articolelor publicate — pentru `generateStaticParams`. */
+export async function getPostSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return []
+
+  try {
+    const result = await payload.find({
+      collection: 'posts',
+      where: PUBLISHED,
+      sort: '-publishedAt',
+      limit: 500,
+      depth: 0,
+    })
+    return result.docs.map((doc) => ({ slug: doc.slug, updatedAt: doc.updatedAt }))
+  } catch {
+    return []
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Categorii                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Categoriile, cu numărul de articole publicate în fiecare.
+ *
+ * Numărătoarea se face cu `limit: 0` și se citește `totalDocs`: aduce cifra
+ * fără să transfere documentele. Categoriile goale nu apar în filtre — un
+ * filtru care duce la o pagină goală e o promisiune încălcată.
+ */
+export async function getCategories(): Promise<CategorySummary[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return []
+
+  try {
+    const result = await payload.find({
+      collection: 'categories',
+      sort: 'name',
+      limit: 50,
+      depth: 0,
+    })
+
+    const counted = await Promise.all(
+      result.docs.map(async (doc) => {
+        const posts = await payload.count({
+          collection: 'posts',
+          where: { and: [PUBLISHED, { 'category.slug': { equals: doc.slug } }] },
+        })
+        return {
+          name: doc.name,
+          slug: doc.slug,
+          description: nullableText(doc.description, null),
+          count: posts.totalDocs,
+        }
+      }),
+    )
+
+    return counted.filter((item) => item.count > 0)
+  } catch {
+    return []
+  }
+}
+
+export async function getCategoryBySlug(slug: string): Promise<CategorySummary | null> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return null
+
+  try {
+    const result = await payload.find({
+      collection: 'categories',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+
+    const doc = result.docs[0]
+    if (!doc) return null
+
+    const posts = await payload.count({
+      collection: 'posts',
+      where: { and: [PUBLISHED, { 'category.slug': { equals: slug } }] },
+    })
+
+    return {
+      name: doc.name,
+      slug: doc.slug,
+      description: nullableText(doc.description, null),
+      count: posts.totalDocs,
+    }
+  } catch {
+    return null
+  }
 }

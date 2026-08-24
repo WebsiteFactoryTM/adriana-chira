@@ -25,30 +25,32 @@ export const siteSettings: SiteSettings = {
    * demo și brief §4.3 impun „Blog" în navigație și în rute (cerință de proiect
    * + SEO). Am păstrat „Blog", forma consecventă. Se schimbă dintr-un singur loc.
    *
-   * NOTĂ RUTARE: demo-ul aprobat este o pagină unică, deci țintele sunt ancore
-   * pe homepage. La intrarea paginilor interioare (faza 3) se înlocuiesc cu
-   * `/despre`, `/servicii`, `/blog`, `/contact` — tot de aici, dintr-un loc.
+   * NOTĂ RUTARE: până la faza 3b, demo-ul aprobat era o pagină unică și
+   * țintele erau ancore pe homepage. Odată cu paginile interioare, navigația
+   * duce la rute reale — tot de aici, dintr-un singur loc. Întrebările
+   * frecvente rămân ancoră: trăiesc pe homepage, n-au pagină proprie.
    */
   nav: [
-    { label: 'Despre mine', href: '#despre' },
-    { label: 'Servicii', href: '#servicii' },
-    { label: 'Blog', href: '#blog' },
-    { label: 'Contact', href: '#cta' },
+    { label: 'Despre mine', href: '/despre' },
+    { label: 'Servicii', href: '/servicii' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
   ],
 
   mobileNav: [
-    { label: 'Despre mine', href: '#despre' },
-    { label: 'Servicii', href: '#servicii' },
-    { label: 'Blog', href: '#blog' },
-    { label: 'Întrebări frecvente', href: '#faq' },
+    { label: 'Despre mine', href: '/despre' },
+    { label: 'Servicii', href: '/servicii' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'Întrebări frecvente', href: '/#faq' },
   ],
 
   footerNav: [
-    { label: 'Acasă', href: '#hero' },
-    { label: 'Despre mine', href: '#despre' },
-    { label: 'Servicii', href: '#servicii' },
-    { label: 'Blog', href: '#blog' },
-    { label: 'Contact', href: '#cta' },
+    { label: 'Acasă', href: '/' },
+    { label: 'Despre mine', href: '/despre' },
+    { label: 'Servicii', href: '/servicii' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
   ],
 
   legalNav: [
