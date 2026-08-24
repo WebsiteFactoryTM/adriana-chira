@@ -4,6 +4,7 @@ import { ConsentBanner } from '@/components/consent/ConsentBanner'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { PageLight } from '@/components/ui/PageLight'
 import { RevealFallback } from '@/components/ui/RevealFallback'
 import { buildConsentBootstrap } from '@/lib/consent'
 import { getSiteSettings } from '@/lib/content'
@@ -89,6 +90,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           aria-hidden="true"
           className="ac-grain pointer-events-none fixed inset-0 z-[46] opacity-[.045] mix-blend-multiply"
         />
+
+        {/* Lumina care traversează pagina la derulare. Stă sub fundalurile
+            secțiunilor, deci nu trece niciodată peste text. */}
+        <PageLight />
 
         <Header settings={settings} />
         {children}

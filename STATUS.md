@@ -165,6 +165,7 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei |
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
 | `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
+| `PageLight` | Server Component; corpul de lumină care traversează pagina la derulare. Montat o singură dată, în layout |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
 
@@ -220,6 +221,46 @@ hârtie greutatea aurului stă la ~0.3–0.6, iar la greutate plină merge doar 
 `--ac-ink-50` la 11px: stă pe `--ac-paper` la 4.64:1, adică la 0.14 peste AA.
 Preseturile țin acele etichete **în afara** inelului de accent, nu doar la intensitate
 mică.
+
+### Lumina paginii ✅
+
+Al doilea strat vizual care nu vine din designul aprobat, și perechea aurei la altă
+scară. Aura aparține unei secțiuni; lumina asta nu aparține niciuneia: e fixată de
+ecran și **traversează pagina odată cu derularea**, ca o singură sursă care însoțește
+lectura de la primul rând până la subsol. Aura spune „aici încetinește", lumina spune
+„mai e drum".
+
+- `src/components/ui/PageLight.tsx` — Server Component, un singur nod, **zero JS**.
+- Blocul „LUMINA PAGINII" din `globals.css` — traseul pe `animation-timeline:
+  scroll(root)`, deci **o mută cititorul, nu se mișcă singură**: dacă pagina stă, stă
+  și ea. Peste traseu rulează o respirație lentă, în timp, ca să rămână vie la oprire.
+- Stă la `z-index: -1`, adică **sub fundalurile secțiunilor**. Secțiunile `paper` n-au
+  fundal propriu, deci lumina se vede prin ele; blocurile crem și cel întunecat sunt
+  opace și o ascund. E efectul dorit: blocurile colorate sunt materie, lumina trece pe
+  după ele. Consecința importantă — **nu trece niciodată peste litere.**
+- Se stinge de tot dintr-un singur loc: `--ac-light-gain: 0`.
+- `prefers-reduced-motion`: rămâne, dar nu mai călătorește și nu mai respiră — se
+  așază în centru, la jumătate de intensitate.
+
+**Plafonul de contrast, măsurat în pagină** (nu estimat), pe cazul cel mai prost:
+`--ac-ink-50` la 11px pe `--ac-paper`, care pornește de la **4.64:1**, la 0.14 peste AA.
+Lumina schimbă doar fundalul de sub text, nu și culoarea literelor, deci contează doar
+cât întunecă hârtia:
+
+| Halou peste hârtie | Aur curat (`--ac-accent`) | Aur amestecat 50/50 cu alb cald |
+|---|---|---|
+| 3 % | 4.54:1 ✅ | — |
+| 4 % | 4.51:1 ✅ la limită | 4.58:1 ✅ |
+| 4.5 % | **4.49:1 ❌** | — |
+| 6 % | 4.45:1 ❌ | 4.55:1 ✅ |
+| 8 % | — | 4.52:1 ✅ |
+| 10 % | 4.33:1 ❌ | **4.49:1 ❌** |
+
+De aici cele două decizii de rețetă: haloul **nu** e aur curat, ci aur încălzit cu miez
+(`--ac-light-halo`), care rezistă la dublul intensității la același prag; și corpul
+luminii se construiește din **miez**, nu din halou — miezul e alb cald, ridică
+luminanța hârtiei, deci textul închis câștigă contrast și poate urca la 96% fără cost.
+Aici haloul stă la 4.2 % efectiv, cu marjă păstrată pentru aura care se poate suprapune.
 
 ### SEO / AEO pentru homepage ✅
 
@@ -577,6 +618,20 @@ Verificat și în browser, pe build de producție, la 1440px: hero, citat, servi
 CTA se aprind cum sunt descrise, iar `CSS.supports('animation-timeline: view()')` e
 `true` pe Chrome-ul de pe mașina de lucru.
 
+### ✅ Lumina paginii nu a mișcat niciun text — verificat prin diff
+
+Aceeași metodă ca la aură (§12.5): build de producție pe `HEAD`, build de producție cu
+lumina, `curl` pe `/` în ambele, diff după normalizarea payload-ului RSC și a
+hash-urilor de chunk.
+
+**Rezultat: două linii în plus, exact nodul luminii** (`<div data-page-light>` la
+nivelul lui `<body>`), plus o singură diferență colaterală — hash-ul `useId` al
+meniului mobil (`_R_iivb_` → `_R_mivb_`), care se schimbă pentru că arborele React a
+câștigat un nod. **Text vizibil identic la caracter: 9692 în ambele.**
+
+Fiind `position: fixed`, stratul e în afara fluxului: înălțimile secțiunilor rămân
+cele din comparația la pixel, care **nu trebuie refăcută**.
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
@@ -657,7 +712,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Șaisprezece, toate documentate în cod prin comentarii:
+Șaptesprezece, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -756,6 +811,12 @@ curl -s http://localhost:3000/ -o /tmp/h.html
     clienta o refuză, se stinge dintr-un singur loc — `--ac-aura-gain: 0` — fără să
     se atingă nicio secțiune.
 
+17. **Lumina paginii — a doua adăugire peste designul aprobat**
+    (`src/components/ui/PageLight.tsx`). Descrisă în §4. Ca și aura, e în afara
+    fluxului și nu mută nimic — diff-ul din §6 o confirmă. Spre deosebire de aură,
+    stă **sub** fundalurile secțiunilor, deci nu trece niciodată peste text. Se
+    stinge din `--ac-light-gain: 0`, fără să se atingă nicio secțiune.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -789,6 +850,9 @@ pe homepage și nu au pagină proprie.
 | Ghilimelele de închidere arată altfel decât în restul textului | Convenția proiectului este `„text"` — U+201E la deschidere, ASCII `"` la închidere. U+201D nu apare nicăieri în designul aprobat | `grep -rn $'”' src/` trebuie să dea zero. Într-un atribut JSX delimitat cu `"`, un `"` în text rupe oricum compilarea |
 | Aura se aprindea cu o jumătate de rază mai jos decât secțiunea | `animation-timeline: view()` își calculează progresul din **caseta de layout** și ignoră complet `transform`. Centrarea câmpului prin `translate(-50%,-50%)` era deci invizibilă pentru timeline | Centrarea se face din margini negative (`margin-left/top: -50%` din lățime), care intră în layout. `transform` rămâne liber pentru animație |
 | Un strat decorativ tăiat cu `overflow: hidden` pe `<section>` | Ar rupe `StickyColumn` — poziționarea `sticky` nu funcționează într-un strămoș cu `overflow` | `contain: paint` pe stratul decorativ: taie la marginile secțiunii **și** scutește pictarea cât e în afara ecranului |
+| Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
+| Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
+| Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---

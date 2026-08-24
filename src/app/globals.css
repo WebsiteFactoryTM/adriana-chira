@@ -762,6 +762,137 @@ details[open] summary [data-plus] {
   }
 }
 
+/* ==========================================================================
+   LUMINA PAGINII — corpul de lumină care traversează pagina la derulare
+   Vezi `src/components/ui/PageLight.tsx` pentru rolul ei și pentru de ce stă
+   în spatele conținutului. Al doilea strat vizual care nu vine din designul
+   aprobat; fiind `position: fixed`, nu mută niciun nod de text.
+
+   Trei reguli care nu se încalcă:
+   1. O mută cititorul, nu se mută singură. Traseul e legat de `scroll(root)`:
+      dacă pagina stă, lumina stă. Un obiect care se plimbă singur peste text
+      fură atenția în loc s-o conducă.
+   2. Stă sub fundalurile secțiunilor. Nu trece niciodată peste litere, deci
+      nu poate strica niciun contrast pe blocurile crem sau pe cel întunecat.
+   3. Un singur corp. Două lumini care se plimbă simultan devin zgomot.
+   ========================================================================== */
+
+:root {
+  /* Raza. Deliberat mai strânsă decât a aurei: la 62vw lumina se citea ca o
+     spălare de fundal, nu ca un corp. Un obiect are margine, o atmosferă nu. */
+  --ac-light-size: clamp(300px, 46vw, 660px);
+  /* Regulator global. `0` stinge lumina pe tot site-ul, dintr-un singur loc. */
+  --ac-light-gain: 1;
+  /* Haloul: aur încălzit cu miez, nu aur curat. Vezi măsurătorile de mai jos —
+     amestecul rezistă la dublul intensității aurului curat, la același prag. */
+  --ac-light-halo: color-mix(in srgb, var(--ac-accent) 55%, var(--ac-aura-core));
+}
+
+[data-page-light] {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: var(--ac-light-size);
+  aspect-ratio: 1;
+  /* Centrarea din margini negative, nu din `translate`: `translate` e ocupat
+     de traseu, iar `view()`/`scroll()` oricum își citesc progresul din caseta
+     de layout. Aceeași capcană ca la aură — vezi STATUS §10. */
+  margin-left: calc(var(--ac-light-size) * -0.5);
+  margin-top: calc(var(--ac-light-size) * -0.5);
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+
+  /*
+    Miez de lumină, halou de accent — aceeași rețetă ca la aură, dar cu
+    greutățile pe dos, și dintr-un motiv măsurat.
+
+    Stând SUB text, lumina nu atinge culoarea literelor: schimbă doar fundalul
+    de sub ele. Asta face ca cele două jumătăți ale gradientului să aibă efecte
+    opuse. Miezul e alb cald: ridică luminanța hârtiei, deci textul închis
+    CÂȘTIGĂ contrast — poate fi generos, și el face corpul luminii vizibil.
+    Haloul e aurul: coboară luminanța, deci el are plafon.
+
+    Plafonul, MĂSURAT în pagină pe cazul cel mai prost — `--ac-ink-50`
+    (#756E64) la 11px pe `--ac-paper`, care pornește de la 4.64:1, adică la
+    0.14 peste AA. Cu aur curat peste hârtie:
+      3%  → 4.54:1  ✅      4%   → 4.51:1  ✅ la limită
+      4.5% → 4.49:1 ❌      10%  → 4.33:1  ❌
+    Aurul curat se termină, practic, la 4%. Dar același halou amestecat pe
+    jumătate cu alb cald rezistă mult mai mult, pentru că albul compensează
+    exact ce ia aurul:
+      4%  → 4.58:1  ✅      6%   → 4.55:1  ✅
+      8%  → 4.52:1  ✅      10%  → 4.49:1  ❌
+    De aceea haloul de aici NU e aur curat, ci aur încălzit cu miez: la 14% în
+    gradient × 0.3 opacitate = 4.2% efectiv, adică ~4.57:1, cu marjă păstrată
+    pentru aura care se poate suprapune pe cele cinci secțiuni ale ei.
+    Corpul luminii vine din miez, nu din halou: miezul urcă la 96% fără să
+    coste nimic, pentru că ridică luminanța. Dacă urci haloul, remăsoară.
+  */
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--ac-aura-core) 96%, transparent) 0%,
+    color-mix(in srgb, var(--ac-aura-core) 62%, transparent) 24%,
+    color-mix(in srgb, var(--ac-aura-core) 26%, transparent) 42%,
+    color-mix(in srgb, var(--ac-light-halo) 14%, transparent) 56%,
+    color-mix(in srgb, var(--ac-light-halo) 5%, transparent) 70%,
+    transparent 84%
+  );
+  opacity: calc(0.3 * var(--ac-light-gain));
+
+  /* Respirația, în timp. Rulează și fără scroll-driven animations, deci pe
+     Safari vechi lumina rămâne un corp viu, doar că nemișcat pe pagină. */
+  animation: acLightBreath 19s ease-in-out infinite;
+}
+
+/* Traseul. Nu e o plimbare aleatoare: pornește din dreapta jos, urcă pe
+   dreapta cât se citește deschiderea, traversează spre stânga pe la mijlocul
+   paginii — acolo unde sunt metoda și citatul — și se întoarce în dreapta
+   pentru final. Lumina merge înaintea cititorului, nu după el. */
+@supports (animation-timeline: scroll()) {
+  [data-page-light] {
+    animation:
+      acLightBreath 19s ease-in-out infinite,
+      acLightTravel linear both;
+    /* `animation-timeline` DUPĂ scurtătură: scurtătura o resetează la `auto`. */
+    animation-timeline: auto, scroll(root block);
+    animation-range: normal, 0% 100%;
+  }
+}
+
+@keyframes acLightTravel {
+  0% {
+    translate: 24vw 26vh;
+  }
+  22% {
+    translate: 29vw -14vh;
+  }
+  45% {
+    translate: -4vw 20vh;
+  }
+  68% {
+    translate: -27vw -12vh;
+  }
+  86% {
+    translate: 9vw 22vh;
+  }
+  100% {
+    translate: 25vw -16vh;
+  }
+}
+
+/* Respirația lucrează pe `scale`, traseul pe `translate`: proprietăți separate,
+   deci se compun fără să se suprascrie. */
+@keyframes acLightBreath {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.13;
+  }
+}
+
 /* „prefers-reduced-motion" oprește complet mișcarea (brief §5.6, §9.3). */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -780,5 +911,12 @@ details[open] summary [data-plus] {
      toată pagina. Cine cere mai puțină mișcare primește și mai puțin decor. */
   [data-aura-field] {
     opacity: calc(var(--fp, 0.24) * var(--ac-aura-gain) * 0.5) !important;
+  }
+  /* Lumina paginii rămâne, dar nu mai călătorește și nu mai respiră: regula de
+     sus i-a oprit ambele animații, deci se așază în centrul ecranului, la
+     jumătate de intensitate. Cine cere mai puțină mișcare primește o lumină,
+     nu un obiect care se mișcă. */
+  [data-page-light] {
+    opacity: calc(0.3 * var(--ac-light-gain) * 0.5) !important;
   }
 }
