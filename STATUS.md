@@ -9,7 +9,7 @@ e următorul pas concret.
 | Ultima actualizare | **24 august 2026** |
 | Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · aura de secțiune adăugată · fazele 4–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
-| Ultimul commit | `2bf70d2` — Faza 3b: paginile interioare, de la /despre la cele patru pagini legale |
+| Ultimul commit | `a9f4db2` — Aura de secțiune: un sistem de atenție peste designul aprobat |
 
 ---
 
