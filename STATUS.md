@@ -6,10 +6,10 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **21 august 2026** |
-| Stadiu general | Faza 1 completă · homepage complet · fazele 2–7 neîncepute |
+| Ultima actualizare | **24 august 2026** |
+| Stadiu general | Faza 1 completă · homepage complet **și verificat vizual față de design** · fazele 2–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`) |
-| Ultimul commit | `16cb6ce` — Reveal: conținutul rămâne vizibil dacă JavaScript e oprit |
+| Ultimul commit | `38c29e7` — Fidelitate față de designul aprobat: 12 din 12 secțiuni identice |
 
 ---
 
@@ -30,6 +30,7 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 | `../03-PROMPT-CLAUDE-CODE.md` | Specificația de implementare pe 7 faze, cu verificări per fază | Înainte de a începe o fază nouă |
 | `../02-PROMPT-CLAUDE-DESIGN.md` | Promptul care a generat designul | Rar; doar pentru context istoric |
 | `design/homepage-approved.html` | **Designul aprobat de clientă.** Sursa de adevăr pentru tot ce ține de aspect | Înainte de a scrie orice linie de UI |
+| `design/compare/README.md` | Harnessul de comparație vizuală design ↔ implementare, cu mod de rulare | Ori de câte ori atingi UI-ul |
 
 > `design/homepage-approved.html` **nu se șterge și nu se modifică niciodată.**
 > Este varianta v3 („Homepage completă cu 14 secțiuni"), aprobată de clientă.
@@ -106,8 +107,15 @@ designul aprobat. Numele urmează convenția din brief §5.3:
 
 > **Atenție:** valorile din designul aprobat DIFERĂ de cele orientative din brief §5.3
 > (`#FCFAF7`, `#F5F0E8`, `#E8DFD1`, `#A98C5F`, `#7E653F`). Designul aprobat are
-> precedență. `--ac-accent-deep` este o valoare suplimentară, pentru text în accent pe
-> fundal crem, unde `--ac-accent-ink` nu ar trece AA.
+> precedență. `--ac-accent-deep` apare și în design (10 locuri) și se folosește **doar
+> pe `cream-100`**, unde `--ac-accent-ink` dă 4.31:1 și pică AA. Pe `paper` și
+> `cream-50` accentul rămâne `--ac-accent-ink`, ca în design. Vezi §9.3.
+
+> **line-height pe etichete:** tokenii `eyebrow`, `label`, `nav` și `btn` sunt pe
+> `normal`, nu pe o valoare numerică. Designul nu pune `line-height` pe niciuna dintre
+> aceste mărimi, iar `html` are explicit `line-height: normal` ca să anuleze `1.5`-ul
+> din preflight. Nu le pune valori numerice „ca să fie consecvent" — crește fiecare
+> etichetă cu ~3px și deplasează tot ce urmează.
 
 Plus scala de tipografie (`--text-h1`, `--text-h2-col`, `--text-quote`, …), ritmul
 (`--spacing-section`, `--spacing-gutter`, `--spacing-col-gap`, …), containerele și
@@ -260,7 +268,7 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 
 ---
 
-## 6. Verificări deja rulate — și una care lipsește
+## 6. Verificări rulate
 
 | Verificare | Rezultat |
 |---|---|
@@ -275,16 +283,45 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt` | ✅ 200 |
 | 404 personalizat | ✅ status 404, layout-ul site-ului |
 | Test de crawler fără JS (`curl` pe `/`) | ✅ tot textul vizibil e în HTML |
+| Cele 6 `<details>` din FAQ, închise în HTML-ul livrat | ✅ ca în design |
+| Hidratare pe build de producție (meniu mobil, bară de consimțământ) | ✅ |
+| **Comparație vizuală cu designul aprobat, 375 / 768 / 1440** | ✅ vezi mai jos |
 
-> ### ❌ Lipsește: comparația vizuală cu designul aprobat
->
-> Testul de acceptanță al fazei de UI (prompt §0): homepage-ul randat și
-> `design/homepage-approved.html`, deschise una lângă alta la **375px, 768px și
-> 1440px**, trebuie să fie indistinctibile.
->
-> **Nu a fost rulat** — extensia Claude in Chrome nu era conectată în sesiunea de
-> implementare. Este singura verificare a fazei 3 care lipsește. De rulat înainte de a
-> considera faza 3 încheiată.
+### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
+
+Testul de acceptanță al fazei de UI (prompt §0). Metoda și modul de re-rulare:
+`design/compare/README.md`. Rulat pe **build de producție**, la 375px, 768px și
+1440px, comparând nod-de-text cu nod-de-text: poziție, dimensiune, `font-size`,
+`line-height`, `font-weight`, `color`, `letter-spacing`.
+
+**Rezultat după corecții — înălțimea celor 12 secțiuni:**
+
+| Lățime | Secțiuni identice la px | Abatere maximă pe secțiune | Abatere pe toată pagina |
+|---|---|---|---|
+| 1440px | 11 / 12 | 1px (`metoda`) | 1px din 14015 |
+| 768px | 10 / 12 | 2px (`univers`) | 2px din 14535 |
+| 375px | 9 / 12 | 2px (`metoda`, `univers`, `valori`) | 6px din 17541 |
+
+Header și footer identice la px la toate cele trei lățimi. Abaterile de 1–2px vin
+toate din normalizarea `line-height`-ului pe h3 (vezi §9.4) și sunt sub pragul
+vizual.
+
+**Ce a găsit testul — șapte diferențe reale, toate corectate:**
+
+| # | Diferență | Cauză | Corecție |
+|---|---|---|---|
+| 1 | Prima întrebare din FAQ era deschisă | `defaultOpen: true` în `src/content/home.ts` | Eliminat — în design toate cele 6 sunt închise. Răspunsul rămâne în HTML oricum, deci AEO nu pierde nimic |
+| 2 | Fiecare etichetă mică era cu ~3px mai înaltă | Preflight pune `line-height: 1.5` pe `html`; resetul designului nu pune nimic | `line-height: normal` pe `html` + tokenii `eyebrow`/`label`/`nav`/`btn` pe `normal` |
+| 3 | Link-urile de text erau cu ~7px mai înalte | `text-body*` aduce `line-height: 1.8`; în design linkurile n-au line-height | `leading-[normal]` intrat în `TextLink`, nu la fiecare apel |
+| 4 | Listele din footer, cu ~30px mai înalte | Aceeași cauză, pe `<a>`-urile din liste | `leading-[normal]` pe linkuri; mărimea a coborât de pe `<ul>` pe copii, ca în design |
+| 5 | La 375px, header-ul cu 8px mai scund | `ac-shell` dă gutter minim 24px; header-ul din design e singurul loc cu 20px. Plus `shrink-0` pe wordmark, care împiedica subtitlul să treacă pe două rânduri | Gutter propriu pe header, `shrink-0` eliminat |
+| 6 | Link-ul din bara de consimțământ avea culoarea textului din jur | Preflight face `a` să moștenească culoarea; resetul designului dă `a { color: ink }` | `text-ac-ink` pe link |
+| 7 | `ac-accent-deep` folosit în 5 locuri unde designul are `ac-accent-ink` | Regula „pe crem folosim varianta închisă" aplicată prea larg | Restrânsă la `cream-100`, unde chiar pică AA (vezi §9.3) |
+
+**Placeholderele din footer** (`[ email ]`, `[ LinkedIn ]`) erau desenate cu 65%
+opacitate; în design au culoarea normală a textului. Componenta `Placeholder` nu mai
+impune culoare — moștenește, deci arată corect și în bara de jos, unde fundalul e
+închis.
 
 ---
 
@@ -349,7 +386,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Trei, toate documentate în cod prin comentarii:
+Cinci, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -359,7 +396,20 @@ Trei, toate documentate în cod prin comentarii:
    Brief §5.6 descria transparent → paper după 80px. Designul aprobat (v3) l-a
    simplificat la translucid permanent. Am implementat varianta aprobată; economisește
    un Client Component.
-3. **`Reveal` este Server Component** (`src/components/ui/Reveal.tsx`).
+3. **`ac-accent-deep` pe `cream-100`** (`src/components/ui/Eyebrow.tsx`).
+   Designul folosește `#7A6038` pentru etichetele în accent. Măsurat: 5.44:1 pe
+   `paper`, 4.98:1 pe `cream-50` — ambele trec AA — dar **4.31:1 pe `cream-100`**,
+   sub prag. Doar acolo (secțiunea `cta`) folosim `#6B5430` (5.22:1). Designul
+   însuși îl folosește deja în 10 locuri: etichetele de slot de imagine și pachetul
+   evidențiat din `servicii`.
+
+4. **`line-height` normalizat pe h3** (`src/app/globals.css`).
+   Exportul designului e inconsecvent: aceeași mărime de h3 apare de 6 ori, de 3 ori
+   cu `line-height` și de 3 ori fără. Tokenii impun o singură valoare. Diferența față
+   de `normal` la Cormorant e sub 0.5px pe rând și explică toate abaterile de 1–2px
+   din §6.
+
+5. **`Reveal` este Server Component** (`src/components/ui/Reveal.tsx`).
    Promptul cerea Client Component cu IntersectionObserver propriu. Un observer per
    element ar însemna sute de instanțe și un `use client` pe fiecare secțiune.
    Rezultatul vizual e identic; costul în JS pe browsere moderne e zero.
@@ -378,6 +428,10 @@ Se înlocuiesc cu rutele reale la faza 3b.
 | Conținut invizibil cu JS oprit | Fallback-ul de reveal ascundea elementele necondiționat | Ascunderea e condiționată de `<html data-ac-reveal="js">`, pus de script din `<head>` |
 | `max-w-prose` suprascria un default Tailwind | Token numit `--container-prose` | Redenumit `--container-narrow` |
 | Warning la build pe `Cache-Control` | Override pe `/_next/static/media` | Eliminat — Next livrează deja `immutable` |
+| „Hidratarea nu funcționează": meniul mobil nu se deschide, bara de consimțământ nu apare | În `next dev`, dacă deschizi site-ul prin altceva decât `localhost` (IP de rețea, tunel), Next blochează resursele de dev cross-origin. Mesajul apare **doar în logul serverului** | Testează hidratarea pe `pnpm build && pnpm start`, sau adaugă `allowedDevOrigins` în `next.config.ts`. Nu e un bug al site-ului |
+| Etichetele mici, cu ~3px mai înalte decât în design | Preflight-ul Tailwind pune `line-height: 1.5` pe `html`; resetul designului nu pune nimic, deci tot ce moștenește rulează pe `normal` | `line-height: normal` pe `html`. Nu pune `line-height` pe tokenii de etichetă: designul n-are niciunul |
+| Link-uri de text mai înalte decât în design | Tokenii `text-body*` aduc `line-height: 1.8`, corect pentru paragrafe, greșit pentru linkuri | `TextLink` are deja `leading-[normal]`. Nu-l adăuga la fiecare apel |
+| CLAUDE.md apare modificat după `next dev` | Next adaugă singur blocul `nextjs-agent-rules` | Se comite odată cu restul; se dezactivează cu `agentRules: false` în `next.config.ts` |
 
 ---
 
@@ -385,7 +439,9 @@ Se înlocuiesc cu rutele reale la faza 3b.
 
 ```
 adriana-chira-repo/
-├─ design/homepage-approved.html   ← NU se șterge, NU se modifică
+├─ design/
+│  ├─ homepage-approved.html      ← NU se șterge, NU se modifică
+│  └─ compare/                   ← harnessul de comparație vizuală (§6)
 ├─ public/images/adriana-portret.jpg
 ├─ src/
 │  ├─ app/

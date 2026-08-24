@@ -1,0 +1,95 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Comparație design ↔ implementare</title>
+<style>
+  html,body{margin:0;background:#222;color:#fff;font:12px/1.4 ui-monospace,monospace}
+  .bar{position:fixed;inset:0 0 auto 0;height:26px;display:flex;gap:16px;align-items:center;padding:0 10px;background:#111;z-index:9}
+  .wrap{display:flex;gap:12px;padding:32px 10px 10px;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:4px}
+  iframe{border:0;background:#FAF5EC;display:block}
+</style>
+<div class="bar"><b id="lbl">—</b><span>stânga = DESIGN APROBAT · dreapta = IMPLEMENTARE</span></div>
+<div class="wrap">
+  <div class="col"><span>design</span><iframe id="a" src="/__ref/homepage-approved.html"></iframe></div>
+  <div class="col"><span>implementare</span><iframe id="b" src="/"></iframe></div>
+</div>
+<script>
+const A = document.getElementById('a'), B = document.getElementById('b')
+
+/** Setează lățimea ambelor iframe-uri și le reîncarcă. w = viewport dorit + 15px scrollbar. */
+window.setW = (w, h) => new Promise(res => {
+  document.getElementById('lbl').textContent = w + 'px'
+  let n = 0; const done = () => { if (++n === 2) setTimeout(() => res('ok'), 1500) }
+  A.onload = done; B.onload = done
+  for (const f of [A, B]) { f.style.width = w + 'px'; f.style.height = (h || 900) + 'px'; f.contentWindow.location.reload() }
+})
+
+window.scrollBoth = (y) => { A.contentWindow.scrollTo(0, y); B.contentWindow.scrollTo(0, y); return y }
+window.docs = () => [A.contentDocument, B.contentDocument]
+window.IDS = ['hero','problema','metoda','pentru-cine','univers','despre','valori','citat','servicii','blog','faq','cta']
+
+/** Înălțimea fiecărei secțiuni, design vs implementare. */
+window.heights = () => {
+  const [a, b] = docs()
+  return IDS.map(id => {
+    const x = a.getElementById(id), y = b.getElementById(id)
+    const xh = x ? Math.round(x.getBoundingClientRect().height) : 0
+    const yh = y ? Math.round(y.getBoundingClientRect().height) : 0
+    return `${id.padEnd(12)} design ${String(xh).padStart(5)}  impl ${String(yh).padStart(5)}  Δ ${yh - xh > 0 ? '+' : ''}${yh - xh}`
+  }).join('\n')
+   + `\nfooter       design ${Math.round(a.querySelector('footer').getBoundingClientRect().height)}  impl ${Math.round(b.querySelector('footer').getBoundingClientRect().height)}`
+   + `\nheader       design ${Math.round(a.querySelector('header').getBoundingClientRect().height)}  impl ${Math.round(b.querySelector('header').getBoundingClientRect().height)}`
+   + `\nTOTAL        design ${Math.round(a.documentElement.scrollHeight)}  impl ${Math.round(b.documentElement.scrollHeight)}`
+}
+
+/** Indexează fiecare nod de text după primele 40 de caractere, cu geometria și stilul părintelui. */
+window.probe = (doc, sel) => {
+  const root = doc.querySelector(sel); if (!root) return new Map()
+  const rTop = root.getBoundingClientRect().top + doc.defaultView.scrollY, map = new Map()
+  const wk = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n
+  while ((n = wk.nextNode())) {
+    const t = n.textContent.replace(/\s+/g, ' ').trim(); if (!t) continue
+    const el = n.parentElement, r = el.getBoundingClientRect(); if (!r.width) continue
+    const cs = doc.defaultView.getComputedStyle(el), k = t.slice(0, 40); if (map.has(k)) continue
+    map.set(k, { l: Math.round(r.left), t: Math.round(r.top + doc.defaultView.scrollY - rTop), w: Math.round(r.width), h: Math.round(r.height), fs: cs.fontSize, lh: cs.lineHeight, fw: cs.fontWeight, c: cs.color, ls: cs.letterSpacing })
+  }
+  return map
+}
+
+/** Diferențele nod cu nod dintr-o secțiune. „LIPSEȘTE"/„ÎN PLUS" apar și când un
+    text e împărțit altfel în elemente (ex. săgeata „→" separată de etichetă). */
+window.sect = (sel, tol = 2) => {
+  const [a, b] = docs(), impl = probe(b, sel), design = probe(a, sel), out = []
+  for (const [k, x] of design) {
+    const y = impl.get(k); if (!y) { out.push(k.slice(0, 30) + ' :: LIPSEȘTE'); continue }
+    const d = []
+    for (const p of ['l','t','w','h']) if (Math.abs(y[p] - x[p]) > tol) d.push(`${p} ${x[p]}→${y[p]}`)
+    for (const p of ['fs','lh','fw','ls','c']) if (y[p] !== x[p]) d.push(`${p} ${x[p]}→${y[p]}`)
+    if (d.length) out.push(k.slice(0, 30) + ' :: ' + d.join(', '))
+  }
+  for (const k of impl.keys()) if (!design.has(k)) out.push(k.slice(0, 30) + ' :: ÎN PLUS')
+  return out.join('\n') || '  ✓ identic'
+}
+
+/** Diferențele de stil pe toată pagina, grupate pe tip. */
+window.styleDiff = () => {
+  const [a, b] = docs(), impl = probe(b, 'body'), design = probe(a, 'body'), agg = new Map()
+  for (const [k, x] of design) {
+    const y = impl.get(k); if (!y) continue
+    for (const p of ['fs','lh','fw','c','ls']) if (y[p] !== x[p]) {
+      const key = `${p}: ${x[p]} → ${y[p]}`; agg.set(key, (agg.get(key) || []).concat(k.slice(0, 22)))
+    }
+  }
+  return [...agg].map(([k, v]) => `${k}  ×${v.length}  ex: ${v.slice(0, 2).join(' / ')}`).join('\n') || '  ✓ zero diferențe'
+}
+
+/** Micșorează ambele coloane ca să încapă două viewport-uri de 1440px pe ecran. */
+window.setScale = (s) => {
+  for (const f of [A, B]) { f.style.transformOrigin = 'top left'; f.style.transform = `scale(${s})` }
+  for (const col of document.querySelectorAll('.col')) {
+    col.style.width = (parseFloat(A.style.width) * s) + 'px'
+    col.style.height = (parseFloat(A.style.height) * s + 24) + 'px'
+  }
+  return s
+}
+</script>
