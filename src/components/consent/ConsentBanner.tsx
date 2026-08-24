@@ -98,6 +98,9 @@ export function ConsentBanner({ policyHref }: { policyHref: string }) {
 
   return (
     <div
+      /* Marcaj citit din CSS: cât timp bara e deschisă, voalul se retrage.
+         Vezi blocul „VOALUL" din `globals.css`. */
+      data-consent-bar
       role="region"
       aria-label="Preferințe cookie-uri"
       className="fixed inset-x-0 bottom-0 z-[60] animate-[acRise_.45s_var(--ease-ac)_both] border-t border-ac-line bg-[rgba(250,245,236,.96)] shadow-[0_-10px_40px_rgba(23,20,15,.07)] backdrop-blur-[14px]"

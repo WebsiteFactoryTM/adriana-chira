@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { PageLight } from '@/components/ui/PageLight'
 import { RevealFallback } from '@/components/ui/RevealFallback'
+import { Veil } from '@/components/ui/Veil'
 import { buildConsentBootstrap } from '@/lib/consent'
 import { getSiteSettings } from '@/lib/content'
 import { graph, personSchema } from '@/lib/schema'
@@ -98,6 +99,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Header settings={settings} />
         {children}
         <Footer settings={settings} />
+
+        {/* Obiectul care rămâne cu cititorul. Deasupra conținutului, spre
+            deosebire de lumina de mai sus. */}
+        <Veil />
 
         <ConsentBanner policyHref="/politica-de-cookies" />
 

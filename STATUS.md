@@ -166,6 +166,7 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
 | `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
 | `PageLight` | Server Component; corpul de lumină care traversează pagina la derulare. Montat o singură dată, în layout |
+| `Veil` | Server Component; obiectul de abur care însoțește cititorul. Singurul strat decorativ care stă **peste** conținut |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
 
@@ -261,6 +262,44 @@ De aici cele două decizii de rețetă: haloul **nu** e aur curat, ci aur încă
 luminii se construiește din **miez**, nu din halou — miezul e alb cald, ridică
 luminanța hârtiei, deci textul închis câștigă contrast și poate urca la 96% fără cost.
 Aici haloul stă la 4.2 % efectiv, cu marjă păstrată pentru aura care se poate suprapune.
+
+### Voalul ✅
+
+Al treilea strat din afara designului aprobat, și singurul care e un **obiect**, nu
+atmosferă. Un corp de abur translucid, fixat de ecran, care însoțește cititorul prin
+toată pagina. Nu e mascotă, nu e buton, n-are text și nu duce nicăieri: rolul lui e
+prezență, nu instrucțiune.
+
+Cele trei straturi decorative, ca să nu fie confundate:
+
+| | `PageLight` | `SectionAura` | `Veil` |
+|---|---|---|---|
+| Ce e | atmosferă | semnal de atenție | obiect |
+| Unde stă | **sub** fundaluri | sub conținut, în secțiune | **peste** conținut |
+| Mărime | mare, difuz, fără contur | mare, difuz | mic, cu contur și volum |
+| Ce îl mișcă | derularea | secțiunea care intră în ecran | derularea + plutire proprie |
+
+- `src/components/ui/Veil.tsx` — Server Component, **zero JS**.
+- Blocul „VOALUL" din `globals.css`. Ce îl face să pară fizic: `backdrop-filter`
+  (refractă efectiv ce e în spate — diferența dintre desen și corp), lumina care vine
+  dintr-o direcție (reflex sus-stânga, umbră caldă jos-dreapta, inel de margine) și
+  forma care se transformă lent, în loc de cerc perfect.
+- Patru mișcări, cu durate fără numitor comun — 13s plutire, 19s respirație, 23s
+  schimbare de formă, 31s rotația reflexului. Dacă s-ar sincroniza, ochiul ar prinde
+  un puls, iar pulsul citește ca ceas, nu ca prezență.
+- `pointer-events: none`, verificat: `elementFromPoint` din centrul lui returnează
+  elementul de dedesubt, nu voalul.
+- Se retrage complet (`display: none`) cât timp bara de consimțământ sau meniul mobil
+  sunt deschise — prin `:has()` pe `body`, fără ascultători de evenimente.
+- Se stinge dintr-un singur loc: `--ac-veil-gain: 0`.
+
+**De ce iese din cadru, și nu stă frumos în colț.** Stând peste conținut, e singurul
+strat care poate strica lizibilitatea: `backdrop-filter` înceață ce e sub el. Măsurat
+la 1440px, așezat complet în pagină intra **~100px în coloana de text**. Gutterul are
+24–88px, iar voalul 84–132px, deci nu încape niciodată întreg în margine. Soluția:
+iese 45% din cadru, iar deriva pe orizontală are toate valorile ≤ 0 — nu se poate
+apropia de text nici în repaus, nici în vreun punct al derulării. **Verificat la
+1440px: marginea voalului 71px, textul începe la 72px.**
 
 ### SEO / AEO pentru homepage ✅
 
@@ -632,6 +671,12 @@ câștigat un nod. **Text vizibil identic la caracter: 9692 în ambele.**
 Fiind `position: fixed`, stratul e în afara fluxului: înălțimile secțiunilor rămân
 cele din comparația la pixel, care **nu trebuie refăcută**.
 
+### ✅ Voalul nu a mișcat niciun text — verificat prin diff
+
+Aceeași metodă (§12.5). **Rezultat: opt linii în plus, exact nodurile voalului**
+(`<div data-veil>` cu corpul, pielea și reflexul), nimic altceva. **Text vizibil
+identic la caracter: 9692 în ambele.** Fiind `position: fixed`, e în afara fluxului.
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
@@ -712,7 +757,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Șaptesprezece, toate documentate în cod prin comentarii:
+Optsprezece, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -817,6 +862,12 @@ curl -s http://localhost:3000/ -o /tmp/h.html
     stă **sub** fundalurile secțiunilor, deci nu trece niciodată peste text. Se
     stinge din `--ac-light-gain: 0`, fără să se atingă nicio secțiune.
 
+18. **Voalul — a treia adăugire, și singura care trece peste conținut**
+    (`src/components/ui/Veil.tsx`). Descris în §4. Singurul strat decorativ cu
+    `pointer-events` de verificat și cu risc de lizibilitate, tocmai pentru că e
+    deasupra. De aceea iese din cadru și n-are voie să derive spre dreapta.
+    Se stinge din `--ac-veil-gain: 0`.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -852,6 +903,8 @@ pe homepage și nu au pagină proprie.
 | Un strat decorativ tăiat cu `overflow: hidden` pe `<section>` | Ar rupe `StickyColumn` — poziționarea `sticky` nu funcționează într-un strămoș cu `overflow` | `contain: paint` pe stratul decorativ: taie la marginile secțiunii **și** scutește pictarea cât e în afara ecranului |
 | Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
 | Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
+| Un strat decorativ pus peste conținut înceață textul de dedesubt | `backdrop-filter` e singurul lucru care face un strat să pară corp fizic, dar tot el face ilizibil ce acoperă. Gutterul paginii (24–88px) e mai îngust decât orice obiect care merită văzut (84–132px), deci „îl pun în margine" nu e o soluție | Lasă-l să iasă din cadru și interzice-i deriva spre coloana de text (toate valorile de `translate` orizontal ≤ 0). Verifică, nu presupune: compară `getBoundingClientRect().right` al obiectului cu `x + paddingLeft` al lui `.ac-shell` |
+| Comentariu care rupe compilarea într-un tag JSX | În lista de atribute, `{/* … */}` nu e valid — acolo se scriu comentarii JS simple, `/* … */`. Forma cu acolade merge doar între copii | `/* … */` între atribute, sau comentariul deasupra elementului |
 | Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 

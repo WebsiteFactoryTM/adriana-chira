@@ -893,6 +893,225 @@ details[open] summary [data-plus] {
   }
 }
 
+/* ==========================================================================
+   VOALUL — obiectul care rămâne cu cititorul
+   Vezi `src/components/ui/Veil.tsx` pentru ce este, ce nu este și de ce stă
+   jos-stânga. Al treilea strat care nu vine din designul aprobat; fiind
+   `position: fixed`, nu mută niciun nod de text.
+
+   Patru reguli care nu se încalcă:
+   1. Trece peste conținut, deci trebuie să rămână MIC și în bandă de margine.
+      Lumina paginii poate fi mare pentru că stă dedesubt; voalul nu poate.
+   2. `pointer-events: none`, mereu. Nu are voie să fure un click.
+   3. Nu concurează cu bara de consimțământ și nici cu meniul deschis: se
+      retrage, prin `:has()` pe body, fără niciun ascultător de evenimente.
+   4. Duratele mișcărilor n-au numitor comun (13s / 19s / 31s). Dacă s-ar
+      sincroniza, ochiul ar prinde un puls, iar pulsul e ceas, nu prezență.
+   ========================================================================== */
+
+:root {
+  --ac-veil-size: clamp(84px, 9vw, 132px);
+  /* Regulator global. `0` stinge voalul pe tot site-ul, dintr-un singur loc. */
+  --ac-veil-gain: 1;
+}
+
+[data-veil] {
+  position: fixed;
+  /*
+    Iese 45% din cadru. Nu e compromis, e singura soluție care ține la orice
+    lățime: gutterul coloanei de text are 24–88px, iar voalul 84–132px, deci
+    nu încape niciodată întreg în margine. Așezat complet în pagină, ar sta
+    peste începutul rândurilor, iar `backdrop-filter` ar înceța exact primele
+    cuvinte — măsurat, intra ~100px în coloană la 1440px.
+
+    Așa, partea vizibilă (~55% din corp) se termină la marginea gutterului:
+    la 1440px, 71.5px față de textul care începe la 72px. Ultimii pixeli sunt
+    oricum stinși de mască, deci pe niciun ecran nu ajunge cerneală de voal
+    peste o literă. În plus, un corp care intră pe după marginea paginii
+    citește ca ceva care plutește pe lângă tine, nu ca un obiect pus în colț.
+  */
+  left: calc(var(--ac-veil-size) * -0.45);
+  bottom: clamp(18px, 7vh, 84px);
+  width: var(--ac-veil-size);
+  height: var(--ac-veil-size);
+  /* Sub textura de hârtie (46) și sub header (50), deci granulația paginii
+     trece peste el și îl integrează în material. Peste conținut, unde trebuie. */
+  z-index: 44;
+  pointer-events: none;
+  opacity: var(--ac-veil-gain);
+}
+
+/* Plutirea legată de derulare: voalul rătăcește prin banda lui pe măsură ce
+   cititorul coboară. Nu urcă și nu coboară monoton — ar citi ca un indicator
+   de progres, iar ăsta nu e rolul lui. */
+@supports (animation-timeline: scroll()) {
+  [data-veil] {
+    animation: acVeilRide linear both;
+    /* DUPĂ scurtătură — altfel scurtătura le resetează. Vezi STATUS §10. */
+    animation-timeline: scroll(root block);
+    animation-range: 0% 100%;
+  }
+}
+
+/* Pe verticală rătăcește cât vrea. Pe orizontală, NICIODATĂ spre dreapta:
+   toate valorile sunt ≤ 0. Așa, garanția de mai sus — voalul nu ajunge peste
+   coloana de text — rămâne valabilă în orice punct al derulării, nu doar în
+   repaus. Dacă cineva pune aici o valoare pozitivă, o strică. */
+@keyframes acVeilRide {
+  0% {
+    translate: 0 4vh;
+  }
+  28% {
+    translate: -1.5vw -5vh;
+  }
+  55% {
+    translate: -0.5vw 4vh;
+  }
+  80% {
+    translate: -2vw -3vh;
+  }
+  100% {
+    translate: 0 -7vh;
+  }
+}
+
+/* Corpul: plutire lentă și respirație. Pe alt element decât cursa de mai sus,
+   ca să nu se bată pe `translate`. */
+[data-veil-body] {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation:
+    acVeilBob 13s ease-in-out infinite,
+    acVeilBreath 19s ease-in-out infinite;
+}
+
+@keyframes acVeilBob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -9px;
+  }
+}
+
+@keyframes acVeilBreath {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  50% {
+    /* Ușor turtit, nu scalat uniform: un corp moale nu se umflă egal. */
+    scale: 1.05 0.96;
+  }
+}
+
+/*
+  Pielea. Aici se produce senzația de corp:
+
+  `backdrop-filter` refractă ce e în spate — singura tehnică prin care un strat
+  chiar pare materie, nu desen. Blur mic (8px), ca să se vadă că deformează,
+  nu că ascunde.
+
+  Lumina cade din stânga-sus: reflex rece-cald acolo, umbră caldă în
+  dreapta-jos, plus un inel subțire de margine. Toate trei sunt `inset`, deci
+  nu costă un al doilea nod.
+*/
+[data-veil-skin] {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px) saturate(118%);
+  -webkit-backdrop-filter: blur(8px) saturate(118%);
+  background: radial-gradient(
+    circle at 34% 30%,
+    color-mix(in srgb, var(--ac-aura-core) 30%, transparent) 0%,
+    color-mix(in srgb, var(--ac-aura-core) 13%, transparent) 42%,
+    color-mix(in srgb, var(--ac-accent) 9%, transparent) 74%,
+    color-mix(in srgb, var(--ac-accent) 15%, transparent) 100%
+  );
+  box-shadow:
+    /* inelul de margine — subțire, cât să existe un contur de bulă */
+    inset 0 0 0 1px color-mix(in srgb, var(--ac-aura-core) 40%, transparent),
+    /* lumina din stânga-sus */ inset 10px 12px 26px
+      color-mix(in srgb, var(--ac-aura-core) 30%, transparent),
+    /* umbra caldă din dreapta-jos */ inset -12px -14px 30px
+      color-mix(in srgb, var(--ac-accent) 20%, transparent),
+    /* umbra proprie, care îl desprinde de pagină */ 0 16px 40px
+      color-mix(in srgb, var(--ac-ink) 9%, transparent);
+  /*
+    Marginea estompată. Fără ea, `backdrop-filter` se taie pe un cerc perfect
+    și obiectul citește ca o perlă — corp solid, cu contur de nasture. Un voal
+    n-are muchie: masca lasă refracția să se stingă spre margine, iar ce rămâne
+    e abur cu un contur abia sugerat.
+  */
+  mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 97%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 97%);
+  /*
+    Forma care se transformă. Un cerc perfect e un obiect fabricat; un corp
+    moale nu stă niciodată în aceeași formă. Durata (23s) e din nou primă față
+    de celelalte, ca să nu se sincronizeze.
+  */
+  border-radius: 58% 42% 47% 53% / 52% 46% 54% 48%;
+  animation: acVeilMorph 23s ease-in-out infinite;
+}
+
+@keyframes acVeilMorph {
+  0%,
+  100% {
+    border-radius: 58% 42% 47% 53% / 52% 46% 54% 48%;
+  }
+  33% {
+    border-radius: 44% 56% 61% 39% / 46% 58% 42% 54%;
+  }
+  66% {
+    border-radius: 53% 47% 38% 62% / 60% 41% 59% 40%;
+  }
+}
+
+/* Reflexul care alunecă pe suprafață. Se rotește foarte lent, în sens invers
+   față de restul, ca lumina să pară că vine din cameră, nu din obiect. */
+[data-veil-sheen] {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 46% 26% at 32% 24%,
+    color-mix(in srgb, var(--ac-aura-core) 62%, transparent) 0%,
+    transparent 70%
+  );
+  animation: acVeilSheen 31s linear infinite;
+}
+
+@keyframes acVeilSheen {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: -360deg;
+  }
+}
+
+/* Sub 900px coloana de text ocupă toată lățimea: voalul nu mai are bandă de
+   margine, deci se micșorează, se retrage în colț și se estompează. Prezență,
+   nu obstacol. */
+@media (max-width: 899px) {
+  :root {
+    --ac-veil-size: clamp(64px, 15vw, 92px);
+    --ac-veil-gain: 0.82;
+  }
+  [data-veil] {
+    bottom: clamp(12px, 3vh, 28px);
+  }
+}
+
+/* Cât timp bara de consimțământ sau meniul mobil sunt deschise, voalul dispare:
+   amândouă ocupă exact zona lui, iar el n-are voie să stea în drum. */
+body:has([data-consent-bar]) [data-veil],
+body:has([data-burger][data-open='true']) [data-veil] {
+  display: none;
+}
+
 /* „prefers-reduced-motion" oprește complet mișcarea (brief §5.6, §9.3). */
 @media (prefers-reduced-motion: reduce) {
   *,
