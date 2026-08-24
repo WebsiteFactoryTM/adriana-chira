@@ -9,3 +9,7 @@ next-env.d.ts
 .vercel
 .DS_Store
 Thumbs.db
+
+# Fișierele încărcate în admin. În producție merg în Vercel Blob;
+# local rămân pe disc și nu au ce căuta în repo.
+public/media/

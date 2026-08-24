@@ -7,7 +7,8 @@ ce e blocat și care e următorul pas. Acest fișier e doar indexul.
 
 Site de prezentare și vânzare pentru Adriana Chira, consultant în performanță umană.
 Română, un singur locale. Next 16 · React 19 · Tailwind v4 · TypeScript 7 strict ·
-Payload 3 (neinstalat încă) · Stripe (neinstalat încă) · Vercel.
+Payload 3.88 (instalat, faza 2 completă) · Stripe 22.5 (doar sincronizarea prețurilor) ·
+Postgres · Vercel.
 
 ## Surse de adevăr, în ordine
 
@@ -37,21 +38,32 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 
 ```bash
 pnpm dev · pnpm build · pnpm start · pnpm typecheck
+pnpm db:up · pnpm migrate · pnpm seed · pnpm verify:faza2
 ```
+
+Baza de date locală rulează în Docker. Lista completă de comenzi: `STATUS.md` §3.
+Pe Vercel, build command-ul este `pnpm build:deploy`, nu `pnpm build`.
 
 Windows: dacă `pnpm` lipsește din PATH, e la `$HOME/AppData/Roaming/npm`
 (`corepack enable` eșuează fără drepturi de administrator).
 
 ## Unde se conectează Payload
 
-`src/lib/content.ts` — `getSiteSettings()` și `getHomeContent()`, deja `async`.
-Componentele nu știu de unde vine conținutul. La faza 2 se schimbă doar corpul
-acestor funcții; `src/content/*.ts` rămâne ca fallback. Detalii în `STATUS.md` §5.
+`src/lib/content.ts` — singurul loc care știe de unde vine conținutul. Componentele
+primesc mereu tipurile din `src/content/types.ts`.
+
+**Regula de îmbinare:** CMS-ul are întâietate, dar numai unde chiar a fost completat.
+Orice câmp gol, `null` sau listă goală cade pe `src/content/*.ts`, adică pe textul
+verificat la px față de designul aprobat. Acele fișiere **nu se șterg**: sunt și
+fallback-ul, și sursa din care `pnpm seed` populează CMS-ul.
+
+Atingi UI-ul sau stratul de conținut? Refă diff-ul CMS ↔ fallback din `STATUS.md` §6.
 
 ## Înainte de commit
 
-`pnpm build && pnpm typecheck` curate, grep-ul de sedile la zero, și
-**actualizează `STATUS.md`**.
+`pnpm build && pnpm typecheck` curate, grep-ul de sedile la zero pe `src/` și
+`scripts/`, `pnpm verify:faza2` la 10/10, și **actualizează `STATUS.md`**.
+Ai atins schema? `pnpm generate:types` + o migrație nouă + `pnpm migrate:fix`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

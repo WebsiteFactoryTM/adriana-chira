@@ -1,3 +1,4 @@
+import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -8,7 +9,7 @@ const nextConfig: NextConfig = {
   images: {
     // AVIF primul: ~30% mai mic decât WebP pe portrete.
     formats: ['image/avif', 'image/webp'],
-    // Vercel Blob — se activează la faza Payload.
+    // Vercel Blob — activ când BLOB_READ_WRITE_TOKEN există (vezi payload.config.ts).
     remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }],
   },
 
@@ -33,4 +34,8 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+/**
+ * `withPayload` montează rutele din grupul `(payload)` și ține pachetele
+ * native ale Payload în afara bundle-ului de server.
+ */
+export default withPayload(nextConfig, { devBundleServerPackages: false })

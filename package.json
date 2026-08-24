@@ -2,6 +2,7 @@
   "name": "adriana-chira",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "adrianachira.ro — Adriana Chira, consultant în performanță umană",
   "packageManager": "pnpm@10.34.5",
   "engines": {
@@ -11,12 +12,31 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "payload": "payload",
+    "generate:types": "payload generate:types",
+    "generate:importmap": "payload generate:importmap",
+    "seed": "payload run src/seed/index.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "verify:faza2": "payload run scripts/verify-faza2.ts",
+    "build:deploy": "node scripts/fix-migration-imports.mjs && payload migrate && next build",
+    "migrate:create": "payload migrate:create",
+    "migrate": "payload migrate",
+    "migrate:fix": "node scripts/fix-migration-imports.mjs"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/richtext-lexical": "3.88.0",
+    "@payloadcms/storage-vercel-blob": "3.88.0",
+    "@payloadcms/translations": "3.88.0",
+    "graphql": "^16.14.2",
     "next": "16.3.1",
+    "payload": "3.88.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "stripe": "22.5.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
@@ -26,5 +46,11 @@
     "sharp": "^0.35.3",
     "tailwindcss": "4.3.3",
     "typescript": "^7.0.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild"
+    ]
   }
 }

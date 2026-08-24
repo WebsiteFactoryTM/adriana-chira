@@ -16,7 +16,7 @@ Designul aprobat de clientă: [`design/homepage-approved.html`](design/homepage-
 | 3a | Homepage — cele 12 secțiuni din designul aprobat | ✅ gata |
 | 5a | SEO/AEO pentru homepage: metadata, JSON-LD, robots, sitemap, llms.txt | ✅ gata |
 | 6a | Consent Mode v2 + bara de consimțământ | ✅ gata |
-| 2 | Payload: colecții, globals, seed | ⏳ urmează |
+| 2 | Payload: colecții, globals, seed, admin în română | ✅ gata |
 | 3b | Paginile interioare: /despre, /servicii, /blog, /contact, legale | ⏳ urmează |
 | 4 | Stripe Checkout + webhook + emailuri | ⏳ urmează |
 | 7 | Lighthouse, axe, lansare | ⏳ urmează |
@@ -27,16 +27,28 @@ Designul aprobat de clientă: [`design/homepage-approved.html`](design/homepage-
 
 ```bash
 pnpm install
-cp .env.example .env.local     # completează NEXT_PUBLIC_SITE_URL
-pnpm dev                       # http://localhost:3000
+cp .env.example .env.local     # completează PAYLOAD_SECRET și DATABASE_URI
+pnpm db:up                     # Postgres 17 în Docker, pe 127.0.0.1:5432
+pnpm migrate                   # creează schema
+pnpm seed                      # populează conținutul aprobat
+pnpm dev                       # http://localhost:3000 · admin la /admin
 ```
+
+Docker este necesar doar local. În producție baza de date este Neon sau Vercel
+Postgres, cu connection string **pooled**.
 
 | Comandă | Ce face |
 |---|---|
 | `pnpm dev` | server de dezvoltare |
 | `pnpm build` | build de producție (Turbopack) |
+| `pnpm build:deploy` | **comanda de build pe Vercel** — aplică migrațiile, apoi build |
 | `pnpm start` | servește build-ul de producție |
 | `pnpm typecheck` | `tsc --noEmit`, TypeScript 7 |
+| `pnpm db:up` / `db:down` | pornește / oprește baza de date locală |
+| `pnpm seed` | populează CMS-ul; idempotent, se poate rula oricând |
+| `pnpm migrate` / `migrate:create` | aplică / generează migrații |
+| `pnpm generate:types` | `src/payload-types.ts`, după orice schimbare de schemă |
+| `pnpm verify:faza2` | verificările de acceptanță: etichete, acces, validări |
 
 `pnpm` este obligatoriu (`packageManager` fixat în `package.json`). Dacă nu îl ai:
 `npm i -g pnpm` sau `corepack enable pnpm`.
@@ -77,12 +89,17 @@ Componentele **nu** știu de unde vine conținutul. Citesc doar din `src/lib/con
 const content = await getHomeContent()   // azi: src/content/home.ts
 ```
 
-Când intră Payload (faza 2), se schimbă **doar corpul acelor funcții** — se citește
-globalul `home-page` și se face merge peste valorile din `src/content/home.ts`, care
-rămân ca fallback. Zero modificări în cele 12 secțiuni. Funcțiile sunt `async` de la
-început tocmai ca semnătura să nu se schimbe.
+Astăzi funcțiile citesc din Payload și fac merge peste valorile din
+`src/content/`. Semnătura nu s-a schimbat la intrarea CMS-ului, iar cele 12 secțiuni
+n-au fost atinse deloc.
 
-Același principiu pentru `getSiteSettings()` → globalul `site-settings`.
+**Regula de îmbinare:** CMS-ul are întâietate, dar numai unde chiar a fost completat.
+Orice câmp gol, `null` sau listă goală cade pe `src/content/`, adică pe textul
+verificat la px față de designul aprobat. Verificat prin diff: cu baza de date oprită,
+pagina livrată este identică, la caracter, cu cea randată din CMS.
+
+De aceea `src/content/home.ts` și `src/content/site.ts` **nu se șterg**: sunt și
+fallback-ul, și sursa din care `pnpm seed` populează CMS-ul.
 
 ### Tokenii de design
 
@@ -207,11 +224,13 @@ dintr-un singur loc, `src/content/site.ts`.
 
 ## Următorul pas recomandat
 
-**Faza 2 — Payload.** Nu depinde de UI și poate rula în paralel. Are nevoie de:
-`DATABASE_URI` (Postgres pooled), `PAYLOAD_SECRET`, `BLOB_READ_WRITE_TOKEN`.
+**Faza 3b — paginile interioare.** `/despre`, `/servicii`, `/blog`, `/contact` și cele
+patru pagini legale. Datele există deja în CMS și sunt tipate; se adaugă resolvere noi
+în `src/lib/content.ts`, după același tipar de îmbinare cu fallback.
 
-Ordinea: colecții și globals → seed idempotent → mutarea resolverelor din
-`src/lib/content.ts` pe Payload → webhook `afterChange` → `/api/revalidate`.
+Pentru deploy mai sunt necesare, de la clientă: o bază de date Postgres cu string
+POOLED și un `BLOB_READ_WRITE_TOKEN` de Vercel Blob — fără el, imaginile încărcate în
+admin se pierd la fiecare deploy. Detalii în `STATUS.md` §7.
 
 ---
 

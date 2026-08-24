@@ -12,7 +12,7 @@ import { Problema } from '@/components/sections/Problema'
 import { Servicii } from '@/components/sections/Servicii'
 import { Univers } from '@/components/sections/Univers'
 import { Valori } from '@/components/sections/Valori'
-import { getHomeContent, getSiteSettings } from '@/lib/content'
+import { getHiddenSections, getHomeContent, getSiteSettings } from '@/lib/content'
 import { faqSchema, graph, professionalServiceSchema, websiteSchema } from '@/lib/schema'
 
 export const metadata: Metadata = {
@@ -34,26 +34,36 @@ export const metadata: Metadata = {
  *
  * Pagina este 100% Server Component. Singurele componente de client din tot
  * arborele sunt `MobileNav` și `ConsentBanner` (ambele justificate în fișier).
- * Statică: se re-generează la publicare, prin webhook Payload (faza 2).
+ *
+ * Ordinea secțiunilor este cea din designul aprobat și nu vine din CMS. Ce vine
+ * din CMS este doar dacă o secțiune a fost ascunsă — implicit, toate sunt
+ * vizibile, deci pagina arată identic cu designul până când cineva debifează
+ * ceva intenționat.
  */
 export default async function HomePage() {
-  const [content, settings] = await Promise.all([getHomeContent(), getSiteSettings()])
+  const [content, settings, hidden] = await Promise.all([
+    getHomeContent(),
+    getSiteSettings(),
+    getHiddenSections(),
+  ])
+
+  const shows = (id: string) => !hidden.has(id)
 
   return (
     <>
       <main id="continut">
         <Hero content={content.hero} />
-        <Problema content={content.problema} />
-        <Metoda content={content.metoda} />
-        <PentruCine content={content.pentruCine} />
-        <Univers content={content.univers} />
-        <Despre content={content.despre} />
-        <Valori content={content.valori} />
-        <Citat content={content.citat} />
-        <Servicii content={content.servicii} />
-        <BlogPreview content={content.blog} />
-        <Faq content={content.faq} />
-        <CtaFinal content={content.cta} />
+        {shows('problema') && <Problema content={content.problema} />}
+        {shows('metoda') && <Metoda content={content.metoda} />}
+        {shows('pentru-cine') && <PentruCine content={content.pentruCine} />}
+        {shows('univers') && <Univers content={content.univers} />}
+        {shows('despre') && <Despre content={content.despre} />}
+        {shows('valori') && <Valori content={content.valori} />}
+        {shows('citat') && <Citat content={content.citat} />}
+        {shows('servicii') && <Servicii content={content.servicii} />}
+        {shows('blog') && <BlogPreview content={content.blog} />}
+        {shows('faq') && <Faq content={content.faq} />}
+        {shows('cta') && <CtaFinal content={content.cta} />}
       </main>
 
       <JsonLd

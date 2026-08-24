@@ -7,9 +7,9 @@ e următorul pas concret.
 | | |
 |---|---|
 | Ultima actualizare | **24 august 2026** |
-| Stadiu general | Faza 1 completă · homepage complet **și verificat vizual față de design** · fazele 2–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) |
-| Ultimul commit | `38c29e7` — Fidelitate față de designul aprobat: 12 din 12 secțiuni identice |
+| Stadiu general | Fazele 1 și 2 complete · homepage verificat vizual · **conținutul vine din Payload**, cu fallback pe design · fazele 3–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
+| Ultimul commit | `afd19f8` — Documentație: rezultatul comparației vizuale și harnessul de rulare |
 
 ---
 
@@ -62,19 +62,46 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 
 ```
 Next 16.3.1 · React 19.2.8 · Tailwind 4.3.3 · TypeScript 7 · pnpm 10.34.5
+Payload 3.88.0 (+ db-postgres, next, richtext-lexical, storage-vercel-blob,
+translations) · Stripe 22.5.0 · Postgres 17
 ```
 
-Versiunile `next`, `react`, `react-dom`, `tailwindcss` sunt **fixate exact**, fără
-caret — compatibilitatea Payload ↔ Next este strictă.
+Versiunile `next`, `react`, `react-dom`, `tailwindcss`, `stripe` și **toate** pachetele
+`payload*` sunt **fixate exact**, fără caret — compatibilitatea Payload ↔ Next este
+strictă și un minor necontrolat rupe build-ul.
+
+`package.json` are `"type": "module"`. Fără el, CLI-ul Payload transpilează
+`payload.config.ts` ca CommonJS și cade cu `ERR_REQUIRE_ASYNC_MODULE`.
+
+### Pornirea de la zero
 
 ```bash
 pnpm install
-cp .env.example .env.local
-pnpm dev          # http://localhost:3000
-pnpm build        # build de producție (Turbopack)
-pnpm start        # servește build-ul
-pnpm typecheck    # tsc --noEmit
+cp .env.example .env.local     # completează PAYLOAD_SECRET și DATABASE_URI
+pnpm db:up                     # Postgres 17 în Docker, pe 127.0.0.1:5432
+pnpm migrate                   # creează schema
+pnpm seed                      # populează conținutul aprobat
+pnpm dev                       # http://localhost:3000 · admin la /admin
 ```
+
+### Comenzi
+
+```bash
+pnpm dev · pnpm build · pnpm start · pnpm typecheck
+
+pnpm db:up / db:down       # baza de date locală (docker-compose.yml)
+pnpm seed                  # idempotent; rulează oricând
+pnpm migrate               # aplică migrațiile
+pnpm migrate:create <nume> # generează o migrație nouă
+pnpm migrate:fix           # repară importurile din migrațiile generate (vezi §10)
+pnpm generate:types        # src/payload-types.ts, după orice schimbare de schemă
+pnpm generate:importmap    # după adăugarea unei componente proprii în admin
+pnpm verify:faza2          # verificările de acceptanță ale fazei 2
+pnpm build:deploy          # migrate:fix + migrate + build — comanda de build pe Vercel
+```
+
+> **Pe Vercel, comanda de build este `pnpm build:deploy`, nu `pnpm build`.**
+> În producție `push` este dezactivat, deci schema vine exclusiv din migrații.
 
 **Notă de mediu (Windows):** `corepack enable` eșuează fără drepturi de administrator
 (EPERM pe `C:\Program Files\nodejs`). `pnpm` a fost instalat la nivel de utilizator:
@@ -192,47 +219,88 @@ Link-ul „Setări cookie-uri" din footer funcționează prin delegare pe
   **Necesar** pentru că layout-ul rădăcină trăiește în grupul `(frontend)`; fără el,
   un URL inexistent cădea pe 404-ul implicit al Next-ului, în engleză.
 
+### Faza 2 — Payload CMS ✅
+
+Baza de date locală rulează în **Docker** (`docker-compose.yml`, Postgres 17 pe
+`127.0.0.1:5432`). Asta a deblocat faza: nu mai depinde de credențiale de la clientă.
+
+**Colecții** — `src/collections/`, toate cu etichete și descrieri în română:
+
+| Colecție | Ce ține | Cine o vede |
+|---|---|---|
+| `posts` | articolele; ciorne + versionare, `readingTime` calculat în hook | public doar `published` |
+| `categories` | Performanță, Decizie, Perspectivă, Mindset | public |
+| `packages` | pachetele, cu sincronizare Stripe la salvare | public doar `active` |
+| `faqs` | întrebările, cu tabelul comparativ opțional | public |
+| `media` | fișierele; `alt` **blocant** | public |
+| `orders` | comenzile — doar citire, doar `admin` | nimeni public |
+| `submissions` | mesajele din formular — doar `admin`, retenție 12 luni | nimeni public |
+| `users` | `admin` și `editor`; rolul nu se poate schimba de un editor | doar propriul cont |
+
+**Globals** — `src/globals/`: `site-settings` (contact, firmă, social, GA4),
+`home-page` (textele celor 12 secțiuni, fiecare cu bifă de vizibilitate),
+`about-page` (narațiune, repere, cele 4 principii).
+
+**Panoul este în română integral.** Traducerea oficială `@payloadcms/translations`
+acoperă interfața; trei șiruri ale ei foloseau sedila și unul avea substituenții
+traduși (deci nu se completa) — sunt corectate în `src/payload.config.ts`.
+`pnpm verify:faza2` verifică automat că **niciun** câmp nu rămâne fără etichetă
+scrisă de noi (Payload i-ar genera una în engleză din numele câmpului).
+
+**Stocarea fișierelor:** Vercel Blob când există `BLOB_READ_WRITE_TOKEN`, altfel disc
+local în `public/media/` (gitignorat). Comutarea se face doar în `payload.config.ts`.
+
+**Sincronizarea prețurilor cu Stripe** — `src/lib/stripe.ts` + hook `afterChange` pe
+`packages`. Idempotentă (compară suma cu Price-ul activ înainte de a atinge Stripe),
+creează un Price nou și îl arhivează pe cel vechi (prețurile Stripe sunt imutabile) și
+**nu blochează salvarea** dacă Stripe e indisponibil sau cheia lipsește — pachetul
+rămâne marcat „Nesincronizat". Fără cheie, azi, ramura normală este exact aceasta.
+
+**Revalidarea** — `src/hooks/revalidate.ts`. Payload rulează în același proces cu Next,
+deci hook-urile cheamă direct `revalidatePath`. De asta **nu** există `/api/revalidate`
+cu secret: ruta aceea are rost doar cu CMS-ul găzduit separat.
+
+#### Conectarea cu conținutul — cum funcționează îmbinarea
+
+`src/lib/content.ts` a rămas singurul loc care știe de unde vine conținutul, iar
+semnătura funcțiilor nu s-a schimbat. Regula de îmbinare:
+
+> **CMS-ul are întâietate, dar numai unde chiar a fost completat.** Orice câmp gol,
+> `null` sau listă goală cade pe `src/content/`, adică pe textul verificat nod-cu-nod
+> față de designul aprobat.
+
+Nu e o precauție teoretică: un global Payload se creează cu toate câmpurile `null`, iar
+fără regula asta prima secțiune neatinsă ar goli pagina. Cel mai rău caz — baza de date
+oprită, CMS gol, migrare pe jumătate — dă exact pagina din design. Verificat: cu
+`DATABASE_URI` gol, `getPayloadClientSafe()` întoarce `null`, build-ul trece și pagina
+se randează din fallback.
+
+`src/content/home.ts` și `src/content/site.ts` **nu se șterg.** Sunt și fallback-ul, și
+sursa din care seed-ul populează CMS-ul — de aceea textele nu pot devia unul de altul.
+
+#### Seed
+
+`pnpm seed`, idempotent, construit **din** `src/content/`. Populează 4 categorii,
+6 întrebări (cu tabelul comparativ), 3 pachete, 3 articole, cele trei globals și, la
+prima rulare, contul de administrator (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; fără
+ele generează o parolă aleatoare și o afișează o dată).
+
+Două lucruri sunt intenționat **ascunse**, ca pagina să rămână identică cu designul:
+
+- **pachetele au `active: false`** — numele și prețurile nu sunt decise (§7.1). Câtă
+  vreme sunt ascunse, cardurile afișează placeholderele din design, `[ Nume pachet ]`
+  și `[ 000 ] EUR`. Prima bifă „Vizibil pe site" le aduce în pagină.
+- **articolele sunt ciorne** — titlurile și rezumatele vin din design, textul nu a fost
+  livrat. Ciornele nu sunt publice, deci secțiunea Blog rămâne cea aprobată.
+
+Pachetele și articolele se creează o singură dată (`createOnly`): a doua rulare nu
+suprascrie ce a început clienta să completeze.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
 
-### Faza 2 — Payload CMS ⏳ **următorul pas recomandat**
-
-Nu depinde de UI. Are nevoie de `DATABASE_URI` (Postgres **pooled**),
-`PAYLOAD_SECRET`, `BLOB_READ_WRITE_TOKEN`.
-
-Nimic din Payload nu e instalat: fără `payload.config.ts`, fără colecții, fără
-`src/app/(payload)/`. Grupul `(frontend)` există deja tocmai ca `(payload)` să poată fi
-adăugat alături, cu layout propriu.
-
-De făcut, în ordine (spec: `../03-PROMPT-CLAUDE-CODE.md` §4):
-
-1. Instalare `payload@3.88.0`, `@payloadcms/next`, `@payloadcms/db-postgres`,
-   `@payloadcms/richtext-lexical`, `@payloadcms/storage-vercel-blob` — toate `3.88.0` fix
-2. Colecții: `users`, `media`, `posts`, `categories`, `packages`, `faqs`, `orders`,
-   `submissions`. **Toate etichetele în română.**
-3. Globals: `site-settings`, `home-page`, `about-page`
-4. Hook `afterChange` pe `packages` → sincronizare preț cu Stripe, idempotent
-5. `pnpm seed` idempotent
-6. **Mutarea resolverelor** — vezi mai jos
-
-> #### Punctul exact de conectare cu Payload
->
-> `src/lib/content.ts` conține `getSiteSettings()` și `getHomeContent()`, ambele
-> `async` **special ca semnătura să nu se schimbe**. Componentele nu știu de unde vine
-> conținutul. La faza 2 se schimbă doar corpul lor:
->
-> ```ts
-> const payload = await getPayload({ config })
-> const home = await payload.findGlobal({ slug: 'home-page' })
-> return mergeWithFallback(home, homeContent)   // homeContent rămâne fallback
-> ```
->
-> `src/content/home.ts` și `src/content/site.ts` **nu se șterg** — rămân valorile de
-> rezervă din designul aprobat, pentru câmpurile necompletate în CMS.
-> Tipurile din `src/content/types.ts` sunt contractul; ele nu se schimbă.
-
-### Faza 3b — Paginile interioare ⏳
+### Faza 3b — Paginile interioare ⏳ **următorul pas recomandat**
 
 Nu există: `/despre`, `/servicii`, `/servicii/[slug]`, `/blog`, `/blog/[slug]`,
 `/blog/categorie/[slug]`, `/contact`, `/multumim`, `/comanda-anulata` și cele patru
@@ -242,14 +310,28 @@ pagini legale.
 `src/content/site.ts`: `nav`, `mobileNav`, `footerNav`. Astăzi sunt `#despre`,
 `#servicii`, `#blog`, `#cta` pentru că demo-ul aprobat e o pagină unică.
 
+Datele există deja: colecțiile `posts`, `categories`, `packages` și globalul
+`about-page` sunt populate și tipate (`src/payload-types.ts`). Se adaugă resolvere
+noi în `src/lib/content.ts`, după același tipar de îmbinare cu fallback, și rutele
+de invalidare din `src/hooks/revalidate.ts` sunt deja scrise pentru `/blog`,
+`/blog/[slug]`, `/servicii`, `/servicii/[slug]` și `/despre`.
+
+Un detaliu care așteaptă acolo: `mergeHome()` lasă azi `blog.posts` pe valorile din
+design, cu un comentariu explicit. Când apar paginile de blog, se citesc din `posts`.
+
 Formularul de contact: Zod pe client și pe server, honeypot + rate limiting,
-**fără reCAPTCHA**.
+**fără reCAPTCHA**. Colecția `submissions` există deja, cu `create` închis prin API —
+ruta o va scrie cu `overrideAccess`.
 
 ### Faza 4 — Stripe ⏳
 
-Nimic. `/api/stripe/checkout`, `/api/stripe/webhook`, emailurile Resend.
-Două capcane semnalate în prompt: **idempotența webhook-ului** pe `stripeSessionId`
-(Stripe reîncearcă) și citirea prețului **doar pe server**.
+Lipsesc `/api/stripe/checkout`, `/api/stripe/webhook` și emailurile Resend. Există
+deja: clientul Stripe (`src/lib/stripe.ts`), sincronizarea prețurilor, colecția
+`orders` cu `stripeSessionId` **unic la nivel de bază de date** — cheia de idempotență
+a webhook-ului, pentru că Stripe reîncearcă livrarea evenimentelor — și câmpurile
+`packageNameSnapshot` / `amount`, copii, nu relații live.
+
+Prețul se citește **doar pe server**, din `packages.price`, niciodată din client.
 
 ### Faza 5b — SEO pentru restul site-ului ⏳
 
@@ -286,6 +368,10 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | Cele 6 `<details>` din FAQ, închise în HTML-ul livrat | ✅ ca în design |
 | Hidratare pe build de producție (meniu mobil, bară de consimțământ) | ✅ |
 | **Comparație vizuală cu designul aprobat, 375 / 768 / 1440** | ✅ vezi mai jos |
+| `pnpm verify:faza2` — cele 4 criterii din prompt + 6 verificări de acces | ✅ 10/10 |
+| `pnpm seed` rulat de trei ori la rând | ✅ zero duplicate, zero suprascrieri |
+| Migrație aplicată pe bază de date curată, apoi seed | ✅ |
+| **Pagina randată din CMS vs. pagina din fallback** | ✅ HTML identic, vezi mai jos |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -323,16 +409,42 @@ opacitate; în design au culoarea normală a textului. Componenta `Placeholder` 
 impune culoare — moștenește, deci arată corect și în bara de jos, unde fundalul e
 închis.
 
+### ✅ CMS-ul nu schimbă pagina aprobată — verificat prin diff
+
+Riscul real al fazei 2 nu e ca ceva să nu meargă, ci ca pagina verificată la px să se
+schimbe pe tăcute. Verificarea: două build-uri de producție, unul cu `DATABASE_URI`
+setat (conținut din Payload) și unul cu el gol (conținut din `src/content/`), apoi
+diff pe HTML-ul livrat de `/`.
+
+**Rezultat: HTML vizibil identic, text identic (9621 de caractere).** Singurele
+diferențe sunt blocurile `self.__next_f.push(...)`, adică payload-ul RSC de hidratare,
+pe care React îl împarte altfel de la un build la altul, plus atributul `crossorigin`
+pus inconsecvent pe un `<script>`.
+
+Testul a și găsit o regresie, înainte de a fi comisă: globalul modela titlul din hero
+pe **două** rânduri (`heroHeadlineLine1/2`, cum sugera promptul §4.2), iar designul are
+**trei**. Randarea din CMS pierdea rândul „ce ai de făcut.". Câmpul a devenit o listă
+cu `minRows: 3, maxRows: 3` — numărul de rânduri e parte din design, nu preferință.
+
+Reproducere:
+
+```bash
+pnpm build && pnpm start -p 3210          # cu baza de date
+DATABASE_URI="" pnpm build && DATABASE_URI="" pnpm start -p 3211
+# apoi curl pe ambele și diff, ignorând <script>self.__next_f.push(...)</script>
+```
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
 
-Din brief §13. Toate se completează dintr-un singur loc: `src/content/site.ts`
-(→ ulterior globalul Payload `site-settings`).
+Din brief §13. **Toate se completează acum din panoul de administrare**, fără cod și
+fără redeploy: globalul `site-settings` pentru datele de contact și firmă, colecția
+`packages` pentru pachete. Valorile din `src/content/site.ts` rămân doar ca rezervă.
 
 | # | Element | Cum se manifestă în cod acum | Blochează |
 |---|---|---|---|
-| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Cele 3 carduri randează `[ Nume pachet ]`, `[ 000 ] EUR`. Structura e finală. | Faza 4 (Stripe), pagina Servicii |
+| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Cardurile randează placeholderele din design. Se completează în admin și se bifează „Vizibil pe site". | Faza 4 (Stripe), pagina Servicii |
 | 2 | **Portret profesional** | Se folosește `public/images/adriana-portret.jpg` din pachetul de design. `ImageSlot` fixează raportul → CLS 0 la înlocuire. | Calitatea hero-ului |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
 | 4 | Email, telefon | Footerul afișează `[ email ]`, `[ telefon ]` | Contact, schema |
@@ -340,10 +452,13 @@ Din brief §13. Toate se completează dintr-un singur loc: `src/content/site.ts`
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
 | 7 | Regim TVA, PFA sau SRL | — | Configurarea Stripe |
 | 8 | Cont Stripe | — | Faza 4 |
-| 9 | GA4 + Search Console | `NEXT_PUBLIC_GA4_ID` gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
+| 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
 | 10 | Validare juridică a paginilor legale | — | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
+| 12 | **Textul celor 3 articole de lansare** | Titlurile, rezumatele și categoriile din design sunt în CMS, ca **ciorne**; corpul e `[ DE COMPLETAT ]` | Pagina de blog, RSS |
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
+| 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile s-ar pierde la fiecare deploy** | Încărcarea de imagini în producție |
+| 15 | **Postgres pentru producție** (Neon / Vercel Postgres, string POOLED) | Local rulează în Docker. Producția are nevoie de o bază proprie și de `pnpm build:deploy` ca build command | Deploy |
 
 > ### ⚠️ Decizie deschisă: crawlerele AI
 >
@@ -369,6 +484,10 @@ Din brief §13. Toate se completează dintr-un singur loc: `src/content/site.ts`
 Chunk-ul de polyfill-uri (39 KB gz) are `noModule` — browserele moderne nu îl descarcă
 și nu intră în calcul.
 
+**Payload nu a schimbat cifra.** Panoul trăiește în grupul `(payload)`, cu layout
+rădăcină propriu; JS-ul lui nu ajunge niciodată într-o pagină publică. Nici stratul de
+conținut nu adaugă nimic: `src/lib/content.ts` rulează exclusiv pe server.
+
 ~126 KB din 142 sunt podeaua Next 16 + React 19 cu App Router. **Nu se optimizează** —
 ar cere renunțarea la App Router. Ori se ajustează bugetul la ~150 KB, ori se
 reevaluează stack-ul. Nu blochează Lighthouse Performance (scripturile sunt `async`,
@@ -386,7 +505,7 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Cinci, toate documentate în cod prin comentarii:
+Nouă, toate documentate în cod prin comentarii:
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -414,6 +533,29 @@ Cinci, toate documentate în cod prin comentarii:
    element ar însemna sute de instanțe și un `use client` pe fiecare secțiune.
    Rezultatul vizual e identic; costul în JS pe browsere moderne e zero.
 
+6. **Titlul din hero este o listă, nu `heroHeadlineLine1/2`** (`src/globals/HomePage.ts`).
+   Promptul §4.2 numea două câmpuri; designul are **trei** rânduri, fiecare cu animația
+   lui. Am ales lista, cu `minRows: 3, maxRows: 3`. Designul e lege și bate literatura
+   promptului. Fără corecție, randarea din CMS pierdea un rând — vezi §6.
+
+7. **Revalidare în proces, fără `/api/revalidate`** (`src/hooks/revalidate.ts`).
+   Promptul §2 prevedea o rută cu `REVALIDATE_SECRET`. Payload rulează însă în același
+   proces cu Next, deci hook-urile cheamă direct `revalidatePath`: o rută HTTP cu secret
+   ar fi un ocol prin rețea către propriul proces. Variabila rămâne în `.env.example`,
+   marcată nefolosită, pentru cazul în care CMS-ul se mută pe alt host.
+
+8. **Pachetele și articolele intră ascunse** (`src/seed/index.ts`).
+   Promptul cerea trei pachete seed cu text `[ DE COMPLETAT ]`. Vizibile, ar fi înlocuit
+   placeholderele din designul aprobat (`[ Nume pachet ]`) cu marcajul nostru de lucru,
+   adică o regresie vizuală. Intră cu `active: false`, respectiv ca ciorne; conținutul e
+   acolo, în admin, dar pagina rămâne cea aprobată până când cineva le publică.
+
+9. **Tabelul comparativ din FAQ este editabil în CMS** (`src/collections/Faqs.ts`).
+   Promptul descria `faqs` cu `question` / `answer` / `page` / `order`. Designul are
+   însă un tabel comparativ pe una dintre întrebări, iar acela e fragmentul cel mai
+   citabil din pagină pentru AEO. L-am modelat ca grup opțional; resolverul îl afișează
+   doar dacă are titlu, coloane și rânduri complete pe toate coloanele.
+
 De asemenea: ancorele din navigație reproduc demo-ul aprobat, care este o pagină unică.
 Se înlocuiesc cu rutele reale la faza 3b.
 
@@ -432,6 +574,14 @@ Se înlocuiesc cu rutele reale la faza 3b.
 | Etichetele mici, cu ~3px mai înalte decât în design | Preflight-ul Tailwind pune `line-height: 1.5` pe `html`; resetul designului nu pune nimic, deci tot ce moștenește rulează pe `normal` | `line-height: normal` pe `html`. Nu pune `line-height` pe tokenii de etichetă: designul n-are niciunul |
 | Link-uri de text mai înalte decât în design | Tokenii `text-body*` aduc `line-height: 1.8`, corect pentru paragrafe, greșit pentru linkuri | `TextLink` are deja `leading-[normal]`. Nu-l adăuga la fiecare apel |
 | CLAUDE.md apare modificat după `next dev` | Next adaugă singur blocul `nextjs-agent-rules` | Se comite odată cu restul; se dezactivează cu `agentRules: false` în `next.config.ts` |
+| `ERR_REQUIRE_ASYNC_MODULE` la orice comandă `payload ...` | Fără `"type": "module"`, tsx transpilează `payload.config.ts` ca CommonJS, iar `@payloadcms/richtext-lexical` are top-level await | `"type": "module"` în `package.json` |
+| `Cannot find package '@payloadcms/translations'` | Pachetul e dependență tranzitivă a `payload`; pnpm nu îl expune la rădăcină | Declarat ca dependență directă, fixat pe `3.88.0` |
+| Migrațiile cad cu `does not provide an export named 'MigrateDownArgs'` | Generatorul Payload scrie tipurile ca import de **valoare**, iar ESM le caută la rulare | `pnpm migrate:fix` după fiecare `migrate:create`. Rulează automat și în `pnpm build:deploy` |
+| Hook `afterChange` care scrie înapoi în document cade cu 404 la **creare** | Update-ul rula în afara tranzacției de creare, deci documentul încă nu exista | Se pasează `req` la `payload.update` — intră în aceeași tranzacție. Vezi `src/collections/Packages.ts` |
+| Hook care scrie înapoi → buclă infinită | `update` declanșează din nou `afterChange` | `context: { skipStripeSync: true }`, verificat la intrarea în hook. În plus, nu se scrie deloc dacă valorile n-ar schimba nimic |
+| `pnpm seed` pare blocat, fără niciun mesaj | După o schimbare de schemă, `push` din drizzle pune o întrebare interactivă (coloană creată sau redenumită?) și așteaptă la `stdin` | Rulează comanda fără pipe, ca să vezi întrebarea; sau resetează baza locală și aplică migrațiile: e oricum calea din producție |
+| Erori TS pe `importMap.js` | Fișierul e generat ca JavaScript, iar `allowJs` e `false` (regula 8) | `src/app/(payload)/admin/importMap.d.ts`, scris de mână. Generatorul atinge doar `.js`-ul de alături |
+| Panoul de admin nu autentifică pe alt host decât cel din `serverURL` | Nu e un bug al site-ului: cu un token pus manual pe cookie, Payload refuză. Autentificarea normală, prin formular, nu e afectată | Deschide adminul pe hostul din `NEXT_PUBLIC_SITE_URL`. Vezi și capcana cu `localhost` de mai sus |
 
 ---
 
@@ -441,30 +591,50 @@ Se înlocuiesc cu rutele reale la faza 3b.
 adriana-chira-repo/
 ├─ design/
 │  ├─ homepage-approved.html      ← NU se șterge, NU se modifică
-│  └─ compare/                   ← harnessul de comparație vizuală (§6)
+│  └─ compare/                    ← harnessul de comparație vizuală (§6)
+├─ docker-compose.yml             ← Postgres local
 ├─ public/images/adriana-portret.jpg
+├─ public/media/                  ← fișiere încărcate, gitignorat
+├─ scripts/
+│  ├─ verify-faza2.ts             ← verificările de acceptanță (pnpm verify:faza2)
+│  └─ fix-migration-imports.mjs   ← vezi §10
 ├─ src/
 │  ├─ app/
 │  │  ├─ globals.css               ← TOȚI tokenii, în @theme
 │  │  ├─ fonts.ts
 │  │  ├─ robots.ts                 ← la rădăcină, nu în grup
-│  │  └─ (frontend)/
-│  │     ├─ layout.tsx             ← layout rădăcină
-│  │     ├─ page.tsx               ← homepage
-│  │     ├─ not-found.tsx
-│  │     ├─ [...notFound]/page.tsx
-│  │     ├─ sitemap.ts
-│  │     ├─ llms.txt/route.ts
-│  │     └─ opengraph-image.tsx
+│  │  ├─ (frontend)/
+│  │  │  ├─ layout.tsx             ← layout rădăcină al site-ului
+│  │  │  ├─ page.tsx               ← homepage
+│  │  │  ├─ not-found.tsx
+│  │  │  ├─ [...notFound]/page.tsx
+│  │  │  ├─ sitemap.ts
+│  │  │  ├─ llms.txt/route.ts
+│  │  │  └─ opengraph-image.tsx
+│  │  └─ (payload)/                ← generat de Payload, nu se editează manual
+│  │     ├─ layout.tsx             ← layout rădăcină al panoului
+│  │     ├─ admin/[[...segments]]/ + importMap.js · importMap.d.ts
+│  │     └─ api/{[...slug],graphql,graphql-playground}/
+│  ├─ access/                      ← regulile de acces, într-un singur loc
+│  ├─ collections/                 Posts · Categories · Packages · Faqs
+│  │                               Media · Orders · Submissions · Users
+│  ├─ globals/                     SiteSettings · HomePage · AboutPage
+│  ├─ fields/                      slug.ts · seo.ts · section.ts
+│  ├─ hooks/                       revalidate.ts
+│  ├─ migrations/                  ← schema pentru producție
+│  ├─ seed/index.ts                ← pnpm seed
 │  ├─ components/{layout,sections,ui,consent,seo}/
-│  ├─ content/                     types.ts · site.ts · home.ts
-│  └─ lib/                         content.ts · consent.ts · schema.ts · cn.ts
+│  ├─ content/                     types.ts · site.ts · home.ts  ← fallback ȘI sursa seed-ului
+│  ├─ lib/                         content.ts · payload.ts · stripe.ts · lexical.ts
+│  │                               consent.ts · schema.ts · cn.ts
+│  ├─ payload.config.ts
+│  └─ payload-types.ts             ← generat, se comite
 ├─ README.md                       ← prezentare pentru echipă
 └─ STATUS.md                       ← acest fișier
 ```
 
-Directoare care **vor** apărea la faza 2: `src/app/(payload)/`, `src/collections/`,
-`src/globals/`, `src/emails/`, `src/payload.config.ts`.
+Directoare care **vor** apărea la fazele următoare: `src/emails/`,
+`src/app/api/{stripe,contact}/`.
 
 ---
 
@@ -472,10 +642,14 @@ Directoare care **vor** apărea la faza 2: `src/app/(payload)/`, `src/collection
 
 1. Rulează verificările fazei din `../03-PROMPT-CLAUDE-CODE.md`.
 2. `pnpm build && pnpm typecheck` — ambele trebuie să treacă curat.
-3. `grep -rn "ş\|ţ" src/` — zero rezultate.
-4. **Actualizează acest fișier:** mută ce ai făcut din §5 în §4, actualizează data și
+3. `grep -rn "ş\|ţ" src/ scripts/` — zero rezultate.
+4. Dacă ai atins schema: `pnpm generate:types`, `pnpm migrate:create <nume>`,
+   `pnpm migrate:fix`, apoi `pnpm seed` de două ori la rând.
+5. Dacă ai atins UI-ul sau stratul de conținut: refă diff-ul CMS ↔ fallback din §6.
+   Costă două build-uri și prinde exact regresia pe care n-o vezi cu ochiul.
+6. **Actualizează acest fișier:** mută ce ai făcut din §5 în §4, actualizează data și
    commit-ul din antet, adaugă în §10 orice capcană nouă pe care ai rezolvat-o.
-5. Commit mic, cu mesaj descriptiv în română.
+7. Commit mic, cu mesaj descriptiv în română.
 
 ---
 
