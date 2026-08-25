@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-url'
 import type { SiteSettings } from './types'
 
 /**
@@ -11,7 +12,7 @@ export const siteSettings: SiteSettings = {
   siteName: 'Adriana Chira',
   role: 'Consultant în Performanță Umană',
   tagline: 'Claritate înainte de decizie.',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://adrianachira.ro',
+  url: SITE_URL,
   locale: 'ro-RO',
 
   email: null, // [ DE CONFIRMAT ] brief §13.4

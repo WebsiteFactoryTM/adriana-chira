@@ -8,14 +8,13 @@ import { PageLight } from '@/components/ui/PageLight'
 import { RevealFallback } from '@/components/ui/RevealFallback'
 import { buildConsentBootstrap } from '@/lib/consent'
 import { getSiteSettings } from '@/lib/content'
+import { SITE_URL } from '@/lib/site-url'
 import { graph, personSchema } from '@/lib/schema'
 import { display, sans } from '../fonts'
 import '../globals.css'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://adrianachira.ro'
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Adriana Chira · Consultant în Performanță Umană',
     template: '%s · Adriana Chira',
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
   description:
     'Consultant în performanță umană. Lucrez cu antreprenori, profesioniști independenți și afaceri de familie pentru claritate în deciziile dificile.',
   applicationName: 'Adriana Chira',
-  authors: [{ name: 'Adriana Chira', url: siteUrl }],
+  authors: [{ name: 'Adriana Chira', url: SITE_URL }],
   creator: 'Adriana Chira',
   publisher: 'Adriana Chira',
   formatDetection: { email: false, address: false, telephone: false },
@@ -32,7 +31,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ro_RO',
     siteName: 'Adriana Chira',
-    url: siteUrl,
+    url: SITE_URL,
   },
   twitter: { card: 'summary_large_image' },
   robots: {

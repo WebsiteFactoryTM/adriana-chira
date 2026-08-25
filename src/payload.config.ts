@@ -19,6 +19,7 @@ import { Users } from '@/collections/Users'
 import { AboutPage } from '@/globals/AboutPage'
 import { HomePage } from '@/globals/HomePage'
 import { SiteSettings } from '@/globals/SiteSettings'
+import { siteUrlOr } from '@/lib/site-url'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -64,7 +65,7 @@ const storagePlugins = blobToken
   : []
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  serverURL: siteUrlOr('http://localhost:3000'),
   secret: process.env.PAYLOAD_SECRET ?? '',
 
   admin: {
