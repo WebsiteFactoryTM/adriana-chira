@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Button } from '@/components/ui/Button'
+import { HeroField } from '@/components/ui/HeroField'
 import { ImageSlot } from '@/components/ui/ImageSlot'
 import { Section, Shell } from '@/components/ui/Section'
 import type { HeroContent } from '@/content/types'
@@ -10,6 +11,11 @@ const LINE_DELAY = 110
 export function Hero({ content }: { content: HeroContent }) {
   return (
     <Section id="hero" padding="none" aura="hero" className="pt-[clamp(4rem,11vh,9rem)] pb-[clamp(5rem,10vw,8rem)]">
+      {/* Fundalul care se mișcă în timp. Se poziționează față de secțiune, care
+          e deja `relative isolate` din cauza aurei. Stă la `z-index: -1`, sub
+          conținut; `Shell` are `z-[1]`, deci nu se poate suprapune peste text. */}
+      <HeroField />
+
       <Shell className="relative z-[1] grid grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))] items-end gap-[clamp(40px,6vw,96px)]">
         <div>
           <p

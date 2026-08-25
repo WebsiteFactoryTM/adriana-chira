@@ -894,222 +894,485 @@ details[open] summary [data-plus] {
 }
 
 /* ==========================================================================
-   VOALUL — obiectul care rămâne cu cititorul
-   Vezi `src/components/ui/Veil.tsx` pentru ce este, ce nu este și de ce stă
-   jos-stânga. Al treilea strat care nu vine din designul aprobat; fiind
-   `position: fixed`, nu mută niciun nod de text.
+   CÂMPUL HEROULUI — fundalul care se mișcă în timp
+   Vezi `src/components/ui/HeroField.tsx` pentru ce este și de ce arată așa.
+   Al treilea strat care nu vine din designul aprobat; `position: absolute`,
+   `z-index: -1`, deci nu mută niciun nod de text.
+
+   Trei straturi, în ordinea în care se pictează:
+     corpuri de lumină  → temperatura (hârtia pare luminată dintr-o parte)
+     voaluri de mătase  → mișcarea    (lumina alunecă pe suprafață)
+     inele de aur       → structura   (ochiul are ce urmări)
 
    Patru reguli care nu se încalcă:
-   1. Trece peste conținut, deci trebuie să rămână MIC și în bandă de margine.
-      Lumina paginii poate fi mare pentru că stă dedesubt; voalul nu poate.
-   2. `pointer-events: none`, mereu. Nu are voie să fure un click.
-   3. Nu concurează cu bara de consimțământ și nici cu meniul deschis: se
-      retrage, prin `:has()` pe body, fără niciun ascultător de evenimente.
-   4. Duratele mișcărilor n-au numitor comun (13s / 19s / 31s). Dacă s-ar
-      sincroniza, ochiul ar prinde un puls, iar pulsul e ceas, nu prezență.
+   1. Nimic nu ajunge nicăieri. Voalurile se rotesc, corpurile derivă, inelele
+      își plimbă lumina pe circumferință — dar niciun element nu traversează
+      ecranul și nu se oprește undeva. Un fundal cu destinație devine film, iar
+      filmul cere să fie privit până la capăt.
+   2. Suprafețele mari au plafon de aur, firele nu. Un voal de 900px la 10%
+      aur mută luminanța hârtiei; un fir de 1.25px la 60% nu o mută deloc.
+      De aceea inelele au voie să fie clar vizibile, iar voalurile nu.
+   3. Sub banda de etichete, tot stratul e stins. Acolo stau singurele texte
+      din pagină fără marjă peste AA (`--ac-ink-50` la 11px, 4.64:1). Masca
+      din `[data-hero-field]` e regula asta făcută vizibilă.
+   4. Durate prime, toate diferite (71/89/101s corpurile, 149/191/233s
+      voalurile, 163/211s inelele). Dacă s-ar sincroniza, ochiul ar prinde un
+      puls, iar pulsul e ceas.
    ========================================================================== */
 
 :root {
-  --ac-veil-size: clamp(84px, 9vw, 132px);
-  /* Regulator global. `0` stinge voalul pe tot site-ul, dintr-un singur loc. */
-  --ac-veil-gain: 1;
-}
-
-[data-veil] {
-  position: fixed;
+  /* Raza de bază a unui corp de lumină. Scalează cu ecranul: pe telefon
+     rămâne lumină, nu spălare de fundal. */
+  --ac-hero-field-size: clamp(320px, 44vw, 760px);
+  /* Diametrul de bază al unui voal și al unui inel. */
+  --ac-hero-veil-size: clamp(360px, 54vw, 940px);
+  --ac-hero-ring-size: clamp(340px, 55vw, 960px);
+  /* Raza firului, în procente din caseta inelului. Nu 100%: sub și peste fir
+     stă haloul, iar haloul are nevoie de ~26px de fiecare parte. */
+  --ac-hero-ring-r: 88%;
+  /* Cât de departe bate haloul, în px, de o parte și de alta a firului. */
+  --ac-hero-ring-glow: 26px;
+  /* Grosimea firului de aur. Fixă în px, la orice ecran: un hairline care
+     scalează cu viewportul încetează să mai fie hairline. */
+  --ac-hero-ring-width: 1.25px;
+  /* Regulator global. `0` stinge tot câmpul dintr-un singur loc. */
+  --ac-hero-field-gain: 1;
   /*
-    Iese 45% din cadru. Nu e compromis, e singura soluție care ține la orice
-    lățime: gutterul coloanei de text are 24–88px, iar voalul 84–132px, deci
-    nu încape niciodată întreg în margine. Așezat complet în pagină, ar sta
-    peste începutul rândurilor, iar `backdrop-filter` ar înceța exact primele
-    cuvinte — măsurat, intra ~100px în coloană la 1440px.
-
-    Așa, partea vizibilă (~55% din corp) se termină la marginea gutterului:
-    la 1440px, 71.5px față de textul care începe la 72px. Ultimii pixeli sunt
-    oricum stinși de mască, deci pe niciun ecran nu ajunge cerneală de voal
-    peste o literă. În plus, un corp care intră pe după marginea paginii
-    citește ca ceva care plutește pe lângă tine, nu ca un obiect pus în colț.
+    Tinta caldă: aur încălzit cu miez, nu aur curat. Două motive.
+    (1) Contrast: la aceeași cantitate de „cald" scade luminanța hârtiei mult
+    mai puțin — vezi tabelul de la lumina paginii. (2) Banding: un gradient
+    care trece din alb-cald direct în aur pur schimbă și nuanța, nu doar
+    opacitatea, iar saltul de nuanță se vede ca inel pe fundal plat.
   */
-  left: calc(var(--ac-veil-size) * -0.45);
-  bottom: clamp(18px, 7vh, 84px);
-  width: var(--ac-veil-size);
-  height: var(--ac-veil-size);
-  /* Sub textura de hârtie (46) și sub header (50), deci granulația paginii
-     trece peste el și îl integrează în material. Peste conținut, unde trebuie. */
-  z-index: 44;
+  --ac-hero-warm: color-mix(in srgb, var(--ac-accent) 52%, var(--ac-aura-core));
+}
+
+[data-hero-field] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
-  opacity: var(--ac-veil-gain);
+  /* Taie straturile la marginile heroului ȘI scutește pictarea cât e în afara
+     ecranului. Fără el, lumina ar curge în secțiunea următoare — și, mai
+     important, inelele s-ar vedea întregi. Un cerc întreg pe fundal devine
+     logo; unul tăiat de cadru rămâne arc de lumină care trece prin ecran. */
+  contain: paint;
+  opacity: var(--ac-hero-field-gain);
+  /*
+    Masca. Nu e decor, e regula de contrast făcută vizibilă: în treimea de jos
+    a heroului stau singurele texte din pagină fără marjă peste AA — cele trei
+    etichete de sub butoane și legenda portretului, `--ac-ink-50` la 11px, la
+    4.64:1, adică 0.14 peste prag. Câmpul se stinge complet înainte de ele,
+    deci pe acele litere nu ajunge nici aur, nici fir, în niciun moment al
+    mișcării. Stinsul e lung (50% → 92%), ca să citească drept lumină care
+    vine de sus, nu drept margine tăiată.
+  */
+  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, #00000075 72%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, #00000075 72%, transparent 92%);
 }
 
-/* Plutirea legată de derulare: voalul rătăcește prin banda lui pe măsură ce
-   cititorul coboară. Nu urcă și nu coboară monoton — ar citi ca un indicator
-   de progres, iar ăsta nu e rolul lui. */
-@supports (animation-timeline: scroll()) {
-  [data-veil] {
-    animation: acVeilRide linear both;
-    /* DUPĂ scurtătură — altfel scurtătura le resetează. Vezi STATUS §10. */
-    animation-timeline: scroll(root block);
-    animation-range: 0% 100%;
-  }
+/*
+  Granulația. Un strat static de zgomot fin peste tot câmpul, la ~5%.
+  Face două lucruri, amândouă necesare:
+  (1) Rupe banding-ul. Voalurile și corpurile trăiesc în doi-trei pași de
+      cuantizare pe 8 biți; fără granulație, tranzițiile lor lungi se văd ca
+      inele concentrice desenate pe hârtie.
+  (2) Dă textură de hârtie. Fundalul e crem cald — fără granulă arată ca un
+      ecran, cu ea arată ca o coală. E singura parte a compoziției care NU se
+      mișcă, și tocmai de asta ancorează restul.
+*/
+[data-hero-field]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
-/* Pe verticală rătăcește cât vrea. Pe orizontală, NICIODATĂ spre dreapta:
-   toate valorile sunt ≤ 0. Așa, garanția de mai sus — voalul nu ajunge peste
-   coloana de text — rămâne valabilă în orice punct al derulării, nu doar în
-   repaus. Dacă cineva pune aici o valoare pozitivă, o strică. */
-@keyframes acVeilRide {
-  0% {
-    translate: 0 4vh;
-  }
-  28% {
-    translate: -1.5vw -5vh;
-  }
-  55% {
-    translate: -0.5vw 4vh;
-  }
-  80% {
-    translate: -2vw -3vh;
-  }
-  100% {
-    translate: 0 -7vh;
-  }
-}
+/* --------------------------------------------------------------------------
+   1. CORPURILE DE LUMINĂ — temperatura
+   -------------------------------------------------------------------------- */
 
-/* Corpul: plutire lentă și respirație. Pe alt element decât cursa de mai sus,
-   ca să nu se bată pe `translate`. */
-[data-veil-body] {
-  position: relative;
-  width: 100%;
-  height: 100%;
+[data-hero-mass] {
+  display: block;
+  position: absolute;
+  left: var(--mx, 50%);
+  top: var(--my, 50%);
+  width: calc(var(--ac-hero-field-size) * var(--ms, 1));
+  aspect-ratio: 1;
+  /* Centrare din margini negative, nu din `translate`: `translate` e rezervat
+     derivei, iar `scale` respirației. Două proprietăți separate se compun
+     fără să se suprascrie — vezi aceeași soluție la lumina paginii. */
+  margin-left: calc(var(--ac-hero-field-size) * var(--ms, 1) * -0.5);
+  margin-top: calc(var(--ac-hero-field-size) * var(--ms, 1) * -0.5);
+  border-radius: 50%;
+  opacity: var(--mo, 0.5);
+  /*
+    Miez de lumină, halou cald — efecte opuse asupra contrastului: miezul
+    ridică luminanța hârtiei, haloul o scade.
+
+    UNSPREZECE STOPURI, NU PATRU, și asta e partea importantă. Un fundal atât
+    de palid trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere
+    de pantă în alfa se vede ca INEL desenat pe hârtie. Stopurile de mai jos
+    aproximează o cădere gaussiană (fiecare pas ~0.62 din precedentul) și
+    ajung la zero abia la 100%, deci nu există niciun punct în care panta se
+    schimbă brusc. Dacă rărești stopurile, inelul se întoarce.
+  */
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--ac-aura-core) calc(70% * var(--mk, 1)), transparent) 0%,
+    color-mix(in srgb, var(--ac-aura-core) calc(57% * var(--mk, 1)), transparent) 16%,
+    color-mix(in srgb, var(--ac-aura-core) calc(38% * var(--mk, 1)), transparent) 30%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(24% * var(--ma, 1)), transparent) 42%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(15.5% * var(--ma, 1)), transparent) 53%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(9.5% * var(--ma, 1)), transparent) 63%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(5.5% * var(--ma, 1)), transparent) 72%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(3% * var(--ma, 1)), transparent) 80%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(1.5% * var(--ma, 1)), transparent) 87%,
+    color-mix(in srgb, var(--ac-hero-warm) calc(0.6% * var(--ma, 1)), transparent) 93%,
+    transparent 100%
+  );
   animation:
-    acVeilBob 13s ease-in-out infinite,
-    acVeilBreath 19s ease-in-out infinite;
+    acHeroDrift var(--mdur, 71s) cubic-bezier(0.45, 0, 0.55, 1) infinite both,
+    acHeroSwell var(--msdur, 37s) ease-in-out infinite both;
+  animation-delay: var(--mdelay, 0s), var(--msdelay, 0s);
+  will-change: translate, scale;
 }
 
-@keyframes acVeilBob {
+/* Trei trasee diferite. Dacă toate trei ar merge pe același drum, ochiul ar
+   citi „o singură pată care se plimbă", nu aer în mișcare. Amplitudinile stau
+   sub ~9vw: peste, corpurile ies din hero și deriva devine vizibilă ca atare. */
+@keyframes acHeroDrift {
   0%,
   100% {
     translate: 0 0;
   }
-  50% {
-    translate: 0 -9px;
+  33% {
+    translate: 6vw 3.5vh;
+  }
+  66% {
+    translate: -4vw 6vh;
   }
 }
 
-@keyframes acVeilBreath {
+[data-hero-mass='b'] {
+  animation-name: acHeroDriftB, acHeroSwell;
+}
+
+@keyframes acHeroDriftB {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  30% {
+    translate: -5.5vw 5vh;
+  }
+  70% {
+    translate: -2vw -4vh;
+  }
+}
+
+[data-hero-mass='c'] {
+  animation-name: acHeroDriftC, acHeroSwell;
+}
+
+@keyframes acHeroDriftC {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  40% {
+    translate: 8vw -5vh;
+  }
+  75% {
+    translate: 3vw 4vh;
+  }
+}
+
+/* Respirația. Ușor neuniformă pe cele două axe: lumina care intră într-o
+   cameră nu se umflă egal, iar scalarea uniformă citește ca zoom. */
+@keyframes acHeroSwell {
   0%,
   100% {
     scale: 1 1;
   }
   50% {
-    /* Ușor turtit, nu scalat uniform: un corp moale nu se umflă egal. */
-    scale: 1.05 0.96;
+    scale: 1.14 1.08;
   }
 }
+
+/* --------------------------------------------------------------------------
+   2. VOALURILE — mișcarea
+   -------------------------------------------------------------------------- */
 
 /*
-  Pielea. Aici se produce senzația de corp:
+  DE CE ROTAȚIE, ȘI NU DERIVĂ. Deriva mută lumina dintr-un loc în altul —
+  ochiul o pierde, pentru că nu are muchie de urmărit. Rotația unui gradient
+  conic mută MUCHIA dintre sectoare de-a lungul unei curbe: se vede că
+  suprafața e vie, fără ca ceva să plece efectiv de undeva.
 
-  `backdrop-filter` refractă ce e în spate — singura tehnică prin care un strat
-  chiar pare materie, nu desen. Blur mic (8px), ca să se vadă că deformează,
-  nu că ascunde.
+  Măsurat la 1440px: sectorul luminos al voalului mare parcurge ~1.9°/s, adică
+  muchia lui trece prin dreptul unui punct fix în ~7 secunde. E de trei ori mai
+  mult decât deriva corpurilor și tocmai de asta se VEDE — dar tot atât de
+  lent încât nu poate fi urmărită ca obiect.
 
-  Lumina cade din stânga-sus: reflex rece-cald acolo, umbră caldă în
-  dreapta-jos, plus un inel subțire de margine. Toate trei sunt `inset`, deci
-  nu costă un al doilea nod.
+  Cusătura de la 0°/360° nu există: primul și ultimul stop sunt amândouă
+  transparente, deci gradientul se închide singur.
 */
-[data-veil-skin] {
+[data-hero-veil] {
+  display: block;
   position: absolute;
-  inset: 0;
-  backdrop-filter: blur(8px) saturate(118%);
-  -webkit-backdrop-filter: blur(8px) saturate(118%);
-  background: radial-gradient(
-    circle at 34% 30%,
-    color-mix(in srgb, var(--ac-aura-core) 30%, transparent) 0%,
-    color-mix(in srgb, var(--ac-aura-core) 13%, transparent) 42%,
-    color-mix(in srgb, var(--ac-accent) 9%, transparent) 74%,
-    color-mix(in srgb, var(--ac-accent) 15%, transparent) 100%
+  left: var(--vx, 50%);
+  top: var(--vy, 50%);
+  width: calc(var(--ac-hero-veil-size) * var(--vs, 1));
+  aspect-ratio: 1;
+  margin-left: calc(var(--ac-hero-veil-size) * var(--vs, 1) * -0.5);
+  margin-top: calc(var(--ac-hero-veil-size) * var(--vs, 1) * -0.5);
+  border-radius: 50%;
+  opacity: var(--vo, 0.5);
+  /*
+    Pânza: sectoare largi de cald și de miez, cu rampe lungi între ele.
+    Rampele sunt lungi din același motiv pentru care corpurile au unsprezece
+    stopuri — un sector conic cu muchie scurtă se vede ca felie de tort, nu
+    ca lumină pe mătase. Vârful de cald e 19%, iar cu opacitatea voalului
+    ajunge la ~10% efectiv pe hârtie: măsurat, `--ac-ink-50` la 11px rămâne
+    la 4.55:1, adică peste AA, chiar și cumulat cu un corp de lumină dedesubt.
+    Peste pragul ăsta nu se urcă fără să se refacă măsurătoarea.
+  */
+  background: conic-gradient(
+    from var(--vfrom, 0deg) at 50% 50%,
+    transparent 0%,
+    color-mix(in srgb, var(--ac-hero-warm) 10%, transparent) 8%,
+    color-mix(in srgb, var(--ac-hero-warm) 19%, transparent) 17%,
+    color-mix(in srgb, var(--ac-aura-core) 38%, transparent) 27%,
+    transparent 38%,
+    color-mix(in srgb, var(--ac-hero-warm) 13%, transparent) 50%,
+    color-mix(in srgb, var(--ac-hero-warm) 18%, transparent) 60%,
+    transparent 70%,
+    color-mix(in srgb, var(--ac-aura-core) 32%, transparent) 82%,
+    color-mix(in srgb, var(--ac-hero-warm) 11%, transparent) 92%,
+    transparent 100%
   );
-  box-shadow:
-    /* inelul de margine — subțire, cât să existe un contur de bulă */
-    inset 0 0 0 1px color-mix(in srgb, var(--ac-aura-core) 40%, transparent),
-    /* lumina din stânga-sus */ inset 10px 12px 26px
-      color-mix(in srgb, var(--ac-aura-core) 30%, transparent),
-    /* umbra caldă din dreapta-jos */ inset -12px -14px 30px
-      color-mix(in srgb, var(--ac-accent) 20%, transparent),
-    /* umbra proprie, care îl desprinde de pagină */ 0 16px 40px
-      color-mix(in srgb, var(--ac-ink) 9%, transparent);
-  /*
-    Marginea estompată. Fără ea, `backdrop-filter` se taie pe un cerc perfect
-    și obiectul citește ca o perlă — corp solid, cu contur de nasture. Un voal
-    n-are muchie: masca lasă refracția să se stingă spre margine, iar ce rămâne
-    e abur cu un contur abia sugerat.
-  */
-  mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 97%);
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 97%);
-  /*
-    Forma care se transformă. Un cerc perfect e un obiect fabricat; un corp
-    moale nu stă niciodată în aceeași formă. Durata (23s) e din nou primă față
-    de celelalte, ca să nu se sincronizeze.
-  */
-  border-radius: 58% 42% 47% 53% / 52% 46% 54% 48%;
-  animation: acVeilMorph 23s ease-in-out infinite;
+  /* Fără mască, discul conic are muchie perfect circulară — adică e obiect.
+     Stinsul radial îl transformă înapoi în lumină. */
+  mask-image: radial-gradient(
+    closest-side,
+    #000 0%,
+    #000000e0 26%,
+    #000000a8 44%,
+    #00000063 62%,
+    #00000029 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    #000 0%,
+    #000000e0 26%,
+    #000000a8 44%,
+    #00000063 62%,
+    #00000029 78%,
+    transparent 100%
+  );
+  animation:
+    acHeroSpin var(--vdur, 149s) linear infinite both,
+    acHeroVeilSwell var(--vsdur, 53s) ease-in-out infinite both;
+  animation-delay: var(--vdelay, 0s), var(--vsdelay, 0s);
+  animation-direction: var(--vdir, normal), normal;
+  will-change: rotate, scale;
 }
 
-@keyframes acVeilMorph {
+/* Respirația voalului e mai mică decât a corpurilor: pânza se rotește deja,
+   iar două mișcări ample pe același element se citesc ca tremur. */
+@keyframes acHeroVeilSwell {
   0%,
   100% {
-    border-radius: 58% 42% 47% 53% / 52% 46% 54% 48%;
+    scale: 1 1;
   }
-  33% {
-    border-radius: 44% 56% 61% 39% / 46% 58% 42% 54%;
-  }
-  66% {
-    border-radius: 53% 47% 38% 62% / 60% 41% 59% 40%;
+  50% {
+    scale: 1.07 1.04;
   }
 }
 
-/* Reflexul care alunecă pe suprafață. Se rotește foarte lent, în sens invers
-   față de restul, ca lumina să pară că vine din cameră, nu din obiect. */
-[data-veil-sheen] {
+/* --------------------------------------------------------------------------
+   3. INELELE — structura
+   -------------------------------------------------------------------------- */
+
+/*
+  Inelul e o ELIPSĂ care se rotește, și distincția asta e tot ce contează.
+  Un cerc perfect care se rotește nu arată nimic: e simetric față de propria
+  axă, deci după rotație e identic cu el însuși. Turtit cu 16–24%, se vede că
+  se întoarce — același drum, la nesfârșit, fără început și fără capăt.
+
+  De aceea inelul are două noduri:
+    `[data-hero-ring]`      — învelișul: poziție, mărime, ROTAȚIA formei
+    `[data-hero-ring-body]` — corpul: gradientul, masca, TURTIREA, respirația
+
+  Ordinea nu e negociabilă. Turtirea trebuie să stea sub rotație: dacă ar fi
+  invers, elipsa ar rămâne fixă pe ecran și s-ar roti doar desenul dinăuntru,
+  ceea ce arată exact ca un cerc nemișcat.
+
+  Culoarea variază pe circumferință, deci zona luminoasă se plimbă odată cu
+  forma: nu e un contur care se învârte, e lumină care face ocolul, iar și iar.
+
+  Firul e singurul loc din compoziție unde aurul are voie să fie tare (până la
+  82% în vârful sectorului). 1.25px de aur nu mută luminanța hârtiei de sub un
+  rând de text — plafonul de la regula 2 e al suprafețelor, nu al firelor.
+  Aici se duce, de fapt, atenția pe care a cerut-o clienta.
+*/
+[data-hero-ring] {
+  display: block;
   position: absolute;
-  inset: 8%;
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse 46% 26% at 32% 24%,
-    color-mix(in srgb, var(--ac-aura-core) 62%, transparent) 0%,
-    transparent 70%
-  );
-  animation: acVeilSheen 31s linear infinite;
+  left: var(--rx, 50%);
+  top: var(--ry, 50%);
+  width: calc(var(--ac-hero-ring-size) * var(--rs, 1));
+  aspect-ratio: 1;
+  margin-left: calc(var(--ac-hero-ring-size) * var(--rs, 1) * -0.5);
+  margin-top: calc(var(--ac-hero-ring-size) * var(--rs, 1) * -0.5);
+  opacity: var(--ro, 0.5);
+  animation: acHeroSpin var(--rdur, 163s) linear infinite both;
+  animation-delay: var(--rdelay, 0s);
+  animation-direction: var(--rdir, normal);
+  will-change: rotate;
 }
 
-@keyframes acVeilSheen {
+[data-hero-ring-body] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--rfrom, 0deg) at 50% 50%,
+    transparent 0deg,
+    color-mix(in srgb, var(--ac-accent) 24%, transparent) 26deg,
+    color-mix(in srgb, var(--ac-accent) 82%, transparent) 62deg,
+    color-mix(in srgb, var(--ac-accent) 38%, transparent) 104deg,
+    transparent 158deg,
+    transparent 196deg,
+    color-mix(in srgb, var(--ac-accent) 32%, transparent) 244deg,
+    color-mix(in srgb, var(--ac-accent) 58%, transparent) 286deg,
+    color-mix(in srgb, var(--ac-accent) 12%, transparent) 322deg,
+    transparent 360deg
+  );
+  /*
+    Masca face inelul din nimic: un fir de `--ac-hero-ring-width`, cu un halou
+    care se stinge la ~26px de o parte și de alta.
+
+    Haloul e partea care schimbă totul. Un fir singur pe hârtie e o linie
+    trasată — corectă, dar moartă. Firul cu halou e un filament aprins: se vede
+    că lumina VINE din el, nu că cineva a desenat un cerc. Iar în zona în care
+    sectorul conic e la vârf, haloul se aprinde odată cu firul și pleacă mai
+    departe — ăsta e, de fapt, tot efectul.
+
+    Marginile stopurilor sunt decalate cu fracțiuni de px ca să prindă
+    antialiasingul: un hairline cu muchii dure sfârâie la scalare.
+  */
+  --ring-mask: radial-gradient(
+    closest-side,
+    transparent calc(var(--ac-hero-ring-r) - var(--ac-hero-ring-glow)),
+    #0000002e calc(var(--ac-hero-ring-r) - 10px),
+    #00000082 calc(var(--ac-hero-ring-r) - 3px),
+    #000 calc(var(--ac-hero-ring-r) - var(--ac-hero-ring-width)),
+    #000 calc(var(--ac-hero-ring-r) - 0.35px),
+    #00000038 calc(var(--ac-hero-ring-r) + 8px),
+    transparent calc(var(--ac-hero-ring-r) + var(--ac-hero-ring-glow))
+  );
+  mask-image: var(--ring-mask);
+  -webkit-mask-image: var(--ring-mask);
+  /* Turtirea + respirația, pe aceeași proprietate: `scale` nu se poate scrie
+     de două ori pe același element fără ca a doua declarație s-o șteargă pe
+     prima. Respirația e 2.5% — cât să nu pară elipsă trasată cu șablonul, nu
+     atât cât să se vadă că inelul crește. */
+  /* Valoarea statică e aici ca elipsa să rămână elipsă și când animațiile
+     sunt oprite din `prefers-reduced-motion`. Cât timp animația rulează, ea are
+     întâietate. */
+  scale: 1 var(--rflat, 0.84);
+  animation: acHeroRingBreath var(--rsdur, 71s) ease-in-out infinite both;
+  animation-delay: var(--rsdelay, 0s);
+  will-change: scale;
+}
+
+@keyframes acHeroRingBreath {
+  0%,
+  100% {
+    scale: 1 var(--rflat, 0.84);
+  }
+  50% {
+    scale: 1.025 calc(var(--rflat, 0.84) * 1.03);
+  }
+}
+
+/* Rotația, comună voalurilor și inelelor. Sensul vine din `--vdir` / `--rdir`:
+   două forme care se întorc în același sens se citesc ca un singur obiect.
+   O tură completă durează între 149s și 233s — adică între două și patru
+   minute. Nimic nu pornește și nimic nu se termină; asta e ideea. */
+@keyframes acHeroSpin {
   from {
     rotate: 0deg;
   }
   to {
-    rotate: -360deg;
+    rotate: 360deg;
   }
 }
 
-/* Sub 900px coloana de text ocupă toată lățimea: voalul nu mai are bandă de
-   margine, deci se micșorează, se retrage în colț și se estompează. Prezență,
-   nu obstacol. */
-@media (max-width: 899px) {
+/* --------------------------------------------------------------------------
+   Telefon
+   -------------------------------------------------------------------------- */
+
+/* Sub 768px heroul trece pe o coloană și devine mult mai înalt: straturile
+   calibrate pentru coloana din dreapta ar cădea pe nimic. Se repoziționează,
+   se micșorează și pierd din intensitate — pe ecran mic, aceeași cantitate de
+   lumină acoperă proporțional mult mai mult text. Al treilea voal și inelul
+   mic ies de tot: suprapuse pe lățime de telefon, ar da noroi, nu compoziție. */
+@media (max-width: 767px) {
   :root {
-    --ac-veil-size: clamp(64px, 15vw, 92px);
-    --ac-veil-gain: 0.82;
+    --ac-hero-field-size: clamp(280px, 68vw, 430px);
+    /* Voalul: sub o lățime de ecran. Peste atât nu mai e formă, e spălare de
+       fundal — ochiul nu-i vede marginile, deci nu-i vede nici mișcarea. */
+    --ac-hero-veil-size: clamp(280px, 84vw, 440px);
+    /* Inelul: încape ÎNTREG, cu marjă. Pe desktop are voie să fie tăiat de
+       cadru; pe telefon, un cerc retezat de marginea ecranului citește ca
+       greșeală, nu ca intenție. */
+    --ac-hero-ring-size: clamp(250px, 78vw, 400px);
+    /* Haloul se strânge odată cu inelul: 26px în jurul unui fir de 130px rază
+       ar acoperi o cincime din formă. */
+    --ac-hero-ring-glow: 18px;
+    --ac-hero-field-gain: 0.86;
   }
-  [data-veil] {
-    bottom: clamp(12px, 3vh, 28px);
+  [data-hero-mass] {
+    left: var(--mx-sm, var(--mx, 50%));
+    top: var(--my-sm, var(--my, 50%));
+    width: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)));
+    margin-left: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)) * -0.5);
+    margin-top: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)) * -0.5);
   }
-}
-
-/* Cât timp bara de consimțământ sau meniul mobil sunt deschise, voalul dispare:
-   amândouă ocupă exact zona lui, iar el n-are voie să stea în drum. */
-body:has([data-consent-bar]) [data-veil],
-body:has([data-burger][data-open='true']) [data-veil] {
-  display: none;
+  [data-hero-veil] {
+    left: var(--vx-sm, var(--vx, 50%));
+    top: var(--vy-sm, var(--vy, 50%));
+    width: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)));
+    margin-left: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)) * -0.5);
+    margin-top: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)) * -0.5);
+  }
+  [data-hero-ring] {
+    left: var(--rx-sm, var(--rx, 50%));
+    top: var(--ry-sm, var(--ry, 50%));
+    width: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)));
+    margin-left: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)) * -0.5);
+    margin-top: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)) * -0.5);
+  }
+  [data-hero-veil='sm-hidden'],
+  [data-hero-ring='sm-hidden'] {
+    display: none;
+  }
+  /* Masca. Pe o coloană heroul are ~1418px înălțime, iar banda de etichete
+     ajunge pe la 92% din el. Stinsul se termină la 86%: decorul acoperă și
+     zona butoanelor, dar peste etichetele de 11px tot nu ajunge nimic.
+     Prima variantă stingea la 82% pornind de la 38%, adică lăsa două treimi
+     din heroul de telefon complet goale. */
+  [data-hero-field] {
+    mask-image: linear-gradient(to bottom, #000 0%, #000 46%, #00000075 68%, transparent 86%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, #00000075 68%, transparent 86%);
+  }
 }
 
 /* „prefers-reduced-motion" oprește complet mișcarea (brief §5.6, §9.3). */
@@ -1137,5 +1400,20 @@ body:has([data-burger][data-open='true']) [data-veil] {
      nu un obiect care se mișcă. */
   [data-page-light] {
     opacity: calc(0.3 * var(--ac-light-gain) * 0.5) !important;
+  }
+  /* Câmpul heroului rămâne ca lumină, dar nu mai derivă, nu se mai rotește și
+     nu mai respiră: regula de sus i-a oprit toate animațiile, deci fiecare
+     strat stă în poziția de start. Toate coboară la 55%, ca celelalte două
+     straturi — cine cere mai puțină mișcare primește și mai puțin decor.
+     Compoziția rămâne însă întreagă: corpuri, voaluri și inele, doar
+     nemișcate. Un hero golit de decor n-ar mai fi același hero. */
+  [data-hero-mass] {
+    opacity: calc(var(--mo, 0.5) * 0.55) !important;
+  }
+  [data-hero-veil] {
+    opacity: calc(var(--vo, 0.5) * 0.55) !important;
+  }
+  [data-hero-ring] {
+    opacity: calc(var(--ro, 0.5) * 0.55) !important;
   }
 }

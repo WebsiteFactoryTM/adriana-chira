@@ -6,10 +6,10 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **24 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, voal) · fazele 4–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`, `pnpm verify:faza2` 10/10) |
-| Ultimul commit | `d6abfe0` — Voalul: obiectul de abur care însoțește cititorul |
+| Ultima actualizare | **25 august 2026** |
+| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **câmpul heroului refăcut pe 25 august: acum atrage atenția, la cererea clientei** · fazele 4–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 25 august 2026 |
+| Ultimul commit | `d478a74` — STATUS.md: capcana de codificare la editarea cu perl |
 
 ---
 
@@ -166,7 +166,7 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
 | `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
 | `PageLight` | Server Component; corpul de lumină care traversează pagina la derulare. Montat o singură dată, în layout |
-| `Veil` | Server Component; obiectul de abur care însoțește cititorul. Singurul strat decorativ care stă **peste** conținut |
+| `HeroField` | Server Component; fundalul viu al heroului — trei corpuri de lumină care derivă continuu, în timp. Doar pe hero. Vezi mai jos |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
 
@@ -263,43 +263,121 @@ luminii se construiește din **miez**, nu din halou — miezul e alb cald, ridic
 luminanța hârtiei, deci textul închis câștigă contrast și poate urca la 96% fără cost.
 Aici haloul stă la 4.2 % efectiv, cu marjă păstrată pentru aura care se poate suprapune.
 
-### Voalul ✅
+### Câmpul heroului ✅ — refăcut pe 25 august 2026
 
-Al treilea strat din afara designului aprobat, și singurul care e un **obiect**, nu
-atmosferă. Un corp de abur translucid, fixat de ecran, care însoțește cititorul prin
-toată pagina. Nu e mascotă, nu e buton, n-are text și nu duce nicăieri: rolul lui e
-prezență, nu instrucțiune.
+Al treilea strat din afara designului aprobat, și singurul care se mișcă **în timp**,
+nu la comanda cititorului. **Rețeta a fost schimbată din temelii la cererea clientei**
+(vezi §9.19): prima variantă era construită explicit ca să NU fie observată, iar
+clienta a cerut exact opusul — un prim ecran care atrage privirea.
 
-Cele trei straturi decorative, ca să nu fie confundate:
+Compoziția de acum are **trei straturi**, în ordinea în care se pictează:
 
-| | `PageLight` | `SectionAura` | `Veil` |
+| Strat | Selector | Ce face | Ce îl mișcă |
 |---|---|---|---|
-| Ce e | atmosferă | semnal de atenție | obiect |
-| Unde stă | **sub** fundaluri | sub conținut, în secțiune | **peste** conținut |
-| Mărime | mare, difuz, fără contur | mare, difuz | mic, cu contur și volum |
-| Ce îl mișcă | derularea | secțiunea care intră în ecran | derularea + plutire proprie |
+| Corpuri de lumină | `[data-hero-mass]` | temperatura — hârtia pare luminată dintr-o parte | derivă + respirație (71/89/101s, 37/43/47s) |
+| Voaluri de mătase | `[data-hero-veil]` | mișcarea — lumina alunecă pe suprafață | rotația gradientului conic (149/191/233s) |
+| Inele de aur | `[data-hero-ring]` | structura — ochiul are ce urmări | **elipse care se rotesc**, 163s și 211s, în sensuri opuse |
 
-- `src/components/ui/Veil.tsx` — Server Component, **zero JS**.
-- Blocul „VOALUL" din `globals.css`. Ce îl face să pară fizic: `backdrop-filter`
-  (refractă efectiv ce e în spate — diferența dintre desen și corp), lumina care vine
-  dintr-o direcție (reflex sus-stânga, umbră caldă jos-dreapta, inel de margine) și
-  forma care se transformă lent, în loc de cerc perfect.
-- Patru mișcări, cu durate fără numitor comun — 13s plutire, 19s respirație, 23s
-  schimbare de formă, 31s rotația reflexului. Dacă s-ar sincroniza, ochiul ar prinde
-  un puls, iar pulsul citește ca ceas, nu ca prezență.
-- `pointer-events: none`, verificat: `elementFromPoint` din centrul lui returnează
-  elementul de dedesubt, nu voalul.
-- Se retrage complet (`display: none`) cât timp bara de consimțământ sau meniul mobil
-  sunt deschise — prin `:has()` pe `body`, fără ascultători de evenimente.
-- Se stinge dintr-un singur loc: `--ac-veil-gain: 0`.
+Plus un strat static de granulație (`[data-hero-field]::after`, ~5%), care rupe
+banding-ul și dă textură de hârtie.
 
-**De ce iese din cadru, și nu stă frumos în colț.** Stând peste conținut, e singurul
-strat care poate strica lizibilitatea: `backdrop-filter` înceață ce e sub el. Măsurat
-la 1440px, așezat complet în pagină intra **~100px în coloana de text**. Gutterul are
-24–88px, iar voalul 84–132px, deci nu încape niciodată întreg în margine. Soluția:
-iese 45% din cadru, iar deriva pe orizontală are toate valorile ≤ 0 — nu se poate
-apropia de text nici în repaus, nici în vreun punct al derulării. **Verificat la
-1440px: marginea voalului 71px, textul începe la 72px.**
+Cele trei straturi decorative ale site-ului, ca să nu fie confundate:
+
+| | `PageLight` | `SectionAura` | `HeroField` |
+|---|---|---|---|
+| Ce e | atmosferă | semnal de atenție | fundal viu |
+| Unde stă | **sub** fundaluri | sub conținut, în secțiune | sub conținut, doar în hero |
+| Ce îl mișcă | derularea | secțiunea care intră în ecran | **timpul**, continuu |
+| Când se vede | pe toată pagina | pe cinci secțiuni | doar pe primul ecran |
+
+- `src/components/ui/HeroField.tsx` — Server Component, **zero JS**. Preseturile
+  (poziție, rază, intensitate, traseu, unghi de pornire, durate) sunt date, nu CSS.
+- Blocul „CÂMPUL HEROULUI" din `globals.css`. Gradiente radiale și conice,
+  **niciodată `filter: blur()`**. Animate sunt doar `translate`, `scale` și `rotate`,
+  pe proprietăți separate, deci totul se compune pe GPU: zero repictare per cadru.
+- **Doar pe hero, și motivul contează:** e singurul ecran pe care omul stă locului
+  câteva secunde înainte să deruleze. Pe restul paginii, mișcarea în timp n-ar fi
+  atmosferă, ci zgomot peste text citit.
+- Opt durate prime, toate diferite. Ansamblul practic nu se repetă, deci ochiul nu
+  poate prinde un puls — iar pulsul citește ca ceas.
+- Se stinge dintr-un singur loc: `--ac-hero-field-gain: 0`.
+- `prefers-reduced-motion`: compoziția rămâne întreagă, dar nemișcată, la 55% din
+  intensitate — toate trei straturile.
+
+**De ce rotație la voaluri, și nu derivă.** Deriva mută lumina dintr-un loc în altul,
+iar ochiul o pierde: n-are muchie de urmărit. Rotația unui gradient conic mută
+**muchia dintre sectoare** de-a lungul unei curbe — se vede că suprafața e vie, fără
+ca ceva să plece efectiv de undeva. Măsurat la 1440px, sectorul luminos al voalului
+mare parcurge ~1.9°/s: de trei ori mai vizibil decât deriva corpurilor, și tot prea
+lent ca să poată fi urmărit ca obiect.
+
+**Inelele sunt ELIPSE care se rotesc, și distincția e tot ce contează.** Un cerc
+perfect care se rotește nu arată absolut nimic: e simetric față de propria axă, deci
+după rotație e identic cu el însuși. Prima variantă avea cercuri, iar rotația se
+vedea doar ca o zonă mai luminoasă care aluneca — prea puțin. Turtite cu 16–24%
+(`--rflat`), formele se văd că se **întorc**: același drum, la nesfârșit, fără început
+și fără capăt. Asta a cerut clienta — continuitate, nu efect.
+
+Inelul are de aceea două noduri, iar ordinea lor nu e negociabilă:
+
+| Nod | Ce ține |
+|---|---|
+| `[data-hero-ring]` | poziția, mărimea, **rotația formei** |
+| `[data-hero-ring-body]` | gradientul, masca, **turtirea**, respirația |
+
+Dacă turtirea ar sta deasupra rotației, elipsa ar rămâne fixă pe ecran și s-ar roti
+doar desenul dinăuntru — adică ar arăta exact ca un cerc nemișcat. Turtirea e scrisă
+și ca valoare statică pe corp, nu doar în keyframes, ca elipsa să rămână elipsă și
+când `prefers-reduced-motion` oprește animațiile.
+
+O tură completă durează 163s într-un sens și 211s în celălalt. Două forme care se
+întorc identic se citesc ca un singur obiect; două care se întorc diferit se citesc ca
+mișcare.
+
+**Inelul e un fir cu halou, nu un cerc desenat.** Masca îl face din nimic: un fir de
+1.25px, cu un halou care se stinge la ~26px de o parte și de alta (18px pe telefon,
+unde raza e la jumătate). Un fir singur pe hârtie e o linie trasată — corectă, dar
+moartă. Firul cu halou e un filament aprins: se vede că lumina *vine* din el.
+
+**Responsivitatea — regula, ca să nu fie stricată la loc.** Măsurat la 388px lățime:
+heroul are 1418px înălțime, iar caseta câmpului 373px. Prima variantă punea acolo un
+voal de 617px, adică de 1.7 ori lățimea ecranului, iar inelul mare ieșea cu 13px în
+afara casetei. Un voal mai lat decât ecranul nu mai e formă, e spălare de fundal:
+ochiul nu-i vede marginile, deci nu-i vede nici mișcarea. Un inel retezat exact de
+marginea ecranului citește ca greșeală, nu ca intenție.
+
+| | Telefon (≤767px) | Desktop |
+|---|---|---|
+| Voaluri | sub o lățime de ecran (280–287px pe 373px) | până la 1.45× raza de bază |
+| Inele | încap **întregi**, cu marjă de fiecare parte | au voie să fie tăiate de cadru sau să intre în spatele portretului |
+| Al treilea voal | ascuns — trei pânze suprapuse pe lățime de telefon dau noroi | vizibil |
+| Masca | stinsă între 46% și 86% din hero | între 50% și 92% |
+
+Pe desktop regula e inversă intenționat: un cerc întreg, complet vizibil, pe un ecran
+lat devine „logo pe fundal". Verificat prin măsurare în browser, la 388px: zero
+depășire orizontală (`scrollWidth` 373 pe un viewport de 388), ambele inele integral
+în casetă.
+
+**Unsprezece stopuri de gradient la corpuri, nu patru.** Un fundal atât de palid
+trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere de pantă în alfa se
+vede ca **inel desenat pe hârtie**. Prima variantă avea patru stopuri și inelul se
+vedea clar la 1440px, în stânga titlului. Stopurile actuale aproximează o cădere
+gaussiană (fiecare pas ~0.62 din precedentul) și ajung la zero abia la 100%. Dacă
+cineva le rărește „ca să fie mai curat CSS-ul", inelul se întoarce.
+
+**Plafonul de contrast — regula care nu s-a schimbat.** Suprafețele mari au plafon de
+aur, firele nu: un voal de 900px la 10% aur mută luminanța hârtiei, un fir de 1.25px
+la 60% nu o mută deloc. De aceea inelele au voie să fie clar vizibile, iar voalurile
+nu — vârful lor de cald e 19%, adică ~10% efectiv pe hârtie, unde `--ac-ink-50` la
+11px rămâne la **4.55:1**, peste AA. Garanția tare nu e însă asta, ci masca: câmpul e
+stins complet înainte de treimea de jos a heroului, unde stau singurele texte fără
+marjă — cele trei etichete de sub butoane și legenda portretului. Peste ele nu ajunge
+nici aur, nici fir, în niciun moment al mișcării. Verificat în browser, pe build de
+producție, la 1440px.
+
+> **Voalul (obiectul de abur din colțul stânga-jos) a fost eliminat complet** pe
+> 25 august 2026, la cererea clientei — vezi §9.18. Nu se reintroduce fără o cerere
+> explicită.
 
 ### SEO / AEO pentru homepage ✅
 
@@ -671,11 +749,51 @@ câștigat un nod. **Text vizibil identic la caracter: 9692 în ambele.**
 Fiind `position: fixed`, stratul e în afara fluxului: înălțimile secțiunilor rămân
 cele din comparația la pixel, care **nu trebuie refăcută**.
 
-### ✅ Voalul nu a mișcat niciun text — verificat prin diff
+### ✅ Câmpul heroului nu a mișcat niciun text — verificat prin diff
 
-Aceeași metodă (§12.5). **Rezultat: opt linii în plus, exact nodurile voalului**
-(`<div data-veil>` cu corpul, pielea și reflexul), nimic altceva. **Text vizibil
-identic la caracter: 9692 în ambele.** Fiind `position: fixed`, e în afara fluxului.
+Aceeași metodă (§12.5), rulată pe 25 august 2026 pentru schimbul „voal scos, câmp
+pus": build de producție pe `HEAD`, build de producție cu schimbarea, `curl` pe `/` în
+ambele, diff pe markup normalizat.
+
+**Rezultat: 32 de linii diferite, toate explicabile** — opt noduri de voal scoase,
+opt noduri de câmp adăugate (`<div data-hero-field>` cu cele trei corpuri), hash-ul
+fișierului CSS, și renumerotarea id-urilor din payload-ul RSC, care se decalează cu
+unu pentru că arborele React a pierdut un nod (aceeași diferență colaterală ca la
+lumina paginii). **Text vizibil identic la caracter: 9616 în ambele.**
+
+> Nota de cifre: 9616, nu 9692 ca în comparațiile de mai sus, pentru că Postgres-ul
+> local era oprit și ambele build-uri au căzut pe `src/content/`. Comparația rămâne
+> validă — contează că cele două părți sunt identice între ele.
+
+Câmpul e `position: absolute`, `z-index: -1`, într-o secțiune care era deja
+`relative isolate` din cauza aurei: înălțimile secțiunilor rămân cele din comparația
+la pixel, care **nu trebuie refăcută.**
+
+### ✅ Voalurile și inelele n-au mișcat niciun text — verificat prin diff
+
+Rulat pe 25 august 2026, pentru refacerea câmpului (§9.19). De data asta A/B-ul a fost
+direct: serverul de producție de pe `:3000` rula încă build-ul dinainte de schimbare,
+iar cel de dezvoltare, pe `:3100`, avea schimbarea. `curl` pe `/` în ambele, tag-urile
+scoase, spațiile normalizate, comparație caracter cu caracter.
+
+**Rezultat: text vizibil identic — 9616 caractere în ambele.** Singurele noduri
+adăugate sunt cinci `<span>`-uri decorative în interiorul `[data-hero-field]`, care
+era deja `position: absolute; z-index: -1`. Comparația la pixel cu designul aprobat
+**nu trebuie refăcută.**
+
+Verificat în plus, pe build de producție, la 1440px: zero mesaje în consolă, banda de
+etichete de sub butoane și legenda portretului stau pe hârtie curată (masca își face
+treaba), iar toate cele opt animații rulează — numai `rotate`, `translate` și `scale`,
+deci compuse pe GPU.
+
+**Runda a doua (inele eliptice + responsivitate), aceeași zi.** Aceeași metodă, pe
+build de producție: **9616 caractere vizibile**, identic cu referința. Nodurile
+adăugate sunt două `<span>`-uri (`data-hero-ring-body`), tot în interiorul câmpului.
+
+Responsivitatea, măsurată în browser la 388px lățime: `scrollWidth` 373 pe un viewport
+de 388, deci **zero depășire orizontală**; ambele inele încap integral în casetă
+(278px și 157px pe 373px), iar voalurile au coborât de la 617px la 280–287px. Banda de
+etichete de pe telefon stă tot pe hârtie curată, cu masca nouă (46% → 86%).
 
 ---
 
@@ -862,11 +980,41 @@ Optsprezece, toate documentate în cod prin comentarii:
     stă **sub** fundalurile secțiunilor, deci nu trece niciodată peste text. Se
     stinge din `--ac-light-gain: 0`, fără să se atingă nicio secțiune.
 
-18. **Voalul — a treia adăugire, și singura care trece peste conținut**
-    (`src/components/ui/Veil.tsx`). Descris în §4. Singurul strat decorativ cu
-    `pointer-events` de verificat și cu risc de lizibilitate, tocmai pentru că e
-    deasupra. De aceea iese din cadru și n-are voie să derive spre dreapta.
-    Se stinge din `--ac-veil-gain: 0`.
+18. **Voalul a fost eliminat, câmpul heroului i-a luat locul** (25 august 2026).
+    Clienta a respins obiectul de abur din colțul stânga-jos („nu arată bine deloc")
+    și a cerut în locul lui un fundal de hero cu mișcare continuă și lentă. Voalul e
+    scos complet — componentă, bloc CSS, montare în layout — nu doar stins din
+    `--ac-veil-gain`. **Nu se reintroduce fără o cerere explicită.**
+
+    Lecția, pentru orice decor viitor: obiectul cerea atenție tocmai pentru că era un
+    obiect — mic, cu contur, cu volum, fixat de ecran, deasupra conținutului. Cu cât
+    era mai reușit tehnic, cu atât se uita omul mai mult la el și mai puțin la text.
+    Înlocuitorul (`src/components/ui/HeroField.tsx`, descris în §4) face invers: n-are
+    contur, e mare, stă sub conținut și nu ajunge nicăieri — mișcă ochiul, nu îl
+    cheamă. Se stinge din `--ac-hero-field-gain: 0`.
+
+19. **Heroul are voie să atragă atenția** (25 august 2026). După ce câmpul a înlocuit
+    voalul, clienta a cerut mai mult: un fundal de hero „plăcut vizual, în mișcare
+    continuă lentă, elegant — ceva care să atragă atenția". Premisa se inversează
+    față de punctul 18: nu mai e „nu te uita la mine", ci „uită-te, dar la text
+    ajungi tot în două secunde".
+
+    Ce s-a schimbat concret: peste corpurile de lumină s-au adăugat trei voaluri de
+    mătase (gradiente conice care se rotesc încet) și două inele de aur cu halou,
+    plus un strat static de granulație. Descrise integral în §4.
+
+    **A doua rundă, aceeași zi:** clienta a cerut ca rotația să se și *vadă* —
+    „mișcare continuă lentă, semnificând infinitul / continuitate" — și a semnalat
+    că pe telefon compoziția pare că depășește ecranul. Inelele au devenit elipse
+    (un cerc perfect care se rotește nu arată nimic), iar toate dimensiunile de pe
+    telefon au fost recalibrate: voalurile au coborât de la 617px la ~285px pe o
+    casetă de 373px, iar inelele încap acum întregi. Vezi §4 și verificarea din §6.
+
+    Ce NU s-a schimbat, și nu se schimbă nici la o cerere de „mai mult": plafonul de
+    aur pe suprafețele mari, masca ce stinge tot stratul înainte de banda de
+    etichete, zero JS, zero bibliotecă de animație, durate prime, și
+    `position: absolute; z-index: -1` — adică zero text mutat. Verificat prin diff,
+    vezi §6.
 
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
