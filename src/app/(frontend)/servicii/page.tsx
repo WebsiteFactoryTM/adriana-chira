@@ -57,6 +57,7 @@ export default async function ServiciiPage() {
           eyebrow={serviciiPage.eyebrow}
           title={serviciiPage.title}
           lead={serviciiPage.lead}
+          image={serviciiPage.image}
           tight
         />
 

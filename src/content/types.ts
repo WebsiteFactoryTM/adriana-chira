@@ -66,7 +66,7 @@ export type HeroContent = {
 }
 
 export type ImageSlotContent = {
-  slot: 'hero-portrait' | 'about-portrait' | 'post-cover'
+  slot: 'hero-portrait' | 'about-portrait' | 'post-cover' | 'page-portrait' | 'page-wide'
   src: string | null
   alt: string
   width: number

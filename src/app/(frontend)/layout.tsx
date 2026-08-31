@@ -101,7 +101,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
         <ConsentBanner policyHref="/politica-de-cookies" />
 
-        <JsonLd data={graph([personSchema(settings, '/images/adriana-portret.jpg')])} />
+        <JsonLd data={graph([personSchema(settings, '/images/adriana-despre.jpg')])} />
       </body>
     </html>
   )

@@ -20,12 +20,17 @@ export const homeContent: HomeContent = {
     badges: ['Psihologie și strategie', 'Lucru 1:1', 'Timișoara și online'],
     portrait: {
       slot: 'hero-portrait',
-      src: '/images/adriana-portret.jpg',
+      src: '/images/adriana-hero.jpg',
       alt: 'Portret Adriana Chira',
-      width: 1716,
-      height: 2048,
+      width: 1067,
+      height: 1600,
       placeholderLabel: 'Portret · Hero',
-      objectPosition: '50% 26%',
+      /**
+       * Fotografia e 2:3, cutia e 3:4 — se taie 11% pe verticală. 60% mută
+       * decupajul spre partea de jos: rămâne spațiu deasupra capului și nu se
+       * pierd pantofii.
+       */
+      objectPosition: '50% 60%',
       caption: 'ADRIANA CHIRA',
     },
   },
@@ -137,12 +142,13 @@ export const homeContent: HomeContent = {
     link: { label: 'Citește povestea completă', href: '/despre' },
     portrait: {
       slot: 'about-portrait',
-      src: '/images/adriana-portret.jpg',
+      src: '/images/adriana-despre.jpg',
       alt: 'Adriana Chira, portret',
-      width: 1716,
-      height: 2048,
+      width: 1067,
+      height: 1600,
       placeholderLabel: 'Portret · Despre',
-      objectPosition: '50% 42%',
+      /** Cadru strâns: decupajul urcă, ca să rămână spațiu deasupra capului. */
+      objectPosition: '50% 16%',
       caption: 'Sociologie · Strategie · Psihologie',
     },
   },

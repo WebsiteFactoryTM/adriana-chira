@@ -46,6 +46,7 @@ export default async function BlogPage() {
           eyebrow={blogPage.eyebrow}
           title={blogPage.title}
           lead={blogPage.lead}
+          image={blogPage.image}
           tight
         />
 

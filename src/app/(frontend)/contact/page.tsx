@@ -50,6 +50,7 @@ export default async function ContactPage({ searchParams }: Props) {
           eyebrow={contactPage.eyebrow}
           title={contactPage.title}
           lead={contactPage.lead}
+          image={contactPage.image}
           tight
         />
 

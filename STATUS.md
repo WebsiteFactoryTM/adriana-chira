@@ -6,9 +6,9 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **25 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **câmpul heroului refăcut pe 25 august: acum atrage atenția, la cererea clientei** · fazele 4–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 25 august 2026 |
+| Ultima actualizare | **31 august 2026** |
+| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **fotografiile clientei sunt puse, câte una pe pagină** · **câmpul heroului refăcut a doua oară pe 31 august: ivory minimalist, fără forme circulare, la cererea clientei** · fazele 4–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 31 august 2026 |
 | Ultimul commit | `d478a74` — STATUS.md: capcana de codificare la editarea cu perl |
 
 ---
@@ -162,13 +162,37 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `Button` + `Arrow` | variante `primary \| outline \| soft \| onDark`, mărimi `sm–xl`, ca `<a>`/`<Link>`/`<button>` |
 | `Eyebrow` | eticheta versală; ornamente `line \| pulse \| none`; poate randa ca `h2` |
 | `Section`, `Shell`, `StickyColumn`, `Rule` | învelișul de secțiune, coloana de 1560px, coloana sticky, hairline |
-| `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei |
+| `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei. Cinci sloturi: `hero-portrait` 3:4, `about-portrait` 4:5, `post-cover` 4:3, `page-portrait` 2:3, `page-wide` 3:2 |
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
 | `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
 | `PageLight` | Server Component; corpul de lumină care traversează pagina la derulare. Montat o singură dată, în layout |
 | `HeroField` | Server Component; fundalul viu al heroului — trei corpuri de lumină care derivă continuu, în timp. Doar pe hero. Vezi mai jos |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
+
+### Fotografiile clientei ✅
+
+Din ședința foto, câte una pe pagină. Toate în `public/images/`, servite prin
+`next/image`, deci convertite la cerere în WebP/AVIF.
+
+| Fișier | Unde apare | Slot | Decupaj |
+|---|---|---|---|
+| `adriana-hero.jpg` | homepage, hero | `hero-portrait` 3:4 | 2:3 → se taie 11% pe verticală; `50% 60%` păstrează și spațiul de deasupra capului, și pantofii |
+| `adriana-despre.jpg` | homepage secțiunea Despre **și** `/despre` | `about-portrait` 4:5 | `50% 16%` — cadru strâns, decupajul urcă |
+| `adriana-servicii.jpg` | antetul `/servicii` | `page-wide` 3:2 | niciunul — slotul are chiar raportul fișierului |
+| `adriana-blog.jpg` | antetul `/blog` | `page-portrait` 2:3 | niciunul |
+| `adriana-contact.jpg` | antetul `/contact` | `page-portrait` 2:3 | niciunul |
+
+Fotografiile din antete intră prin `image` pe `PageHeader`, care trece antetul pe
+două coloane doar când primește una. Paginile legale, `/multumim` și
+`/comanda-anulata` nu primesc niciuna și randează exact aceeași coloană unică de
+dinainte. `personSchema` din layout arată acum spre `adriana-despre.jpg`.
+
+Placeholderul din pachetul de design (`adriana-portret.jpg`) a fost șters: avea
+filigranul fotografului peste colțul din dreapta jos.
+
+Fotografia din antet este elementul LCP al paginii ei, deci primește `priority` —
+singura excepție de la regula „doar hero-ul", scrisă ca atare în componentă.
 
 ### Homepage — cele 12 secțiuni ✅
 
@@ -263,121 +287,193 @@ luminii se construiește din **miez**, nu din halou — miezul e alb cald, ridic
 luminanța hârtiei, deci textul închis câștigă contrast și poate urca la 96% fără cost.
 Aici haloul stă la 4.2 % efectiv, cu marjă păstrată pentru aura care se poate suprapune.
 
-### Câmpul heroului ✅ — refăcut pe 25 august 2026
+### Câmpul heroului ✅ — refăcut a doua oară pe 31 august 2026
 
-Al treilea strat din afara designului aprobat, și singurul care se mișcă **în timp**,
-nu la comanda cititorului. **Rețeta a fost schimbată din temelii la cererea clientei**
-(vezi §9.19): prima variantă era construită explicit ca să NU fie observată, iar
-clienta a cerut exact opusul — un prim ecran care atrage privirea.
+Al treilea strat din afara designului aprobat. **Rețeta a fost schimbată din temelii
+de două ori**, iar a doua schimbare a mers în sens invers față de prima: pe 25 august
+clienta ceruse un hero care atrage privirea (§9.19), iar pe 31 august a trimis o
+fotografie de referință și a cerut exact opusul — fundal ivory/crem, „foarte
+minimalist și elegant", **fără formele circulare**, cu o tranziție organică între zona
+de text și fotografie și cu accente de auriu „foarte discrete" (§9.20).
 
-Compoziția de acum are **trei straturi**, în ordinea în care se pictează:
+Ce a fost eliminat complet: trei corpuri de lumină care derivau, trei voaluri conice
+care se roteau, două inele de aur, opt animații și șapte seturi de keyframes. Ce a
+rămas e **o singură formă și o singură lumină**.
 
 | Strat | Selector | Ce face | Ce îl mișcă |
 |---|---|---|---|
-| Corpuri de lumină | `[data-hero-mass]` | temperatura — hârtia pare luminată dintr-o parte | derivă + respirație (71/89/101s, 37/43/47s) |
-| Voaluri de mătase | `[data-hero-veil]` | mișcarea — lumina alunecă pe suprafață | rotația gradientului conic (149/191/233s) |
-| Inele de aur | `[data-hero-ring]` | structura — ochiul are ce urmări | **elipse care se rotesc**, 163s și 211s, în sensuri opuse |
+| Fondul | `[data-hero-wash]` | spălarea caldă de fildeș, sub coloana de text | nimic — e static |
+| Lumina | `[data-hero-halo]` | ridică luminanța hârtiei în spatele portretului | derivă <2vw + respirație 6% (127s / 97s) |
+| Curba | `[data-hero-curve]` | tranziția text ↔ fotografie, cu fir de aur pe muchie | nimic — e statică |
 
-Plus un strat static de granulație (`[data-hero-field]::after`, ~5%), care rupe
-banding-ul și dă textură de hârtie.
+Plus stratul static de granulație (`[data-hero-field]::after`, ~5%), păstrat din
+varianta veche: rupe banding-ul și dă textură de hârtie.
 
 Cele trei straturi decorative ale site-ului, ca să nu fie confundate:
 
 | | `PageLight` | `SectionAura` | `HeroField` |
 |---|---|---|---|
-| Ce e | atmosferă | semnal de atenție | fundal viu |
+| Ce e | atmosferă | semnal de atenție | coala pe care stă fotografia |
 | Unde stă | **sub** fundaluri | sub conținut, în secțiune | sub conținut, doar în hero |
-| Ce îl mișcă | derularea | secțiunea care intră în ecran | **timpul**, continuu |
+| Ce îl mișcă | derularea | secțiunea care intră în ecran | aproape nimic |
 | Când se vede | pe toată pagina | pe cinci secțiuni | doar pe primul ecran |
 
-- `src/components/ui/HeroField.tsx` — Server Component, **zero JS**. Preseturile
-  (poziție, rază, intensitate, traseu, unghi de pornire, durate) sunt date, nu CSS.
-- Blocul „CÂMPUL HEROULUI" din `globals.css`. Gradiente radiale și conice,
-  **niciodată `filter: blur()`**. Animate sunt doar `translate`, `scale` și `rotate`,
-  pe proprietăți separate, deci totul se compune pe GPU: zero repictare per cadru.
-- **Doar pe hero, și motivul contează:** e singurul ecran pe care omul stă locului
-  câteva secunde înainte să deruleze. Pe restul paginii, mișcarea în timp n-ar fi
-  atmosferă, ci zgomot peste text citit.
-- Opt durate prime, toate diferite. Ansamblul practic nu se repetă, deci ochiul nu
-  poate prinde un puls — iar pulsul citește ca ceas.
+- `src/components/ui/HeroField.tsx` — Server Component, **zero JS**. Geometria curbei
+  (căi Bézier în coordonate de viewBox) și opacitățile gradienților sunt date, nu CSS.
+- Blocul „CÂMPUL HEROULUI" din `globals.css` — gradiente liniare și radiale,
+  **niciodată `filter: blur()`**. Culorile stau toate acolo, inclusiv `stop-color`-ul
+  gradienților din SVG; în componentă rămân doar geometria și opacitățile.
 - Se stinge dintr-un singur loc: `--ac-hero-field-gain: 0`.
-- `prefers-reduced-motion`: compoziția rămâne întreagă, dar nemișcată, la 55% din
-  intensitate — toate trei straturile.
 
-**De ce rotație la voaluri, și nu derivă.** Deriva mută lumina dintr-un loc în altul,
-iar ochiul o pierde: n-are muchie de urmărit. Rotația unui gradient conic mută
-**muchia dintre sectoare** de-a lungul unei curbe — se vede că suprafața e vie, fără
-ca ceva să plece efectiv de undeva. Măsurat la 1440px, sectorul luminos al voalului
-mare parcurge ~1.9°/s: de trei ori mai vizibil decât deriva corpurilor, și tot prea
-lent ca să poată fi urmărit ca obiect.
+**Curba e un SVG întins peste toată caseta, cu `preserveAspectRatio="none"`.**
+Întinderea e intenționată: coordonatele viewBox-ului de 1000×1000 se citesc atunci
+direct ca procente din hero, deci forma stă mereu în același raport față de grilă, la
+orice lățime. `vector-effect="non-scaling-stroke"` e obligatoriu, nu opțional — fără
+el, întinderea neuniformă ar îngroșa firul pe orizontală și l-ar subția pe verticală.
 
-**Inelele sunt ELIPSE care se rotesc, și distincția e tot ce contează.** Un cerc
-perfect care se rotește nu arată absolut nimic: e simetric față de propria axă, deci
-după rotație e identic cu el însuși. Prima variantă avea cercuri, iar rotația se
-vedea doar ca o zonă mai luminoasă care aluneca — prea puțin. Turtite cu 16–24%
-(`--rflat`), formele se văd că se **întorc**: același drum, la nesfârșit, fără început
-și fără capăt. Asta a cerut clienta — continuitate, nu efect.
+**De ce Bézier și nu `border-radius`.** O formă din `border-radius` e o elipsă:
+simetrică, previzibilă, se citește ca obiect geometric — adică fix ce a cerut clienta
+să dispară. O cale Bézier are curbură variabilă și se citește ca linie trasată de mână.
+Diferența dintre cele două e diferența dintre „decor" și „editorial".
 
-Inelul are de aceea două noduri, iar ordinea lor nu e negociabilă:
+**Poziția curbei e măsurată, nu aleasă.** Portretul e coloana din dreapta a grilei:
+marginea lui stângă cade între 53% (la 1000px lățime) și 59% (la 1440px și peste).
+Curba intră pe sus la 61.2%, adică din spatele fotografiei, se umflă spre stânga până
+la 47% și revine. Așa fotografia pare că stă *în interiorul* formei, nu lângă ea —
+care e chiar tranziția organică cerută. Dacă cineva mută grila, aici se măsoară din nou.
 
-| Nod | Ce ține |
-|---|---|
-| `[data-hero-ring]` | poziția, mărimea, **rotația formei** |
-| `[data-hero-ring-body]` | gradientul, masca, **turtirea**, respirația |
+**Plafonul de contrast — regula nu s-a schimbat, dar acum e împărțită pe straturi.**
+Singurul strat care **întunecă** hârtia e fondul, și doar el poartă masca
+(`--ac-hero-dim`, 50% → 92%), împreună cu granulația. Lumina și umplutura curbei sunt
+alb-cald: **ridică** luminanța, deci textul închis câștigă contrast și n-au nevoie de
+mască. Firul de aur nu e mascat, ci se stinge singur din gradientul lui, la 86% din
+înălțime — deasupra benzii de etichete de sub butoane și a legendei portretului,
+singurele texte din pagină fără marjă peste AA (`--ac-ink-50` la 11px, 4.64:1).
 
-Dacă turtirea ar sta deasupra rotației, elipsa ar rămâne fixă pe ecran și s-ar roti
-doar desenul dinăuntru — adică ar arăta exact ca un cerc nemișcat. Turtirea e scrisă
-și ca valoare statică pe corp, nu doar în keyframes, ca elipsa să rămână elipsă și
-când `prefers-reduced-motion` oprește animațiile.
+Măsura care fixează plafonul fondului: `--ac-cream-50` plin sub acele etichete dă
+**4.24:1**, adică sub AA. De aceea `--ac-hero-ivory` e `--ac-cream-50` la 62% peste
+hârtie, iar masca îl stinge oricum înainte să ajungă acolo. Aurul rămâne exclusiv fir:
+un hairline de 1.1px nu mută luminanța medie a hârtiei de sub un rând de text, o
+suprafață aurie de 900px la 10% o mută.
 
-O tură completă durează 163s într-un sens și 211s în celălalt. Două forme care se
-întorc identic se citesc ca un singur obiect; două care se întorc diferit se citesc ca
-mișcare.
+**Aurul aurei de hero a coborât de la 0.32/0.30 la 0.12/0.10.** Rețeta din
+`SectionAura` are un halou de accent între 50% și 82% din rază. Pe fundalul încărcat
+de dinainte trecea neobservat; pe coala de fildeș ar fi reapărut exact ca inelul pe
+care clienta a cerut să îl eliminăm. Restul variantelor de aură **nu s-au atins**:
+ele stau pe secțiuni cu fundal propriu.
 
-**Inelul e un fir cu halou, nu un cerc desenat.** Masca îl face din nimic: un fir de
-1.25px, cu un halou care se stinge la ~26px de o parte și de alta (18px pe telefon,
-unde raza e la jumătate). Un fir singur pe hârtie e o linie trasată — corectă, dar
-moartă. Firul cu halou e un filament aprins: se vede că lumina *vine* din el.
+**Mișcarea.** A rămas una singură, și e deliberat aproape invizibilă: haloul derivă
+sub 2vw și respiră 6%, pe două durate prime diferite (127s și 97s), deci ansamblul nu
+se repetă la vedere. Curba **nu se mișcă** — o muchie care se mișcă se citește ca
+tremur, nu ca respirație. `prefers-reduced-motion` nu mai are nevoie de nicio regulă
+proprie pentru hero: regula globală oprește singura animație, iar ce rămâne e exact
+compoziția de start, la intensitate plină.
 
-**Responsivitatea — regula, ca să nu fie stricată la loc.** Măsurat la 388px lățime:
-heroul are 1418px înălțime, iar caseta câmpului 373px. Prima variantă punea acolo un
-voal de 617px, adică de 1.7 ori lățimea ecranului, iar inelul mare ieșea cu 13px în
-afara casetei. Un voal mai lat decât ecranul nu mai e formă, e spălare de fundal:
-ochiul nu-i vede marginile, deci nu-i vede nici mișcarea. Un inel retezat exact de
-marginea ecranului citește ca greșeală, nu ca intenție.
+**Telefonul.** Sub 768px grila trece pe o coloană, portretul ajunge sub text, iar
+heroul devine mult mai înalt (măsurat la 390px lățime: **1486px**). Compoziția se
+rotește cu 90°: unda trece pe deasupra fotografiei, lumina coboară în dreptul ei.
 
 | | Telefon (≤767px) | Desktop |
 |---|---|---|
-| Voaluri | sub o lățime de ecran (280–287px pe 373px) | până la 1.45× raza de bază |
-| Inele | încap **întregi**, cu marjă de fiecare parte | au voie să fie tăiate de cadru sau să intre în spatele portretului |
-| Al treilea voal | ascuns — trei pânze suprapuse pe lățime de telefon dau noroi | vizibil |
-| Masca | stinsă între 46% și 86% din hero | între 50% și 92% |
+| Curba | undă orizontală, amplitudine ±17 unități (~25px) | linie verticală între text și portret |
+| Firul de aur | **nu există** — vezi mai jos | fir + ecou, stinse la ambele capete |
+| Lumina | 92vw, centrată la 56% / 72% | până la 1180px, la 70% / 36% |
+| Masca fondului | 46% → 86% | 50% → 92% |
 
-Pe desktop regula e inversă intenționat: un cerc întreg, complet vizibil, pe un ecran
-lat devine „logo pe fundal". Verificat prin măsurare în browser, la 388px: zero
-depășire orizontală (`scrollWidth` 373 pe un viewport de 388), ambele inele integral
-în casetă.
+**Pe telefon nu există fir de aur, și e o decizie, nu o scăpare.** Măsurat la 390px:
+banda de etichete stă între 53.8% și 60.6% din hero, iar fotografia începe la 63.3% —
+fereastra dintre ele are ~40px. Un fir trasat acolo ar sta la câțiva pixeli de niște
+etichete de 11px cu 0.14 marjă peste AA, iar prima modificare de conținut l-ar muta
+peste ele. Prima variantă chiar trecea prin ele; s-a văzut în browser. A rămas
+umplutura, care doar **luminează** hârtia, deci poate traversa orice text fără să-i
+strice contrastul. Unda trece prin fereastra 59.4% → 62.8%, adică intră în fotografie
+de sus — care e chiar rolul ei.
 
-**Unsprezece stopuri de gradient la corpuri, nu patru.** Un fundal atât de palid
-trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere de pantă în alfa se
-vede ca **inel desenat pe hârtie**. Prima variantă avea patru stopuri și inelul se
-vedea clar la 1440px, în stânga titlului. Stopurile actuale aproximează o cădere
-gaussiană (fiecare pas ~0.62 din precedentul) și ajung la zero abia la 100%. Dacă
-cineva le rărește „ca să fie mai curat CSS-ul", inelul se întoarce.
+**Unsprezece stopuri la lumină, nu patru.** Regulă păstrată din varianta veche, și
+motivul e neschimbat: un fundal atât de palid trăiește în doi-trei pași de cuantizare
+pe 8 biți, iar orice rupere de pantă în alfa se vede ca **inel desenat pe hârtie**.
+Stopurile aproximează o cădere gaussiană (fiecare pas ~0.62 din precedentul) și ajung
+la zero abia la 100%. Dacă le rărește cineva „ca să fie mai curat CSS-ul", inelul se
+întoarce — pe compoziția asta, minimalistă, s-ar vedea de două ori mai bine.
 
-**Plafonul de contrast — regula care nu s-a schimbat.** Suprafețele mari au plafon de
-aur, firele nu: un voal de 900px la 10% aur mută luminanța hârtiei, un fir de 1.25px
-la 60% nu o mută deloc. De aceea inelele au voie să fie clar vizibile, iar voalurile
-nu — vârful lor de cald e 19%, adică ~10% efectiv pe hârtie, unde `--ac-ink-50` la
-11px rămâne la **4.55:1**, peste AA. Garanția tare nu e însă asta, ci masca: câmpul e
-stins complet înainte de treimea de jos a heroului, unde stau singurele texte fără
-marjă — cele trei etichete de sub butoane și legenda portretului. Peste ele nu ajunge
-nici aur, nici fir, în niciun moment al mișcării. Verificat în browser, pe build de
-producție, la 1440px.
+**Umplutura se stinge pe verticală odată cu firul** (`acHeroFillMaskLg`). Fără asta,
+în ultima cincime a heroului rămânea o muchie tonală fără linie pe ea, adică o
+tăietură. Așa forma se termină ca lumină, nu ca margine. Pe telefon nu se aplică:
+acolo fotografia ocupă ultima treime, deci lumina trebuie să rămână exact unde
+umplutura s-ar stinge.
 
-> **Voalul (obiectul de abur din colțul stânga-jos) a fost eliminat complet** pe
-> 25 august 2026, la cererea clientei — vezi §9.18. Nu se reintroduce fără o cerere
-> explicită.
+### Placa cu portretul ✅ — 31 august 2026
+
+Runda a doua a refacerii: clienta a semnalat că fotografia „este încă un dreptunghi,
+are margini clare, în loc să fie integrată în background și linia curbă". Avea
+dreptate — curba trecea pe **lângă** casetă, nu prin ea. Acum fotografia e tăiată chiar
+de curbă, ca în fotografia de referință.
+
+| | Sub 1000px | Peste 1000px |
+|---|---|---|
+| Cum stă portretul | casetă 3:4, max 520px, sub text (neschimbat) | **placă** lipită de marginea dreaptă, de sus până jos |
+| Ce îl taie | muchia de **sus**, undă de 6.4% | latura **stângă**, aceeași curbă ca fundalul |
+| Fir de aur pe tăietură | nu | da, cu 0.8% înaintea muchiei |
+| Curba din fundal | ascunsă | vizibilă |
+
+**Cele două curbe sunt aceeași curbă, și asta e tot ce contează tehnic.** Geometria e
+scrisă o singură dată, ca DATE (`CURVE_LG` în `HeroField.tsx`: un punct de start și
+două segmente cubice), iar din ea se emit toate variantele — firul, ecoul, umplutura și
+masca plăcii — printr-o funcție. Masca plăcii se obține din aceleași puncte printr-o
+schimbare de scară, pentru că placa are marginea stângă **fixată** la 48%
+(`--ac-hero-plate-left`, `PLATE_LEFT`). Dacă ar fi două șiruri scrise de mână, s-ar
+alinia la lățimea la care au fost calibrate și s-ar rata la oricare alta.
+
+De aceea lățimea plăcii **nu are `clamp()`** și nu are voie să primească unul. Cele
+două valori se schimbă întotdeauna împreună.
+
+**Firul stă cu 8 unități (0.8%, ~11px la 1440px) înaintea muchiei fotografiei.** Nu
+zero: firul are 1.1px, iar dacă fotografia s-ar opri exact pe el i-ar acoperi
+jumătate, lăsând un fir de o jumătate de pixel — care sfârâie la scalare și dispare pe
+unele ecrane. Cu decalajul, firul rămâne întreg pe fildeș și între el și fotografie
+rămâne o dungă subțire de lumină, exact ca în fotografia de referință.
+
+**`Shell` nu mai e `relative z-[1]` în hero, și e o schimbare cu miză.** Un `Shell`
+poziționat devine blocul de referință al plăcii absolute — iar caseta lui e coloana de
+conținut: mai îngustă decât secțiunea peste 1560px și mai scurtă cu tot paddingul
+vertical al heroului. Prima încercare a avut exact acest bug: cele două curbe se
+rateau cu ~110px pe verticală, iar fotografia părea tăiată aiurea. Fără `relative`,
+blocul de referință redevine secțiunea, adică fix cutia în care desenează
+`HeroField`. Ce ținea `z-[1]` — conținutul deasupra câmpului — e acoperit de
+`z-index: -1` al câmpului plus `z-[2]` explicit pe coloana de text.
+
+**Masca stă pe cutia imaginii, nu pe figură.** `mask-image` se aplică întregului
+subarbore: pe figură ștergea și `figcaption`-ul, pentru că legenda stă tocmai în zona
+în care stingerea de jos e deja transparentă. S-a văzut în browser.
+
+**Stingerea de jos** (`--ac-hero-plate-fade`, 80% → 96%) nu e ornament. Fotografia de
+referință iese din ecran pe jos; heroul nostru are un capăt vizibil, deci fără stingere
+ar rămâne o muchie orizontală dreaptă exact acolo unde începe secțiunea următoare —
+adică fix dreptunghiul pe care îl scoatem. Sub ea rămâne fâșia pe care stă legenda, pe
+fildeș curat: sunt 11px în `--ac-ink-50`, textul fără marjă peste AA, care nu are voie
+să ajungă peste fotografie, unde luminanța nu e garantată.
+
+**Pragul e 1000px, nu 768px.** Grila heroului e `repeat(auto-fit, minmax(min(100%,
+420px), 1fr))` cu gap `clamp(40px, 6vw, 96px)`: măsurat, trece pe o coloană exact sub
+1000px. Prima variantă comuta decorul la 768px, deci între 768 și 999px desena curba
+verticală peste un layout care era deja pe o coloană. Pragul decorului urmează grila,
+nu breakpoint-ul generic de telefon.
+
+**Unda de sub 1000px e legată de fotografie, nu de înălțimea heroului**, și tot din
+lecția asta. Prima variantă o poziționa la 59.4%–62.8% din hero, valoare măsurată la
+390px lățime. Măsurătoarea e adevărată doar acolo: la 999px coloana de text are 899px,
+se rup mult mai puține rânduri, heroul se scurtează cu câteva sute de pixeli, iar unda
+ar fi căzut prin **mijlocul** fotografiei. Legată de caseta fotografiei, se așază
+singură pe muchia ei, la orice lățime și la orice conținut.
+
+Adâncimea undei e plafonată la 6.4% din înălțimea casetei (~29px la 390px): fotografia
+e 2:3 într-o cutie 3:4, decupată deja la 60% pe verticală, deci spațiul de deasupra
+capului e limitat. Peste ~8% s-ar atinge părul.
+
+> **Voalul (obiectul de abur din colțul stânga-jos) rămâne eliminat** — vezi §9.18.
+> **Corpurile de lumină, voalurile conice și inelele de aur au fost eliminate** pe
+> 31 august 2026, la cererea clientei — vezi §9.20. Niciunele nu se reintroduc fără o
+> cerere explicită.
 
 ### SEO / AEO pentru homepage ✅
 
@@ -795,6 +891,70 @@ de 388, deci **zero depășire orizontală**; ambele inele încap integral în c
 (278px și 157px pe 373px), iar voalurile au coborât de la 617px la 280–287px. Banda de
 etichete de pe telefon stă tot pe hârtie curată, cu masca nouă (46% → 86%).
 
+### ✅ Coala de fildeș n-a mișcat niciun text — verificat prin diff
+
+Rulat pe 31 august 2026, pentru refacerea de la §9.20 (fundal ivory, curbă organică,
+zero forme circulare). Metoda, de data asta, e mai strictă decât comparația pe text
+vizibil: A/B pe HTML-ul randat, cu `git stash` între cele două capturi, deci **exact
+același server, aceeași bază de date, același build**.
+
+```bash
+curl -s http://localhost:3000/ > now.html
+git stash push -- src/components/ui/HeroField.tsx src/components/ui/SectionAura.tsx src/app/globals.css
+curl -s http://localhost:3000/ > head.html
+git stash pop
+# apoi: scoase <script>self.__next_f.push(...)</script> și /_next/static/*,
+# spart pe tag-uri (`sed 's#>#>\n#g'`) și diff token cu token
+```
+
+**Rezultat: în afara stratului decorativ, doar două atribute diferă** — cele două
+`--fa` ale aurei de hero, coborâte de la 0.32/0.30 la 0.12/0.10, adică schimbarea
+intenționată din §4. Zero noduri de text, zero clase, zero atribute de layout
+modificate. Tot restul diferențelor sunt înăuntrul lui `[data-hero-field]`, care e
+`position: absolute; z-index: -1`. Comparația la pixel cu designul aprobat **nu
+trebuie refăcută.**
+
+Verificat în plus, în browser la 1440px: `pnpm build` și `pnpm typecheck` curate,
+`pnpm verify:faza2` la 10/10, grep-ul de sedile la zero. Fundalul e fildeș cald sub
+coloana de text și lumină sub fotografie, firul de aur și ecoul lui se sting înainte
+de banda de etichete, iar în ultima cincime a heroului forma se dizolvă în hârtie.
+
+**Telefonul, măsurat într-un iframe de 390px** (media query-ul se aplică pe viewportul
+iframe-ului, deci compoziția de sub 1000px se poate vedea fără redimensionarea
+ferestrei): heroul are 1486px, banda de etichete stă între 53.8% și 60.6%, fotografia
+începe la 63.3%. **Prima variantă avea firul de aur exact peste etichete** — s-a văzut
+în browser și a fost scos; vezi §4 pentru de ce nu se reintroduce.
+
+### ⚠️ Placa cu portretul — verificată doar parțial în browser
+
+Runda a doua (fotografia tăiată de curbă, §4) a fost făcută pe 31 august 2026.
+`pnpm build` și `pnpm typecheck` curate, `pnpm verify:faza2` la 10/10, grep-ul de
+sedile la zero, iar CSS-ul compilat conține toate regulile (`mask-composite: intersect`
+prezent, ambele media query-uri emise, măștile prezente în markup cu geometria
+așteptată — calea plăcii iese exact `M323.08 0C223.08 175 115.38 335 76.92 505C38.46
+678 142.31 848 419.23 1000H1000V0Z`, adică ce dă calculul de mână).
+
+**Ce s-a văzut cu ochii, la 1545px:** placa full-bleed, tăietura curbă pe latura
+stângă, firul de aur care merge exact pe muchia ei, stingerea de jos. Tot atunci s-au
+prins și s-au reparat două defecte: cele două curbe ratate cu ~110px (blocul de
+referință greșit, vezi §4) și legenda ștearsă de mască.
+
+**Ce NU s-a mai putut vedea** — extensia de browser s-a deconectat înainte:
+1. legenda „ADRIANA CHIRA" la baza plăcii, după mutarea măștii pe cutia imaginii;
+2. stingerea de jos strânsă de la 74%→92% la 80%→96%;
+3. compoziția de sub 1000px, unde unda a fost mutată de pe fundal pe muchia de sus a
+   fotografiei.
+
+Primele două sunt schimbări de o valoare fiecare, a treia e geometrie nouă. **Se
+verifică la următoarea sesiune cu browser**, la 1440px, la ~900px (tabletă, cazul care
+a scos la iveală problema) și la 390px.
+
+> **Comparația la pixel cu designul aprobat NU mai e valabilă pe hero, peste 1000px** —
+> și e o schimbare cerută, nu un regres. Portretul iese din coloana grilei și devine
+> placă lipită de marginea dreaptă (§9.20). Coloana de text rămâne exact unde era:
+> grila are în continuare două coloane egale, doar că a doua e goală, iar `Shell` a
+> pierdut `relative z-[1]`, care nu deplasa nimic. Sub 1000px layout-ul e neschimbat.
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
@@ -806,7 +966,7 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | # | Element | Cum se manifestă în cod acum | Blochează |
 |---|---|---|---|
 | 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Homepage-ul și `/servicii` randează placeholderele din design. **Cât timp sunt ascunse, `/servicii/[slug]` nu are nicio rută** — `generateStaticParams` întoarce listă goală și orice slug dă 404, corect. Prima bifă „Vizibil pe site" aduce pachetul și în listă, și pe pagina lui. | Faza 4 (Stripe), paginile de pachet |
-| 2 | **Portret profesional** | Se folosește `public/images/adriana-portret.jpg` din pachetul de design. `ImageSlot` fixează raportul → CLS 0 la înlocuire. | Calitatea hero-ului |
+| 2 | ~~**Portret profesional**~~ ✅ **rezolvat** | Fotografiile din ședința foto a clientei sunt în `public/images/`, câte una pe pagină. Placeholderul filigranat din pachetul de design a fost șters. | — |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
 | 4 | Email, telefon | Footerul, pagina de contact, `/multumim` și paginile legale afișează `[ email ]`, `[ telefon ]`. Formularul funcționează oricum: mesajele ajung în `submissions`, în admin | Contact, schema, notificarea pe email |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
@@ -1016,6 +1176,55 @@ Optsprezece, toate documentate în cod prin comentarii:
     `position: absolute; z-index: -1` — adică zero text mutat. Verificat prin diff,
     vezi §6.
 
+    **Punctul acesta a fost anulat pe 31 august 2026** — vezi punctul 20.
+
+20. **Heroul redevine minimalist, pe bază de fotografie de referință**
+    (31 august 2026). Clienta a trimis o imagine de referință pentru primul ecran și
+    a cerut: fundal ivory/crem, „foarte minimalist și elegant", **eliminarea formelor
+    circulare actuale**, o tranziție organică și subtilă între zona de text și
+    fotografie, accente „foarte discrete" de auriu cald, rezultat „premium, editorial
+    și rafinat". Explicit: fără modificări de structură, conținut, fonturi,
+    fotografie, layout sau culori de brand — doar fundalul și decorul care îl
+    integrează cu fotografia.
+
+    Premisa se inversează a doua oară, și acum se întoarce dincolo de punctul de
+    plecare. La punctul 18 decorul nu avea voie să fie observat. La 19 avea voie să
+    atragă privirea. Aici **atenția se mută pe fotografie**: fundalul nu mai
+    concurează cu ea, o încadrează. Regula nouă: singurul lucru la care se uită omul
+    pe primul ecran e portretul și titlul; tot restul e hârtie.
+
+    Ce s-a eliminat, complet — componente, blocuri CSS, keyframes: trei corpuri de
+    lumină care derivau, trei voaluri conice care se roteau, două inele de aur cu
+    halou, opt animații, șapte seturi de keyframes. **Nu se reintroduc fără o cerere
+    explicită.** Ce a rămas: un fond de fildeș, o singură lumină difuză în spatele
+    portretului și o curbă Bézier cu fir de aur între coloana de text și fotografie.
+    Descrise integral în §4.
+
+    O singură schimbare atinge un fișier din afara heroului: greutatea aurului din
+    varianta `hero` a aurei de secțiune, coborâtă de la 0.32/0.30 la 0.12/0.10.
+    Motivul e chiar cererea: haloul de accent al aurei stă între 50% și 82% din rază
+    și, pe fundalul minimalist de acum, ar fi reapărut ca inel. Celelalte patru
+    variante de aură nu s-au atins.
+
+    Ce NU s-a schimbat: aurul rămâne fir, niciodată suprafață; stratul care întunecă
+    hârtia poartă în continuare masca de contrast înainte de banda de etichete de
+    11px; zero JS, zero bibliotecă de animație; `position: absolute; z-index: -1`,
+    adică zero text mutat. Verificat prin diff pe HTML randat, vezi §6.
+
+    **Runda a doua, aceeași zi — fotografia intră în compoziție.** Prima variantă
+    lăsa curba să treacă pe LÂNGĂ fotografie, iar clienta a semnalat corect că
+    „poza cu persoana este încă un dreptunghi, are margini clare, în loc să fie
+    integrată în background și linia curbă". Peste 1000px portretul iese acum din
+    coloana grilei și devine placă lipită de marginea dreaptă a ecranului, de sus
+    până jos, cu latura stângă tăiată chiar de curbă — compoziția din fotografia de
+    referință. Sub 1000px caseta rămâne unde era, dar cu muchia de sus tăiată de
+    aceeași idee, rotită. Descris integral în §4.
+
+    **Aceasta e singura schimbare de layout din tot lucrul de pe 31 august**, și e
+    cerută explicit: fără ea fotografia rămâne un dreptunghi, oricât de bine ar
+    arăta fundalul din jurul lui. Coloana de text nu se mișcă. Comparația la pixel
+    cu designul aprobat nu mai e valabilă pe heroul de desktop — vezi nota din §6.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -1067,7 +1276,7 @@ adriana-chira-repo/
 │  ├─ homepage-approved.html      ← NU se șterge, NU se modifică
 │  └─ compare/                    ← harnessul de comparație vizuală (§6)
 ├─ docker-compose.yml             ← Postgres local
-├─ public/images/adriana-portret.jpg
+├─ public/images/                  ← fotografiile clientei, câte una pe pagină
 ├─ public/media/                  ← fișiere încărcate, gitignorat
 ├─ scripts/
 │  ├─ verify-faza2.ts             ← verificările de acceptanță (pnpm verify:faza2)
