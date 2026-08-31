@@ -9,7 +9,7 @@ e următorul pas concret.
 | Ultima actualizare | **31 august 2026** |
 | Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **fotografiile clientei sunt puse, câte una pe pagină** · **câmpul heroului refăcut a doua oară pe 31 august: ivory minimalist, fără forme circulare, la cererea clientei** · fazele 4–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 31 august 2026 |
-| Ultimul commit | `d478a74` — STATUS.md: capcana de codificare la editarea cu perl |
+| Ultimul commit | `9ad42e2` — Fotografiile clientei pe fiecare pagină, heroul refăcut ivory |
 
 ---
 
