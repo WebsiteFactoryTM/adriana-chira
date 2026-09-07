@@ -295,6 +295,23 @@ export type PostDetail = PostSummary & {
   seo: SeoOverrides
 }
 
+/**
+ * O secțiune din descrierea lungă a unui pachet, în forma de rezervă.
+ *
+ * Există pentru că `longDescription` este rich text venit din Payload, iar un
+ * document Lexical scris de mână în TypeScript e nelizibil și imposibil de
+ * corectat. Textul aprobat al celor trei programe stă deci structurat, în
+ * `src/content/packages.ts`, iar pagina randează rich text-ul din CMS doar
+ * atunci când chiar există.
+ */
+export type PackageSection = {
+  heading: string
+  paragraphs?: string[]
+  list?: string[]
+  /** Blocuri numerotate: metoda CLAR, dimensiunile HPA, etapele procesului. */
+  steps?: { index: string; title: string; body: string }[]
+}
+
 export type PackageDetail = {
   numeral: string
   slug: string
@@ -309,8 +326,103 @@ export type PackageDetail = {
   currency: string
   featured: boolean
   longDescription: RichTextDocument
+  /** Descrierea aprobată, folosită când CMS-ul n-a primit încă rich text. */
+  body?: PackageSection[]
   faq: QaItem[]
   seo: SeoOverrides
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workshopuri                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Un workshop, așa cum e scris în catalog sau în CMS.
+ *
+ * Ce NU e aici: durata, programul zilei, prețul, „Cum se desfășoară" și
+ * „Pentru cine" — sunt identice la toate cele 14 și stau o singură dată, în
+ * `WORKSHOP_COMMON` (vezi `src/content/workshops.ts`).
+ */
+export type WorkshopEntry = {
+  slug: string
+  /** Titlul creativ. Devine `h3` pe card. */
+  title: string
+  /** Competența căutată în Google. Devine subtitlul de sub titlu. */
+  subtitle: string
+  /** Data ediției, ISO `AAAA-LL-ZZ`. `null` = încă neprogramat. */
+  sessionDate: string | null
+  /** Una-două fraze pe card, înainte de „Citește tot programul". */
+  summary: string
+  what: string
+  problems: string
+  /** Fraza proprie despre ce se lucrează efectiv în ziua respectivă. */
+  workMethod: string
+  outcomes: string[]
+  /** Expresiile-cheie recomandate de clientă. Nu se randează în pagină. */
+  keywords: string[]
+}
+
+/**
+ * Un workshop pregătit pentru randare.
+ *
+ * `purchasable` NU vine din CMS: se calculează din dată, în `lib/workshops.ts`.
+ * Sunt de vânzare întotdeauna doar următoarele trei ediții programate.
+ */
+export type Workshop = WorkshopEntry & {
+  numeral: string
+  href: string
+  price: number
+  currency: string
+  purchasable: boolean
+  /** Ediția are dată, dar nu a intrat (încă) în fereastra de înscriere. */
+  scheduled: boolean
+}
+
+export type WorkshopAgendaRow = { time: string; body: string }
+
+export type WorkshopsPageContent = {
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  intro: string
+  positioning: string
+  image: ImageSlotContent
+  metaTitle: string
+  metaDescription: string
+  faq: FaqItem[]
+}
+
+/* -------------------------------------------------------------------------- */
+/* Recomandări                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export type Testimonial = {
+  slug: string
+  author: string
+  /**
+   * Funcția și organizația. `null` când autorul nu și-a trecut una.
+   *
+   * Nu e o scăpare de modelare: nu toate recomandările vin semnate cu o
+   * funcție, iar a completa noi una ar însemna să atribuim unui om real o
+   * poziție pe care nu a declarat-o. Cardul și pagina o omit pur și simplu.
+   */
+  role: string | null
+  /** În ce context a lucrat autorul cu Adriana. Scurt, factual. */
+  context: string | null
+  /** Fraza scoasă în evidență. COPIATĂ din `paragraphs`, nu rezumată. */
+  excerpt: string
+  paragraphs: string[]
+  /** Apare în secțiunea de pe homepage. */
+  featured: boolean
+  order: number
+}
+
+export type TestimonialsPageContent = {
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  metaDescription: string
+  note: string
 }
 
 /** O pagină cu text fix: legalele, mulțumirile, comanda anulată. */

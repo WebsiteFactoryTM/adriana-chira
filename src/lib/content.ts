@@ -2,7 +2,10 @@ import { cache } from 'react'
 
 import { homeContent } from '@/content/home'
 import { aboutFallback } from '@/content/pages'
+import { CARD_INCLUDES, packagesFallback } from '@/content/packages'
 import { siteSettings } from '@/content/site'
+import { testimonials } from '@/content/testimonials'
+import { workshopEntries, workshopsPage } from '@/content/workshops'
 import type {
   AboutContent,
   BlogContent,
@@ -27,10 +30,14 @@ import type {
   SeoOverrides,
   ServiciiContent,
   SiteSettings,
+  Testimonial,
   UniversContent,
   ValoriContent,
+  Workshop,
+  WorkshopEntry,
 } from '@/content/types'
 import { getPayloadClientSafe } from '@/lib/payload'
+import { prepareWorkshops } from '@/lib/workshops'
 import type {
   AboutPage,
   Category,
@@ -182,11 +189,24 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'] as const
 
 /**
+ * Moneda afișată. Toate prețurile clientei sunt în lei.
+ *
+ * Scris o singură dată: aceeași valoare merge și pe card, și pe pagina de
+ * pachet, și în `Offer`-ul din datele structurate, și în sesiunea de plată.
+ * Codul ISO, nu simbolul — este ce cere `priceCurrency` din schema.org.
+ */
+const CURRENCY = 'RON'
+
+/**
  * Pachetele.
  *
- * Cât timp niciun pachet nu e vizibil, cardurile rămân placeholderele din
- * designul aprobat — `[ Nume pachet ]`, `[ 000 ] EUR`. Numerotarea romană e
- * parte din design și se recalculează după ordinea reală, nu se ia din CMS.
+ * Fără pachete vizibile în CMS, cardurile cad pe cele trei programe reale din
+ * `src/content/packages.ts`. Numerotarea romană e parte din design și se
+ * recalculează după ordinea reală, nu se ia din CMS.
+ *
+ * `CARD_INCLUDES` taie lista „Ce include" la trei rânduri, cât are cardul din
+ * designul aprobat. Restul elementelor nu se pierd: apar integral pe pagina
+ * pachetului.
  */
 function mergePackages(docs: Package[], fallback: PackagePreview[]): PackagePreview[] {
   if (docs.length === 0) return fallback
@@ -198,11 +218,11 @@ function mergePackages(docs: Package[], fallback: PackagePreview[]): PackagePrev
     forWho: nullableText(doc.forWho, null),
     includes:
       Array.isArray(doc.includes) && doc.includes.length > 0
-        ? doc.includes.map((entry) => nullableText(entry.item, null))
+        ? doc.includes.slice(0, CARD_INCLUDES).map((entry) => nullableText(entry.item, null))
         : [null, null, null],
     duration: nullableText(doc.duration, null),
     price: typeof doc.price === 'number' ? doc.price : null,
-    currency: 'EUR',
+    currency: CURRENCY,
     href: `/servicii/${doc.slug}`,
     featured: doc.featured === true,
   }))
@@ -687,6 +707,17 @@ export async function getAboutContent(): Promise<AboutContent> {
 /* -------------------------------------------------------------------------- */
 
 function toPackageDetail(doc: Package, index: number): PackageDetail {
+  /**
+   * Textul aprobat al aceluiași pachet, dacă îl avem.
+   *
+   * Cât timp nimeni n-a scris descrierea lungă în admin, pagina pachetului
+   * randează secțiunile verificate din `src/content/packages.ts` în loc să
+   * arate un placeholder. Potrivirea se face pe slug, nu pe poziție: o
+   * reordonare în admin nu are voie să mute descrierea de la un program la
+   * altul.
+   */
+  const approved = packagesFallback.find((item) => item.slug === doc.slug)
+
   return {
     numeral: ROMAN[index] ?? String(index + 1),
     slug: doc.slug,
@@ -697,14 +728,19 @@ function toPackageDetail(doc: Package, index: number): PackageDetail {
     includes:
       Array.isArray(doc.includes) && doc.includes.length > 0
         ? doc.includes.map((entry) => nullableText(entry.item, null))
-        : [null, null, null],
+        : (approved?.includes ?? [null, null, null]),
     duration: nullableText(doc.duration, null),
     format: doc.format ?? 'hibrid',
     price: typeof doc.price === 'number' ? doc.price : null,
-    currency: 'EUR',
+    currency: CURRENCY,
     featured: doc.featured === true,
     longDescription: hasRichText(doc.longDescription) ? doc.longDescription : null,
-    faq: list(doc.faq, (item) => ({ question: item.question, answer: item.answer }), []),
+    body: approved?.body,
+    faq: list(
+      doc.faq,
+      (item) => ({ question: item.question, answer: item.answer }),
+      approved?.faq ?? [],
+    ),
     seo: seoOf(doc.seo),
   }
 }
@@ -712,13 +748,17 @@ function toPackageDetail(doc: Package, index: number): PackageDetail {
 /**
  * Pachetele vizibile, în ordinea din admin.
  *
- * Lista goală este o stare normală, nu o eroare: azi niciun pachet nu are nume
- * și preț, deci toate sunt ascunse (STATUS §7.1). Pagina `/servicii` randează
- * atunci cardurile-placeholder din designul aprobat, ca pe homepage.
+ * Fără CMS — bază de date oprită, colecție goală, toate pachetele ascunse —
+ * se întorc cele trei programe aprobate din `src/content/packages.ts`. Este
+ * aceeași regulă de îmbinare ca peste tot: CMS-ul are întâietate, dar numai
+ * unde chiar a fost completat.
+ *
+ * Consecința importantă: `/servicii/[slug]` are rute și fără bază de date,
+ * deci build-ul nu mai depinde de Postgres ca să producă paginile de pachet.
  */
 export async function getPackages(): Promise<PackageDetail[]> {
   const payload = await getPayloadClientSafe()
-  if (!payload) return []
+  if (!payload) return packagesFallback
 
   try {
     const result = await payload.find({
@@ -728,9 +768,133 @@ export async function getPackages(): Promise<PackageDetail[]> {
       limit: 12,
       depth: 1,
     })
+    if (result.docs.length === 0) return packagesFallback
     return result.docs.map(toPackageDetail)
   } catch {
-    return []
+    return packagesFallback
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workshopuri                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Catalogul de workshopuri, gata de randat.
+ *
+ * Ordinea și fereastra de înscriere NU se decid aici: `prepareWorkshops` le
+ * calculează din date, iar regula e explicată o singură dată, în
+ * `src/lib/workshops.ts`. Aici rămâne doar traducerea din documentul Payload
+ * în tipul de conținut.
+ */
+export async function getWorkshops(): Promise<Workshop[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return prepareWorkshops(workshopEntries)
+
+  try {
+    const result = await payload.find({
+      collection: 'workshops',
+      where: { active: { equals: true } },
+      sort: 'order',
+      limit: 50,
+      depth: 0,
+    })
+
+    if (result.docs.length === 0) return prepareWorkshops(workshopEntries)
+
+    const entries: WorkshopEntry[] = result.docs.map((doc) => ({
+      slug: doc.slug,
+      title: doc.title,
+      subtitle: nullableText(doc.subtitle, '') ?? '',
+      sessionDate: toIsoDay(doc.sessionDate),
+      summary: nullableText(doc.summary, '') ?? '',
+      what: nullableText(doc.what, '') ?? '',
+      problems: nullableText(doc.problems, '') ?? '',
+      workMethod: nullableText(doc.workMethod, '') ?? '',
+      outcomes: list(doc.outcomes, (item) => item.item, []),
+      keywords: list(doc.keywords, (item) => item.item, []),
+    }))
+
+    // Prețul rămâne per document: dacă Adriana schimbă prețul unui singur
+    // workshop, cardul lui trebuie să îl arate pe al lui, nu pe cel comun.
+    const prepared = prepareWorkshops(entries)
+    const priceBySlug = new Map(
+      result.docs.map((doc) => [doc.slug, typeof doc.price === 'number' ? doc.price : null]),
+    )
+
+    return prepared.map((workshop) => ({
+      ...workshop,
+      price: priceBySlug.get(workshop.slug) ?? workshop.price,
+    }))
+  } catch {
+    return prepareWorkshops(workshopEntries)
+  }
+}
+
+/**
+ * Un workshop după slug, cu tot cu starea lui de înscriere.
+ *
+ * Trece prin `getWorkshops` intenționat: `purchasable` depinde de POZIȚIA
+ * ediției față de celelalte, deci nu poate fi calculat dintr-un document
+ * singur. Ruta de plată se bazează pe asta ca să refuze o ediție închisă.
+ */
+export async function getWorkshopBySlug(slug: string): Promise<Workshop | null> {
+  const workshops = await getWorkshops()
+  return workshops.find((item) => item.slug === slug) ?? null
+}
+
+/**
+ * Data unei ediții, ca `AAAA-LL-ZZ`.
+ *
+ * Payload păstrează câmpurile `date` ca timestamp, chiar și când selectorul
+ * arată doar ziua. Tăiem partea de oră din forma ISO în UTC — aceeași parte pe
+ * care o scrie și selectorul, deci ziua se citește înapoi neschimbată.
+ */
+function toIsoDay(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0) return null
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toISOString().slice(0, 10)
+}
+
+/* -------------------------------------------------------------------------- */
+/* Recomandări                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Recomandările vizibile.
+ *
+ * `featured` filtrează doar secțiunea de pe homepage; pagina `/testimoniale`
+ * le cere pe toate. Filtrarea se face aici, nu în interogare, pentru că sunt
+ * trei documente — o a doua interogare ar costa mai mult decât filtrul.
+ */
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return testimonials
+
+  try {
+    const result = await payload.find({
+      collection: 'testimonials',
+      where: { active: { equals: true } },
+      sort: 'order',
+      limit: 30,
+      depth: 0,
+    })
+
+    if (result.docs.length === 0) return testimonials
+
+    return result.docs.map((doc, index) => ({
+      slug: doc.slug,
+      author: doc.author,
+      role: nullableText(doc.role, null),
+      context: nullableText(doc.context, null),
+      excerpt: nullableText(doc.excerpt, '') ?? '',
+      paragraphs: list(doc.paragraphs, (item) => item.text, []),
+      featured: doc.featured !== false,
+      order: typeof doc.order === 'number' ? doc.order : index,
+    }))
+  } catch {
+    return testimonials
   }
 }
 
@@ -753,12 +917,21 @@ export async function getPackageBySlug(slug: string): Promise<PackageDetail | nu
  * Întrebările frecvente ale unei pagini.
  *
  * `ambele` înseamnă „și pe homepage, și pe servicii", deci intră în ambele
- * liste. Fără CMS, homepage-ul are întrebările din design, iar pagina de
- * servicii rămâne fără secțiunea de FAQ — nu inventăm întrebări comerciale.
+ * liste. Fără CMS, homepage-ul are întrebările din design, pagina de
+ * workshopuri le are pe cele din catalog, iar pagina de servicii rămâne fără
+ * secțiunea de FAQ — nu inventăm întrebări comerciale.
  */
-export async function getFaqs(page: 'homepage' | 'servicii'): Promise<FaqItem[]> {
+export type FaqPage = 'homepage' | 'servicii' | 'workshopuri'
+
+const faqFallback = (page: FaqPage): FaqItem[] => {
+  if (page === 'homepage') return homeContent.faq.items
+  if (page === 'workshopuri') return workshopsPage.faq
+  return []
+}
+
+export async function getFaqs(page: FaqPage): Promise<FaqItem[]> {
   const payload = await getPayloadClientSafe()
-  if (!payload) return page === 'homepage' ? homeContent.faq.items : []
+  if (!payload) return faqFallback(page)
 
   try {
     const result = await payload.find({
@@ -769,12 +942,10 @@ export async function getFaqs(page: 'homepage' | 'servicii'): Promise<FaqItem[]>
       depth: 0,
     })
 
-    if (result.docs.length === 0) {
-      return page === 'homepage' ? homeContent.faq.items : []
-    }
+    if (result.docs.length === 0) return faqFallback(page)
     return mergeFaqItems(result.docs, [])
   } catch {
-    return page === 'homepage' ? homeContent.faq.items : []
+    return faqFallback(page)
   }
 }
 

@@ -64,7 +64,8 @@ export const Faqs: CollectionConfig = {
       options: [
         { label: 'Homepage', value: 'homepage' },
         { label: 'Pagina de servicii', value: 'servicii' },
-        { label: 'Ambele', value: 'ambele' },
+        { label: 'Pagina de workshopuri', value: 'workshopuri' },
+        { label: 'Homepage și servicii', value: 'ambele' },
       ],
       admin: { position: 'sidebar' },
     },

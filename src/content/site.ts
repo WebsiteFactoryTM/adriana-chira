@@ -30,9 +30,22 @@ export const siteSettings: SiteSettings = {
    * duce la rute reale — tot de aici, dintr-un singur loc. Întrebările
    * frecvente rămân ancoră: trăiesc pe homepage, n-au pagină proprie.
    */
+  /**
+   * NOTĂ DESIGN: „Workshopuri" este a cincea intrare din navigație, iar
+   * designul aprobat are patru. Nu contrazice designul — îl extinde: la
+   * momentul aprobării, workshopurile nu existau ca ofertă. Sunt al doilea
+   * lucru vandabil din site, cu pagină și preț propriu, iar o linie de produs
+   * care nu apare în navigație nu se vinde. Măsurat la 1000px, pragul la care
+   * apare navigația pe desktop, cele cinci intrări plus butonul de programare
+   * încap fără să se rupă rândul.
+   *
+   * Eticheta e scurtă, deși adresa e lungă: adresa poartă expresia căutată în
+   * Google, meniul poartă cuvântul pe care îl caută omul cu ochiul.
+   */
   nav: [
     { label: 'Despre mine', href: '/despre' },
     { label: 'Servicii', href: '/servicii' },
+    { label: 'Workshopuri', href: '/workshopuri-performanta-umana' },
     { label: 'Blog', href: '/blog' },
     { label: 'Contact', href: '/contact' },
   ],
@@ -40,6 +53,8 @@ export const siteSettings: SiteSettings = {
   mobileNav: [
     { label: 'Despre mine', href: '/despre' },
     { label: 'Servicii', href: '/servicii' },
+    { label: 'Workshopuri', href: '/workshopuri-performanta-umana' },
+    { label: 'Recomandări', href: '/testimoniale' },
     { label: 'Blog', href: '/blog' },
     { label: 'Contact', href: '/contact' },
     { label: 'Întrebări frecvente', href: '/#faq' },
@@ -49,6 +64,8 @@ export const siteSettings: SiteSettings = {
     { label: 'Acasă', href: '/' },
     { label: 'Despre mine', href: '/despre' },
     { label: 'Servicii', href: '/servicii' },
+    { label: 'Workshopuri', href: '/workshopuri-performanta-umana' },
+    { label: 'Recomandări', href: '/testimoniale' },
     { label: 'Blog', href: '/blog' },
     { label: 'Contact', href: '/contact' },
   ],
@@ -90,6 +107,11 @@ export const HOME_SECTION_IDS = [
   'despre',
   'valori',
   'citat',
+  // A treisprezecea secțiune, adăugată pe 7 septembrie 2026 la cererea
+  // clientei. Nu există în designul aprobat — vezi `sections/Testimoniale.tsx`.
+  // Se ascunde singură când nu există recomandări marcate pentru prima pagină,
+  // deci nu are nevoie de comutator propriu în CMS.
+  'testimoniale',
   'servicii',
   'blog',
   'faq',

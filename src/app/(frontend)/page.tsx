@@ -10,10 +10,22 @@ import { Metoda } from '@/components/sections/Metoda'
 import { PentruCine } from '@/components/sections/PentruCine'
 import { Problema } from '@/components/sections/Problema'
 import { Servicii } from '@/components/sections/Servicii'
+import { Testimoniale } from '@/components/sections/Testimoniale'
 import { Univers } from '@/components/sections/Univers'
 import { Valori } from '@/components/sections/Valori'
-import { getHiddenSections, getHomeContent, getSiteSettings } from '@/lib/content'
-import { faqSchema, graph, professionalServiceSchema, websiteSchema } from '@/lib/schema'
+import {
+  getHiddenSections,
+  getHomeContent,
+  getSiteSettings,
+  getTestimonials,
+} from '@/lib/content'
+import {
+  faqSchema,
+  graph,
+  professionalServiceSchema,
+  reviewSchemas,
+  websiteSchema,
+} from '@/lib/schema'
 
 export const metadata: Metadata = {
   title: 'Adriana Chira · Consultant în Performanță Umană',
@@ -41,11 +53,14 @@ export const metadata: Metadata = {
  * ceva intenționat.
  */
 export default async function HomePage() {
-  const [content, settings, hidden] = await Promise.all([
+  const [content, settings, hidden, testimonials] = await Promise.all([
     getHomeContent(),
     getSiteSettings(),
     getHiddenSections(),
+    getTestimonials(),
   ])
+
+  const featuredTestimonials = testimonials.filter((item) => item.featured).slice(0, 3)
 
   const shows = (id: string) => !hidden.has(id)
 
@@ -60,6 +75,14 @@ export default async function HomePage() {
         {shows('despre') && <Despre content={content.despre} />}
         {shows('valori') && <Valori content={content.valori} />}
         {shows('citat') && <Citat content={content.citat} />}
+        {/*
+          NOTĂ DESIGN: a treisprezecea secțiune, cerută de clientă pe 7
+          septembrie 2026, odată cu livrarea recomandărilor. Nu există în
+          `design/homepage-approved.html`. Vezi `sections/Testimoniale.tsx`
+          și STATUS.md §9. Se ascunde singură dacă nu există recomandări
+          marcate pentru prima pagină.
+        */}
+        <Testimoniale testimonials={testimonials} />
         {shows('servicii') && <Servicii content={content.servicii} />}
         {shows('blog') && <BlogPreview content={content.blog} />}
         {shows('faq') && <Faq content={content.faq} />}
@@ -71,6 +94,8 @@ export default async function HomePage() {
           websiteSchema(settings),
           professionalServiceSchema(settings),
           faqSchema(content.faq.items, settings.url),
+          // Doar recomandările chiar afișate pe pagină, cu fraza chiar afișată.
+          ...reviewSchemas(featuredTestimonials, settings, '/testimoniale'),
         ])}
       />
     </>

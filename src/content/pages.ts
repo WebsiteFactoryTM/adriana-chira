@@ -96,7 +96,7 @@ export const serviciiPage = {
   reassurance: homeContent.servicii.reassurance,
   image: serviciiImage,
   metaDescription:
-    'Pachetele de consultanță în performanță umană: ce conțin, cât durează și pentru cine sunt potrivite. Timișoara și online.',
+    'Consultanță în performanță umană pentru antreprenori, manageri și profesioniști: evaluare strategică de 3 ore, program individual de 8 săptămâni, program executive de 6 luni și workshopuri de o zi. Timișoara și online.',
 }
 
 export const blogPage = {
@@ -139,6 +139,31 @@ export const contactPage = {
   },
   /** Textul precompletat când cineva vine de pe pagina unui pachet. */
   packagePrefill: (name: string) => `Bună, Adriana. Mă interesează pachetul „${name}".\n\n`,
+
+  /**
+   * Precompletarea pentru workshopuri.
+   *
+   * Trei texte, nu unul, pentru că cele trei situații cer răspunsuri diferite:
+   * o ediție deschisă la care omul preferă factura pe firmă, o ediție fără
+   * dată la care își anunță interesul, și cazul în care plata online tocmai a
+   * refuzat să pornească. Un singur text generic ar fi obligat-o pe Adriana să
+   * ghicească la fiecare mesaj despre ce e vorba.
+   */
+  workshopPrefill: (name: string, date: string | null) =>
+    date
+      ? `Bună, Adriana. Vreau să rezerv un loc la workshopul „${name}", ediția din ${date}, fără plată online.\n\nAm nevoie de:\n- [ ] factură pe firmă\n- [ ] plată prin transfer bancar\n- [ ] altceva:\n\nNumăr de locuri: 1\n\n`
+      : `Bună, Adriana. Mă interesează workshopul „${name}".\n\n`,
+
+  waitlistPrefill: (name: string) =>
+    `Bună, Adriana. Mă interesează workshopul „${name}" și aș vrea să știu când se programează următoarea ediție.\n\n`,
+
+  /**
+   * Nota afișată deasupra formularului când cineva ajunge aici pentru că plata
+   * online nu a pornit. Nu spune „a apărut o eroare": pentru omul de la
+   * celălalt capăt, ce contează e că poate cumpăra oricum.
+   */
+  checkoutFallbackNote:
+    'Plata online nu a putut fi pornită acum. Nu s-a debitat nimic. Scrie-mi aici și îți trimit personal datele de plată sau factura proformă, în cel mult 24 de ore lucrătoare.',
   success: {
     title: 'Mesajul a plecat.',
     body: 'Îți răspund personal, de obicei în aceeași zi lucrătoare.',

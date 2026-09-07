@@ -70,6 +70,8 @@ export interface Config {
     posts: Post;
     categories: Category;
     packages: Package;
+    workshops: Workshop;
+    testimonials: Testimonial;
     faqs: Faq;
     media: Media;
     orders: Order;
@@ -85,6 +87,8 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     packages: PackagesSelect<false> | PackagesSelect<true>;
+    workshops: WorkshopsSelect<false> | WorkshopsSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
@@ -343,7 +347,7 @@ export interface Package {
   duration?: string | null;
   format?: ('online' | 'fata-in-fata' | 'hibrid') | null;
   /**
-   * Se citește doar pe server. La salvare, prețul se trimite automat în Stripe.
+   * În lei, fără separator de mii: scrie 5100, nu 5.100. Se citește doar pe server. La salvare, prețul se trimite automat în Stripe.
    */
   price?: number | null;
   /**
@@ -412,6 +416,154 @@ export interface Package {
   createdAt: string;
 }
 /**
+ * Catalogul de workshopuri. Se pot cumpăra întotdeauna doar următoarele trei ediții cu dată în viitor — ca să deschizi un workshop la înscriere, dă-i o dată.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "workshops".
+ */
+export interface Workshop {
+  id: number;
+  /**
+   * Titlul creativ, cel care se vede primul. De exemplu: „Sub presiune".
+   */
+  title: string;
+  /**
+   * Se completează singur din titlu, fără diacritice. Îl poți edita, dar după publicare schimbarea rupe linkurile existente.
+   */
+  slug: string;
+  /**
+   * Competența, scrisă cum o caută oamenii în Google. Apare imediat sub titlu. De exemplu: „Inteligență emoțională și autoreglare în business".
+   */
+  subtitle: string;
+  /**
+   * Una-două fraze, singurul text vizibil înainte ca cineva să apese „Citește tot programul". Scrie-o ca să se înțeleagă singură, fără restul paginii.
+   */
+  summary: string;
+  /**
+   * Gol = workshopul apare în catalog, fără buton de plată. Cu dată în viitor, intră la rând: primele trei astfel de ediții sunt deschise la înscriere. Ora este întotdeauna 09:00–17:00.
+   */
+  sessionDate?: string | null;
+  /**
+   * Per participant, în lei. Se citește doar pe server. La salvare, prețul se trimite automat în Stripe.
+   */
+  price: number;
+  /**
+   * Ordinea firului logic al seriei, folosită pentru workshopurile FĂRĂ dată. Cele cu dată se așază singure, cronologic, deasupra lor.
+   */
+  order: number;
+  /**
+   * Debifează pentru a scoate workshopul din catalog fără a-l șterge.
+   */
+  active?: boolean | null;
+  /**
+   * Începe cu titlul workshopului și spune într-o frază ce este. Fraza asta e cea mai citată de motoarele de căutare și de asistenții AI.
+   */
+  what: string;
+  /**
+   * Situația concretă, în cuvintele omului care o trăiește.
+   */
+  problems: string;
+  /**
+   * Singura parte din „Cum se desfășoară" care diferă de la un workshop la altul. Restul e comun și apare o dată, sus.
+   */
+  workMethod: string;
+  /**
+   * Punctele din listă, în ordinea în care vrei să fie citite.
+   */
+  outcomes?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * NU se afișează în pagină. Sunt notițe pentru redactare: expresiile pe care textul de mai sus ar trebui să le acopere natural. O listă lipită în pagină ar fi keyword stuffing și se penalizează.
+   */
+  keywords?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Lasă gol ca să se folosească titlul și descrierea documentului.
+   */
+  seo?: {
+    /**
+     * Ideal sub 60 de caractere. Gol = titlul documentului.
+     */
+    metaTitle?: string | null;
+    /**
+     * Ideal 150–160 de caractere. Gol = rezumatul documentului.
+     */
+    metaDescription?: string | null;
+    /**
+     * Gol = imaginea implicită din Setările site-ului.
+     */
+    ogImage?: (number | null) | Media;
+    /**
+     * Adaugă `noindex`. Pagina rămâne accesibilă prin link direct.
+     */
+    noIndex?: boolean | null;
+  };
+  stripeProductId?: string | null;
+  stripePriceId?: string | null;
+  stripeSyncStatus?: ('synced' | 'skipped' | 'error') | null;
+  stripeSyncMessage?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Recomandările primite de la oameni cu care Adriana a lucrat. Se publică integral, cu acordul scris al autorului.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: number;
+  /**
+   * Așa cum a cerut persoana să fie scris, cu titluri cu tot.
+   */
+  author: string;
+  /**
+   * Ancora recomandării pe pagina /testimoniale. Se completează singură din nume.
+   */
+  slug: string;
+  /**
+   * Ce dă greutate recomandării. De exemplu: „Director general, AGRO MARUS SRL". Lasă gol dacă autorul nu și-a trecut una — nu o completa din presupunere.
+   */
+  role?: string | null;
+  /**
+   * Scurt și factual. De exemplu: „Mentorat individual, 2021–2023". Gol = nu se afișează.
+   */
+  context?: string | null;
+  /**
+   * COPIAZĂ o frază întreagă din textul de mai jos, nu o rescrie și nu o tăia la mijloc. Apare pe prima pagină, între ghilimele, sub numele autorului — cine o citește trebuie să o regăsească în textul integral.
+   */
+  excerpt: string;
+  /**
+   * Un rând pentru fiecare paragraf, exact ca în textul primit. Nu se rescrie și nu se scurtează: e textul altcuiva.
+   */
+  paragraphs: {
+    text: string;
+    id?: string | null;
+  }[];
+  /**
+   * Secțiunea de pe prima pagină arată maximum trei recomandări. Textul integral rămâne oricum pe /testimoniale.
+   */
+  featured?: boolean | null;
+  /**
+   * Numere mai mici apar primele.
+   */
+  order: number;
+  /**
+   * Debifează dacă autorul își retrage acordul de publicare. Recomandarea rămâne în evidență, dar dispare de pe site.
+   */
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Întrebările afișate pe homepage și pe pagina de servicii.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -424,7 +576,7 @@ export interface Faq {
    * Text simplu, fără formatare. Primele două fraze sunt cele care ajung în Google și în răspunsurile AI — pune concluzia la început.
    */
   answer: string;
-  page: 'homepage' | 'servicii' | 'ambele';
+  page: 'homepage' | 'servicii' | 'workshopuri' | 'ambele';
   /**
    * Numere mai mici apar primele.
    */
@@ -463,7 +615,7 @@ export interface Faq {
   createdAt: string;
 }
 /**
- * Comenzile plătite prin Stripe. Se creează automat; nu se pot edita de aici.
+ * Comenzile plătite prin Stripe — pachete de consultanță și locuri la workshopuri. Se creează automat; nu se pot edita de aici.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
@@ -472,13 +624,23 @@ export interface Order {
   id: number;
   stripeSessionId: string;
   stripePaymentIntentId?: string | null;
+  itemType: 'pachet' | 'workshop';
   /**
    * Relația se poate rupe dacă pachetul e șters. Numele de mai jos rămâne.
    */
   package?: (number | null) | Package;
-  packageNameSnapshot: string;
   /**
-   * În unități întregi ale monedei, așa cum a fost încasată.
+   * Relația se poate rupe dacă workshopul e șters. Numele de mai jos rămâne.
+   */
+  workshop?: (number | null) | Workshop;
+  packageNameSnapshot: string;
+  sessionDateSnapshot?: string | null;
+  /**
+   * La workshopuri, câte locuri au fost plătite într-o singură comandă.
+   */
+  quantity: number;
+  /**
+   * Totalul încasat, în unități întregi ale monedei.
    */
   amount: number;
   currency: string;
@@ -592,6 +754,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'packages';
         value: number | Package;
+      } | null)
+    | ({
+        relationTo: 'workshops';
+        value: number | Workshop;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
       } | null)
     | ({
         relationTo: 'faqs';
@@ -745,6 +915,71 @@ export interface PackagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "workshops_select".
+ */
+export interface WorkshopsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  subtitle?: T;
+  summary?: T;
+  sessionDate?: T;
+  price?: T;
+  order?: T;
+  active?: T;
+  what?: T;
+  problems?: T;
+  workMethod?: T;
+  outcomes?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  keywords?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        ogImage?: T;
+        noIndex?: T;
+      };
+  stripeProductId?: T;
+  stripePriceId?: T;
+  stripeSyncStatus?: T;
+  stripeSyncMessage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  author?: T;
+  slug?: T;
+  role?: T;
+  context?: T;
+  excerpt?: T;
+  paragraphs?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  featured?: T;
+  order?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faqs_select".
  */
 export interface FaqsSelect<T extends boolean = true> {
@@ -849,8 +1084,12 @@ export interface MediaSelect<T extends boolean = true> {
 export interface OrdersSelect<T extends boolean = true> {
   stripeSessionId?: T;
   stripePaymentIntentId?: T;
+  itemType?: T;
   package?: T;
+  workshop?: T;
   packageNameSnapshot?: T;
+  sessionDateSnapshot?: T;
+  quantity?: T;
   amount?: T;
   currency?: T;
   customerName?: T;

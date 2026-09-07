@@ -1,4 +1,4 @@
-import type { FaqItem, SiteSettings } from '@/content/types'
+import type { FaqItem, SiteSettings, Testimonial, Workshop } from '@/content/types'
 
 /**
  * Generatoare de date structurate.
@@ -221,6 +221,128 @@ export function serviceSchema(
         }
       : {}),
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workshopuri                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `Event` pentru o ediție de workshop.
+ *
+ * Se emite DOAR pentru edițiile cu dată. Un `Event` fără `startDate` este
+ * invalid, iar unul cu o dată inventată („peste trei luni") ar fi mai rău:
+ * Google afișează evenimentele în rezultate, cu ziua lor, iar o zi greșită
+ * ajunge în calendarul cuiva.
+ *
+ * `offers` apare numai pe edițiile deschise la înscriere. Restul catalogului
+ * primește `availability: PreOrder`, care descrie exact situația reală: ediția
+ * există, dar încă nu se poate cumpăra un loc la ea.
+ *
+ * Orele sunt cele din catalog — 09:00–17:00, ora României. Ofsetul e scris
+ * explicit, nu dedus din fusul serverului, care pe Vercel e UTC.
+ */
+export function workshopEventSchema(
+  workshop: Workshop,
+  settings: SiteSettings,
+  path: string,
+): JsonLdObject | null {
+  if (!workshop.sessionDate) return null
+
+  const url = new URL(`${path}#${workshop.slug}`, settings.url).toString()
+  // România e pe +03:00 din ultima duminică din martie până în ultima din
+  // octombrie, +02:00 în rest. Workshopurile încep la 09:00, ora locală.
+  const offset = isSummerTime(workshop.sessionDate) ? '+03:00' : '+02:00'
+
+  return {
+    '@type': 'Event',
+    '@id': url,
+    name: `${workshop.title} — ${workshop.subtitle}`,
+    description: workshop.summary,
+    url,
+    startDate: `${workshop.sessionDate}T09:00:00${offset}`,
+    endDate: `${workshop.sessionDate}T17:00:00${offset}`,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    inLanguage: 'ro-RO',
+    location: {
+      '@type': 'Place',
+      name: `Workshop în ${settings.city}`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: settings.city,
+        addressRegion: settings.region,
+        addressCountry: 'RO',
+      },
+    },
+    organizer: { '@id': `${settings.url}/${ORG_ID}` },
+    performer: { '@id': `${settings.url}/${PERSON_ID}` },
+    offers: {
+      '@type': 'Offer',
+      price: workshop.price,
+      priceCurrency: workshop.currency,
+      url,
+      availability: workshop.purchasable
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/PreOrder',
+    },
+  }
+}
+
+/**
+ * Ora de vară a României, pentru o zi dată.
+ *
+ * Se calculează, nu se citește dintr-o bibliotecă de fusuri: ne trebuie o
+ * singură regulă, iar cea europeană e fixă — de la ultima duminică din martie,
+ * ora 01:00 UTC, până la ultima duminică din octombrie.
+ */
+function isSummerTime(isoDay: string): boolean {
+  const date = new Date(`${isoDay}T12:00:00Z`)
+  const year = date.getUTCFullYear()
+  const lastSunday = (month: number): Date => {
+    // Ziua 0 a lunii următoare = ultima zi a lunii cerute.
+    const last = new Date(Date.UTC(year, month + 1, 0, 1))
+    last.setUTCDate(last.getUTCDate() - last.getUTCDay())
+    return last
+  }
+  return date >= lastSunday(2) && date < lastSunday(9)
+}
+
+/* -------------------------------------------------------------------------- */
+/* Recomandări                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `Review`, câte unul pentru fiecare recomandare AFIȘATĂ pe pagina curentă.
+ *
+ * **Fără `reviewRating` și fără `aggregateRating`, deliberat.** Niciunul dintre
+ * cei trei oameni nu a fost rugat să dea o notă, deci orice cifră ar fi
+ * inventată de noi. `Review` fără rating este perfect valid în schema.org;
+ * un `aggregateRating` fabricat este exact motivul pentru care Google dă
+ * penalizări manuale pe date structurate înșelătoare.
+ *
+ * `reviewBody` primește FRAZA VIZIBILĂ pe pagina care emite marcajul, nu
+ * textul integral — regula din brief §8.3: marcajul descrie ce vede omul.
+ */
+export function reviewSchemas(
+  items: Testimonial[],
+  settings: SiteSettings,
+  path: string,
+  options: { full?: boolean } = {},
+): JsonLdObject[] {
+  return items.map((item) => ({
+    '@type': 'Review',
+    '@id': new URL(`${path}#${item.slug}`, settings.url).toString(),
+    itemReviewed: { '@id': `${settings.url}/${ORG_ID}` },
+    author: {
+      '@type': 'Person',
+      name: item.author,
+      ...(item.role ? { jobTitle: item.role } : {}),
+    },
+    reviewBody: options.full ? item.paragraphs.join('\n\n') : item.excerpt,
+    inLanguage: 'ro-RO',
+    publisher: { '@id': `${settings.url}/${PERSON_ID}` },
+  }))
 }
 
 /** Pagina de contact. */

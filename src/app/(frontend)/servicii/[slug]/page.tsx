@@ -6,14 +6,23 @@ import { PageCta } from '@/components/sections/PageCta'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { Breadcrumb, type Crumb } from '@/components/ui/Breadcrumb'
 import { Arrow, Button } from '@/components/ui/Button'
+import { CheckoutButton } from '@/components/ui/CheckoutButton'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { FaqList } from '@/components/ui/FaqList'
+import { PackageBody } from '@/components/ui/PackageBody'
 import { PackageCard } from '@/components/ui/PackageCard'
 import { RichText } from '@/components/ui/RichText'
 import { Rule, Section, Shell, StickyColumn } from '@/components/ui/Section'
+import { TextLink } from '@/components/ui/TextLink'
 import type { PackageDetail } from '@/content/types'
 import { getPackageBySlug, getPackages, getSiteSettings } from '@/lib/content'
-import { breadcrumbSchema, faqSchema, graph, serviceSchema } from '@/lib/schema'
+import {
+  breadcrumbSchema,
+  faqSchema,
+  graph,
+  professionalServiceSchema,
+  serviceSchema,
+} from '@/lib/schema'
 import { pageMetadata } from '@/lib/seo'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -27,9 +36,10 @@ const FORMAT_LABEL: Record<PackageDetail['format'], string> = {
 /**
  * Rutele se prerandează din pachetele vizibile.
  *
- * Azi lista e goală — niciun pachet nu are nume și preț (STATUS §7.1) — deci
- * nu se prerandează nimic, iar rutele necunoscute dau 404. Nu e o problemă de
- * configurare: e exact ce trebuie să se întâmple până când există pachete.
+ * De când `getPackages` cade pe textul aprobat din `src/content/packages.ts`,
+ * lista nu mai e niciodată goală: cele trei programe au rute și fără bază de
+ * date, deci build-ul nu mai depinde de Postgres ca să le producă. Un slug
+ * care nu e nici în CMS, nici în textul aprobat dă în continuare 404, corect.
  */
 export async function generateStaticParams() {
   const packages = await getPackages()
@@ -91,8 +101,18 @@ export default async function PachetPage({ params }: Params) {
                 </p>
               )}
 
+              {/*
+                Rich text-ul din admin are întâietate. Cât timp nu a fost
+                scris — azi, cazul normal — se randează textul aprobat din
+                `src/content/packages.ts`. Placeholderul rămâne doar pentru un
+                pachet nou, creat în admin și încă necompletat.
+              */}
               {pkg.longDescription ? (
                 <RichText content={pkg.longDescription} className="mt-[clamp(40px,5vw,64px)]" />
+              ) : pkg.body && pkg.body.length > 0 ? (
+                <div className="mt-[clamp(40px,5vw,64px)]">
+                  <PackageBody sections={pkg.body} />
+                </div>
               ) : (
                 <p className="mt-[clamp(40px,5vw,64px)] max-w-[62ch] text-body-lg text-ac-ink-70">
                   <span data-placeholder>[ Descrierea completă a pachetului ]</span>
@@ -151,23 +171,44 @@ export default async function PachetPage({ params }: Params) {
                 </div>
 
                 {/*
-                  NOTĂ FAZĂ: promptul §5.3 cere aici `CheckoutButton`. Ruta
-                  `/api/stripe/checkout` intră la faza 4; până atunci butonul
-                  duce la contact, cu pachetul precompletat, ca pagina să nu
-                  aibă un buton care nu face nimic.
+                  Plata propriu-zisă. `CheckoutButton` este un `<form>`
+                  obișnuit către `/api/stripe/checkout`, deci funcționează și
+                  fără JavaScript și nu adaugă o a cincea componentă de client.
+                  Prețul NU pleacă din pagină: ruta îl citește pe server, din
+                  document (regula 7 din STATUS §2).
+
+                  Butonul apare doar dacă pachetul are preț. Un buton de plată
+                  pe un pachet fără preț ar duce în gol.
                 */}
-                <Button
-                  href={`/contact?pachet=${pkg.slug}`}
-                  variant="primary"
-                  size="lg"
-                  className="mt-9 w-full"
-                >
-                  Vreau acest pachet
-                  <Arrow />
-                </Button>
+                {pkg.price === null ? (
+                  <Button
+                    href={`/contact?pachet=${pkg.slug}`}
+                    variant="primary"
+                    size="lg"
+                    className="mt-9 w-full"
+                  >
+                    Întreabă despre acest pachet
+                    <Arrow />
+                  </Button>
+                ) : (
+                  <CheckoutButton
+                    kind="pachet"
+                    slug={pkg.slug}
+                    label="Cumpără acest program"
+                    formClassName="mt-9"
+                  />
+                )}
 
                 <p className="mt-5 text-body-sm leading-[1.7] text-ac-ink-50">
-                  Îți răspund personal înainte de orice plată. {settings.responseTime}.
+                  Plata se face securizat, prin Stripe. Preferi factură pe firmă, contract sau
+                  plata în tranșe?{' '}
+                  <TextLink
+                    href={`/contact?pachet=${pkg.slug}`}
+                    className="text-body-sm text-ac-ink-70"
+                  >
+                    Scrie-mi înainte de plată
+                  </TextLink>
+                  . {settings.responseTime}.
                 </p>
               </aside>
             </StickyColumn>
@@ -231,6 +272,9 @@ export default async function PachetPage({ params }: Params) {
             settings,
           ),
           breadcrumbSchema(trail, settings.url),
+          // `Service.provider` trimite la `#serviciu`. Îl emitem și aici, ca
+          // graful paginii să se rezolve fără să depindă de homepage.
+          professionalServiceSchema(settings),
           ...(pkg.faq.length > 0 ? [faqSchema(pkg.faq, settings.url, pkg.href)] : []),
         ])}
       />

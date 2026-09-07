@@ -2,8 +2,11 @@ import config from '@payload-config'
 import { getPayload, type Payload } from 'payload'
 
 import { homeContent } from '@/content/home'
+import { packagesFallback } from '@/content/packages'
 import { aboutFallback } from '@/content/pages'
 import { siteSettings } from '@/content/site'
+import { testimonials } from '@/content/testimonials'
+import { WORKSHOP_PRICE, workshopEntries, workshopsPage } from '@/content/workshops'
 import { slugify } from '@/fields/slug'
 
 /**
@@ -24,13 +27,15 @@ import { slugify } from '@/fields/slug'
  *   categoriile a trei articole; textul lor nu a fost livrat. Le creăm ca
  *   CIORNE, ca Adriana să le găsească începute în admin. Ciornele nu sunt
  *   publice, deci homepage-ul continuă să arate exact ca în design.
- * - **Pachetele vizibile.** Cele trei pachete se creează cu `active: false`,
- *   pentru că numele și prețurile lor nu sunt încă decise (blocaj §7.1). Câtă
- *   vreme sunt ascunse, cardurile de pe homepage rămân placeholderele din
- *   design, `[ Nume pachet ]` și `[ 000 ] EUR`. Prima bifă de „Vizibil pe site"
- *   este momentul în care pachetul intră în pagină.
+ * - **Descrierea lungă a pachetelor** (`longDescription`, rich text). Rămâne
+ *   goală intenționat, ca pagina să randeze secțiunile structurate din
+ *   `src/content/packages.ts`. Motivul complet e la `seedPackages`.
  * - **Datele de contact reale.** Sunt `null` în `src/content/site.ts` și rămân
  *   `null` aici. Nu inventăm date de client (regula 11 din STATUS.md §2).
+ *
+ * Ce populează, din septembrie 2026: cele trei programe individuale VIZIBILE, cu
+ * preț real în lei; cele 14 workshopuri, dintre care trei cu dată; cele trei
+ * recomandări. Blocajul §7.1 s-a ridicat — pachetele nu mai sunt placeholdere.
  */
 
 type SeedStats = { create: number; update: number; skip: number }
@@ -53,7 +58,7 @@ function record(bucket: string, action: keyof SeedStats): void {
 async function upsert(
   payload: Payload,
   args: {
-    collection: 'categories' | 'faqs' | 'packages' | 'posts'
+    collection: 'categories' | 'faqs' | 'packages' | 'posts' | 'testimonials' | 'workshops'
     keyField: string
     keyValue: string
     data: Record<string, unknown>
@@ -214,43 +219,157 @@ async function seedFaqs(payload: Payload): Promise<void> {
       },
     })
   }
+
+  // Întrebările paginii de workshopuri. Nu au tabel comparativ, dar trec prin
+  // același `upsert`, cheia fiind tot întrebarea.
+  for (const [index, item] of workshopsPage.faq.entries()) {
+    await upsert(payload, {
+      collection: 'faqs',
+      keyField: 'question',
+      keyValue: item.question,
+      data: {
+        question: item.question,
+        answer: item.answer,
+        page: 'workshopuri',
+        order: index,
+        comparisonTable: { caption: null, columns: [], rows: [] },
+      },
+    })
+  }
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pachete — structura completă, conținutul de completat                       */
+/* Pachete — cele trei programe individuale                                    */
 /* -------------------------------------------------------------------------- */
 
+/** Marcajul pentru textul care încă nu a fost livrat de clientă. */
 const TODO = '[ DE COMPLETAT ]'
 
-const PACKAGE_SEEDS = [
-  { numeral: 'I', slug: 'pachet-i', featured: false },
-  { numeral: 'II', slug: 'pachet-ii', featured: true },
-  { numeral: 'III', slug: 'pachet-iii', featured: false },
-] as const
-
+/**
+ * Cele trei programe, cu textul aprobat.
+ *
+ * `createOnly`: dacă cineva a început să corecteze un program în admin, a doua
+ * rulare a seed-ului nu are voie să îi șteargă munca.
+ *
+ * **`longDescription` rămâne NECOMPLETAT, intenționat.** Descrierea lungă a
+ * celor trei programe are titluri, liste și blocuri numerotate (metoda CLAR,
+ * cele șase dimensiuni HPA). Scrisă ca document Lexical în seed, ar fi devenit
+ * o pădure de noduri pe care nimeni nu o mai corectează, iar randarea ei ar fi
+ * fost mai săracă decât cea structurată. Cât timp câmpul e gol, pagina
+ * randează secțiunile din `src/content/packages.ts`, cu tot cu numerotare.
+ * Dacă Adriana scrie rich text în admin, acela are întâietate — regula de
+ * îmbinare, neschimbată.
+ *
+ * ATENȚIE la o rulare pe o bază veche: acolo există deja trei pachete cu
+ * slug-urile `pachet-i`, `pachet-ii`, `pachet-iii` și text `[ DE COMPLETAT ]`.
+ * Au alte slug-uri decât cele de aici, deci NU sunt atinse și rămân ascunse
+ * (`active: false`). Se pot șterge din admin, când e sigur că nu au comenzi.
+ */
 async function seedPackages(payload: Payload): Promise<void> {
-  for (const [index, seed] of PACKAGE_SEEDS.entries()) {
+  for (const [index, pkg] of packagesFallback.entries()) {
     await upsert(payload, {
       collection: 'packages',
       keyField: 'slug',
-      keyValue: seed.slug,
-      // `createOnly`: dacă cineva a început să completeze pachetul, a doua
-      // rulare a seed-ului nu are voie să îi șteargă munca.
+      keyValue: pkg.slug,
       createOnly: true,
       data: {
-        name: `${TODO} Pachetul ${seed.numeral}`,
-        slug: seed.slug,
-        tagline: TODO,
-        forWho: TODO,
-        includes: [{ item: TODO }, { item: TODO }, { item: TODO }],
-        duration: TODO,
-        format: 'hibrid',
-        price: null,
+        name: pkg.name,
+        slug: pkg.slug,
+        tagline: pkg.tagline,
+        forWho: pkg.forWho,
+        includes: pkg.includes
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => ({ item })),
+        duration: pkg.duration,
+        format: pkg.format,
+        price: pkg.price,
         order: index,
-        featured: seed.featured,
-        // Ascuns până când numele și prețul sunt reale. Cât e ascuns,
-        // homepage-ul afișează placeholderele din designul aprobat.
-        active: false,
+        featured: pkg.featured,
+        active: true,
+        faq: pkg.faq.map(({ question, answer }) => ({ question, answer })),
+        seo: {
+          metaTitle: pkg.seo.metaTitle,
+          metaDescription: pkg.seo.metaDescription,
+          noIndex: pkg.seo.noIndex,
+        },
+      },
+    })
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workshopuri                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cele 14 workshopuri.
+ *
+ * `order` este poziția din firul logic al seriei — autocunoaștere, autoreglare,
+ * gândire și decizie, adaptare, relaționare, leadership, performanță
+ * sustenabilă. NU este ordinea din pagină: acolo urcă întâi edițiile cu dată,
+ * cronologic. Vezi `src/lib/workshops.ts`.
+ *
+ * Datele celor trei ediții programate intră ca atare. Restul rămân fără dată,
+ * deci apar în catalog fără buton de plată — exact regula clientei: se pot
+ * cumpăra întotdeauna doar următoarele trei ediții programate.
+ */
+async function seedWorkshops(payload: Payload): Promise<void> {
+  for (const [index, workshop] of workshopEntries.entries()) {
+    await upsert(payload, {
+      collection: 'workshops',
+      keyField: 'slug',
+      keyValue: workshop.slug,
+      createOnly: true,
+      data: {
+        title: workshop.title,
+        slug: workshop.slug,
+        subtitle: workshop.subtitle,
+        summary: workshop.summary,
+        // Payload păstrează câmpurile `date` ca timestamp. Fixăm prânzul UTC,
+        // ca ziua să se citească înapoi la fel în orice fus — inclusiv pe
+        // Vercel, unde serverul rulează pe UTC.
+        sessionDate: workshop.sessionDate ? `${workshop.sessionDate}T12:00:00.000Z` : null,
+        price: WORKSHOP_PRICE,
+        order: index,
+        active: true,
+        what: workshop.what,
+        problems: workshop.problems,
+        workMethod: workshop.workMethod,
+        outcomes: workshop.outcomes.map((item) => ({ item })),
+        keywords: workshop.keywords.map((item) => ({ item })),
+      },
+    })
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Recomandări                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cele trei recomandări.
+ *
+ * `createOnly`, ca peste tot, dar aici motivul e mai tare decât de obicei: sunt
+ * cuvintele unor oameni reali. O rulare de seed nu are voie să rescrie peste o
+ * corectură pe care a cerut-o chiar autorul recomandării.
+ */
+async function seedTestimonials(payload: Payload): Promise<void> {
+  for (const testimonial of testimonials) {
+    await upsert(payload, {
+      collection: 'testimonials',
+      keyField: 'slug',
+      keyValue: testimonial.slug,
+      createOnly: true,
+      data: {
+        author: testimonial.author,
+        slug: testimonial.slug,
+        role: testimonial.role,
+        context: testimonial.context,
+        excerpt: testimonial.excerpt,
+        paragraphs: testimonial.paragraphs.map((text) => ({ text })),
+        featured: testimonial.featured,
+        order: testimonial.order,
+        active: true,
       },
     })
   }
@@ -522,6 +641,8 @@ async function seed(): Promise<void> {
   const categories = await seedCategories(payload)
   await seedFaqs(payload)
   await seedPackages(payload)
+  await seedWorkshops(payload)
+  await seedTestimonials(payload)
   await seedPosts(payload, categories)
   await seedSiteSettings(payload)
   await seedHomePage(payload)
@@ -537,7 +658,11 @@ async function seed(): Promise<void> {
     console.log(`    ${bucket.padEnd(16)} ${parts.join(', ') || 'nimic de făcut'}`)
   }
 
-  console.log('\n  Pachetele sunt ascunse (`active: false`) până când au nume și preț real.')
+  console.log('\n  Cele trei programe individuale sunt vizibile, cu preț real, în lei.')
+  console.log(
+    '  Cele 14 workshopuri sunt în catalog; se pot cumpăra doar cele 3 cu dată în viitor.',
+  )
+  console.log('  Recomandările sunt publicate — confirmă acordul scris al autorilor.')
   console.log('  Articolele sunt ciorne: titlurile vin din design, textul lipsește.\n')
 
   await payload.destroy()

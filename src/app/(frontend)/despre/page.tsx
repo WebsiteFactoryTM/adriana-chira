@@ -8,8 +8,17 @@ import { ImageSlot } from '@/components/ui/ImageSlot'
 import { Reveal } from '@/components/ui/Reveal'
 import { RichText } from '@/components/ui/RichText'
 import { Section, Shell } from '@/components/ui/Section'
-import { getAboutContent, getSiteSettings } from '@/lib/content'
-import { breadcrumbSchema, graph, personSchema, profilePageSchema } from '@/lib/schema'
+import { TestimonialCard } from '@/components/ui/TestimonialCard'
+import { TextLink } from '@/components/ui/TextLink'
+import { getAboutContent, getSiteSettings, getTestimonials } from '@/lib/content'
+import {
+  breadcrumbSchema,
+  graph,
+  personSchema,
+  professionalServiceSchema,
+  profilePageSchema,
+  reviewSchemas,
+} from '@/lib/schema'
 import { pageMetadata } from '@/lib/seo'
 
 const TRAIL: Crumb[] = [
@@ -38,7 +47,16 @@ export async function generateMetadata(): Promise<Metadata> {
  * pe homepage, ca pagina să nu fie un schelet gol (STATUS §7).
  */
 export default async function DesprePage() {
-  const [about, settings] = await Promise.all([getAboutContent(), getSiteSettings()])
+  const [about, settings, allTestimonials] = await Promise.all([
+    getAboutContent(),
+    getSiteSettings(),
+    getTestimonials(),
+  ])
+
+  // Două extrase, nu trei: pagina asta e despre parcursul Adrianei, iar
+  // recomandările sunt aici ca sprijin, nu ca subiect. Toate trei, integral,
+  // stau pe `/testimoniale`.
+  const testimonials = allTestimonials.slice(0, 2)
 
   return (
     <>
@@ -148,6 +166,35 @@ export default async function DesprePage() {
           </Shell>
         </Section>
 
+        {testimonials.length > 0 && (
+          <Section padding="tight" aria-labelledby="recomandari-despre-titlu">
+            <Shell>
+              <div className="flex flex-wrap items-end justify-between gap-8">
+                <h2
+                  id="recomandari-despre-titlu"
+                  className="max-w-[22ch] font-display text-h2-col font-light"
+                >
+                  Cum arată asta pentru oamenii cu care am lucrat
+                </h2>
+                <TextLink href="/testimoniale" className="text-body" arrow>
+                  Citește recomandările integral
+                </TextLink>
+              </div>
+
+              <div className="mt-block grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-stretch gap-[clamp(20px,2.4vw,32px)]">
+                {testimonials.map((testimonial, index) => (
+                  <TestimonialCard
+                    key={testimonial.slug}
+                    testimonial={testimonial}
+                    index={index}
+                    href={`/testimoniale#${testimonial.slug}`}
+                  />
+                ))}
+              </div>
+            </Shell>
+          </Section>
+        )}
+
         {/* CTA dublu, cerut de prompt §5.3 pentru această pagină. */}
         <PageCta
           eyebrow={{ text: 'Primul pas', ornament: 'pulse' }}
@@ -164,6 +211,11 @@ export default async function DesprePage() {
           profilePageSchema(settings, '/despre'),
           personSchema(settings, about.portrait.src ?? undefined),
           breadcrumbSchema(TRAIL, settings.url),
+          // Subiectul recomandărilor, ca `itemReviewed` să nu trimită în gol.
+          professionalServiceSchema(settings),
+          // Doar extrasele chiar afișate aici. Textele integrale sunt marcate
+          // pe pagina lor, nu de două ori.
+          ...reviewSchemas(testimonials, settings, '/testimoniale'),
         ])}
       />
     </>

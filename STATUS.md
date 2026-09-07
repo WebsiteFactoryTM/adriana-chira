@@ -6,10 +6,21 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **31 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **fotografiile clientei sunt puse, câte una pe pagină** · **câmpul heroului refăcut a doua oară pe 31 august: ivory minimalist, fără forme circulare, la cererea clientei** · fazele 4–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 31 august 2026 |
-| Ultimul commit | `9ad42e2` — Fotografiile clientei pe fiecare pagină, heroul refăcut ivory |
+| Ultima actualizare | **7 septembrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 3 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · homepage-ul a primit o a 13-a secțiune, cerută de clientă · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 7 septembrie 2026 |
+| Ultimul commit | `84c7ecb` — STATUS.md: commit-ul fotografiilor în antet |
+
+> **Ce s-a schimbat pe 7 septembrie 2026.** Clienta a livrat materialele finale:
+> cele trei programe individuale (Strategic Performance Assessment, CLAR,
+> Executive Performance Program), catalogul de 14 workshopuri și trei
+> recomandări. Odată cu ele s-au ridicat două blocaje vechi — §7.1 (pachetele
+> fără nume și preț) și faza 4 (Stripe) — și au apărut trei lucruri noi în site:
+> pagina de workshopuri, pagina de recomandări și secțiunea de recomandări de pe
+> prima pagină. Detalii în §4 („Conținutul real"), §9.21–§9.24 și §6.
+>
+> **Moneda s-a schimbat din EUR în RON, peste tot.** Toate prețurile clientei
+> sunt în lei. Nu a mai rămas niciun `EUR` în cod.
 
 ---
 
@@ -94,7 +105,7 @@ pnpm dev · pnpm build · pnpm start · pnpm typecheck
 
 pnpm db:up / db:down       # baza de date locală (docker-compose.yml)
 pnpm seed                  # idempotent; rulează oricând
-pnpm migrate               # aplică migrațiile
+pnpm migrate               # aplică migrațiile — atârnă în dev, vezi §10
 pnpm migrate:create <nume> # generează o migrație nouă
 pnpm migrate:fix           # repară importurile din migrațiile generate (vezi §10)
 pnpm generate:types        # src/payload-types.ts, după orice schimbare de schemă
@@ -182,6 +193,7 @@ Din ședința foto, câte una pe pagină. Toate în `public/images/`, servite pr
 | `adriana-servicii.jpg` | antetul `/servicii` | `page-wide` 3:2 | niciunul — slotul are chiar raportul fișierului |
 | `adriana-blog.jpg` | antetul `/blog` | `page-portrait` 2:3 | niciunul |
 | `adriana-contact.jpg` | antetul `/contact` | `page-portrait` 2:3 | niciunul |
+| `adriana-workshopuri.jpg` | antetul `/workshopuri-performanta-umana` | `page-portrait` 2:3 | niciunul |
 
 Fotografiile din antete intră prin `image` pe `PageHeader`, care trece antetul pe
 două coloane doar când primește una. Paginile legale, `/multumim` și
@@ -586,8 +598,9 @@ suprascrie ce a început clienta să completeze.
 
 ### Faza 3b — Paginile interioare ✅
 
-Site-ul are acum **15 rute publice**. Navigația a trecut de la ancore la rute reale,
-dintr-un singur loc (`src/content/site.ts`).
+Faza 3b a adus **15 rute publice** (17 din 7 septembrie 2026, odată cu
+`/workshopuri-performanta-umana` și `/testimoniale`). Navigația a trecut de la ancore
+la rute reale, dintr-un singur loc (`src/content/site.ts`).
 
 | Rută | Ce e | Randare |
 |---|---|---|
@@ -648,29 +661,203 @@ aceeași listă.
 
 ---
 
+### Conținutul real al clientei ✅ — 7 septembrie 2026
+
+Materialele finale au intrat în site. Trei documente de servicii, un catalog de
+workshopuri și un fișier de recomandări, livrate de clientă, rescrise pentru web și
+puse în CMS prin `pnpm seed`.
+
+**Sursa textului, ca peste tot în proiect, este un fișier din `src/content/`, care e
+în același timp fallback-ul și materialul din care seed-ul populează CMS-ul.** Un
+singur text, deci cele două nu pot devia.
+
+| Fișier | Ce conține |
+|---|---|
+| `src/content/packages.ts` | Cele 3 programe individuale, cu preț, durată, secțiuni și FAQ |
+| `src/content/workshops.ts` | Cele 14 workshopuri, plus partea comună tuturor |
+| `src/content/testimonials.ts` | Cele 3 recomandări, integral |
+
+#### Cele trei programe individuale
+
+Blocajul §7.1 s-a ridicat: pachetele au nume, conținut, durată și preț.
+
+| # | Program | Durată | Preț |
+|---|---|---|---|
+| I | Strategic Performance Assessment™ | 3 ore, o sesiune | 1.500 lei |
+| II | CLAR™ Performance Transformation *(cardul evidențiat)* | 8 săptămâni, 6 sesiuni | 5.100 lei |
+| III | Executive Performance Program™ | 6 luni, evaluare + 12 sesiuni | 15.000 lei |
+
+Ordinea e cea a angajamentului crescător, iar cardul evidențiat rămâne **cel din
+mijloc**, ca în designul aprobat. EPP e „serviciul principal" în documentul clientei,
+dar evidențierea în design e o poziție, nu un premiu — vezi §9.24.
+
+`longDescription` (rich text) rămâne **necompletat intenționat**. Descrierea lungă are
+titluri, liste și blocuri numerotate (metoda CLAR, cele șase dimensiuni HPA); scrisă
+ca document Lexical în seed ar fi devenit ilizibilă și necorectabilă. Cât timp câmpul
+e gol, pagina randează secțiunile structurate din `packages.ts`, prin
+`ui/PackageBody`. Dacă Adriana scrie rich text în admin, acela are întâietate.
+
+> **De curățat din admin:** pe o bază veche există încă cele trei pachete
+> `pachet-i`, `pachet-ii`, `pachet-iii` cu text `[ DE COMPLETAT ]`. Au alte
+> slug-uri, deci seed-ul nu le-a atins și rămân ascunse (`active: false`). Se pot
+> șterge când e sigur că nu au comenzi legate.
+
+#### Workshopurile — rută nouă
+
+`/workshopuri-performanta-umana`, colecția `workshops`, componenta `ui/WorkshopCard`.
+Adresa e cea recomandată explicit în documentul clientei.
+
+**Regula de vânzare, și de ce e calculată, nu bifată.** Se pot cumpăra întotdeauna
+doar **următoarele trei ediții cu dată în viitor**. Nu există bifă „deschis la
+înscriere" în admin, și e o decizie: o bifă ar trebui întoarsă manual în fiecare lună,
+iar ziua în care cineva uită să o întoarcă e ziua în care site-ul vinde locuri la o
+ediție care a trecut. Regula stă în `src/lib/workshops.ts`, se calculează din
+`sessionDate` și se mută singură. **Ca să deschizi un workshop la înscriere, îi pui o
+dată. Atât.**
+
+Ordinea din pagină e ordinea desfășurării: întâi edițiile cu dată, cronologic, apoi
+restul catalogului în ordinea logică a seriei. Un workshop căruia i-a trecut data nu
+dispare — coboară în lista fără dată, pentru că workshopul există în continuare, doar
+ediția s-a consumat.
+
+Astăzi sunt programate trei: **Busola internă** (17 octombrie 2026), **Sub presiune**
+(14 noiembrie 2026), **Spațiul dintre stimul și răspuns** (12 decembrie 2026).
+Toate 14 costă 510 lei de participant.
+
+**Detaliul se deschide pe `<details>` nativ, nu pe stare de React.** Cerința clientei
+era descriere scurtă pe card plus un buton care deschide tot programul. `<details>`
+face exact asta cu zero JavaScript, iar textul rămâne în DOM și când acordeonul e
+închis — ceea ce contează pentru AEO, fiindcă crawlerele de AI în general nu execută
+JS. Verificat: **componentele de client sunt tot exact patru.**
+
+**Partea comună nu se repetă de paisprezece ori.** Durata, orarul, ce include prețul,
+„Cum se desfășoară" și „Pentru cine" sunt identice la toate; stau o dată, în
+`WORKSHOP_COMMON`, și se randează o dată, în capul paginii. Fiecare workshop păstrează
+doar ce îl deosebește, inclusiv fraza proprie despre ce se lucrează în ziua respectivă.
+
+#### Recomandările — rută nouă
+
+`/testimoniale`, colecția `testimonials`, plus extrase pe prima pagină, pe `/despre`
+(două) și pe `/servicii` (una).
+
+**Șase recomandări**, livrate în două loturi. Primul lot (3) e marcat pentru prima
+pagină; al doilea lot (3), primit pe 7 septembrie 2026, are `featured: false`.
+
+| # | Autor | Funcție | Pe prima pagină |
+|---|---|---|---|
+| 0 | Livia Wagner-Rus | Director general, AGRO MARUS SRL | da |
+| 1 | Dr. Gabriel Vasile Oltean | Economist · Conferențiar universitar · Trainer | da |
+| 2 | Paul Ștefănescu | Consultant, trainer, auditor, antreprenor | da |
+| 3 | Gabriela Tarna | Regional Head of Talent Acquisition… (DRÄXLMAIER) | nu |
+| 4 | Marian Rujoiu | Extreme Training | nu |
+| 5 | Bogdan Vasiliu | **lipsește din document** | nu |
+
+**De ce lotul al doilea nu e pe prima pagină.** Secțiunea arată maximum trei
+recomandări. Dacă le-aș fi marcat și pe acestea, două dintre cele deja aprobate ar fi
+dispărut de pe homepage în tăcere, ca efect secundar al unei simple adăugări. Toate
+șase se citesc integral pe `/testimoniale`; schimbarea trioului e o bifă în admin.
+
+**`role` a devenit opțional** (migrația `20260907_135248_rol_optional_la_recomandari`,
+o singură instrucțiune: `DROP NOT NULL`). Documentul lui Bogdan Vasiliu semnează doar
+cu numele. Textul vorbește despre „provocările de HR", dar de acolo până la o funcție
+anume e o presupunere — iar presupunerea ar fi atribuită unui om real, sub numele lui.
+Când funcția lipsește, rândul dispare de pe card și de pe pagină; nu se umple cu
+placeholder și nu se ghicește. Verificat: `jobTitle` se emite pentru cinci din șase.
+
+**Fără note, stele sau medii, deliberat.** Niciunul dintre cei trei oameni nu a fost
+rugat să dea un punctaj, deci orice cifră ar fi inventată de noi. Marcajul urmează
+aceeași regulă: `Review` fără `reviewRating` și fără `aggregateRating` — un
+`aggregateRating` fabricat este exact motivul pentru care Google dă penalizări manuale.
+
+Fraza scoasă în evidență pe carduri este **copiată** din textul integral, nu rezumată,
+iar fiecare card duce la recomandarea întreagă. Regulile sunt scrise în capul lui
+`src/content/testimonials.ts`.
+
+Intervențiile tipografice făcute (și de confirmat cu clienta): diacriticele au fost
+completate în recomandarea lui Paul Ștefănescu, scrisă fără ele — niciun cuvânt și
+nicio topică nu s-au schimbat.
+
+#### Faza 4 — plata prin Stripe ✅
+
+| Ce | Unde |
+|---|---|
+| Pornirea plății | `src/app/api/stripe/checkout/route.ts` |
+| Rezolvarea produsului și sesiunea | `src/lib/checkout.ts` |
+| Înregistrarea comenzii și emailurile | `src/app/api/stripe/webhook/route.ts` |
+| Butonul | `src/components/ui/CheckoutButton.tsx` |
+| Sincronizarea prețului, comună | `src/hooks/stripeSync.ts` |
+
+**Butonul de plată este un `<form method="post">`, nu un `onClick`.** Ruta răspunde cu
+303 către Stripe, browserul urmează redirectarea. Consecințe: zero JavaScript, nicio a
+cincea componentă de client, și butonul funcționează inclusiv înainte de hidratare.
+
+**Din formular pleacă doar `tip` și `slug`.** Prețul se citește pe server, din
+document (regula 7 din §2). Nu există niciun câmp cu sumă de rescris din DevTools.
+
+**Verificarea se repetă pe server.** Pagina nu arată butonul pe o ediție închisă, dar
+un `POST` scris de mână întâlnește aceeași regulă și e refuzat. Verificat:
+
+```
+tip=workshop&slug=busola-interna              → 303 spre Stripe (sau spre contact, fără cheie)
+tip=workshop&slug=dincolo-de-prima-concluzie  → 303 /contact?...&motiv=inchis
+tip=workshop&slug=nu-exista                   → 303 /workshopuri-performanta-umana
+```
+
+**Webhook-ul.** Semnătura se verifică pe corpul brut (`request.text()`).
+Idempotența stă pe indexul unic `stripeSessionId`: a doua livrare a aceluiași
+eveniment cade la inserare, o prindem și răspundem 200. Erorile noastre răspund 500,
+ca Stripe să reîncerce. Emailurile nu aruncă niciodată — un email ratat nu are voie să
+transforme o plată reușită într-un webhook eșuat.
+
+Colecția `orders` a primit `itemType`, relația `workshop`, `sessionDateSnapshot` și
+`quantity`. Data ediției se **copiază** în comandă: un workshop își schimbă
+`sessionDate` la ediția următoare, iar fără copie lista de participanți ar deveni
+greșită exact când e nevoie de ea.
+
+#### Calea de rezervare fără plată online
+
+Cerută explicit. Nu e un mesaj de eroare, e a doua cale de cumpărare, și duce peste tot
+la `/contact` cu produsul precompletat în mesaj:
+
+| Situația | Ce vede omul |
+|---|---|
+| Ediție deschisă, dar vrea factură pe firmă sau transfer | Link sub buton: „Rezervă fără plată online" |
+| Workshop fără dată | Buton: „Anunță-mă când se programează" |
+| Stripe n-a putut porni sesiunea | Redirect cu notă scrisă pentru om, nu cod de eroare |
+| Ediția s-a închis între încărcarea paginii și click | Redirect cu „Ediția aceasta nu mai este deschisă" |
+
+Fiecare situație are alt text precompletat (`contactPage.workshopPrefill`,
+`waitlistPrefill`, `checkoutFallbackNote`), ca Adriana să nu ghicească despre ce e
+vorba la fiecare mesaj.
+
+#### SEO / AEO / GEO pentru conținutul nou
+
+- **Metadate** din documentele clientei: title, meta description și URL recomandat.
+- **Date structurate:** `Event` + `Offer` pentru fiecare ediție cu dată (`InStock` pe
+  cele deschise, `PreOrder` pe restul), `Review` fără rating pentru recomandări,
+  `Service` + `Offer` în lei pe pachete, `FAQPage`, `ItemList`, `BreadcrumbList`.
+- **Referințele `@id` nu mai atârnă.** `Event.organizer`, `Service.provider` și
+  `Review.itemReviewed` trimit la `#serviciu`, nod care se emitea doar pe homepage.
+  Acum `professionalServiceSchema` se emite pe fiecare pagină care îl referă, deci
+  graful fiecărei pagini se rezolvă singur.
+- **`llms.txt`** enumeră programele cu preț, seria de workshopuri, edițiile deschise
+  cu dată și link, catalogul complet și recomandările. A trecut de la `force-static`
+  la `revalidate = 3600`: prerandat o dată, ar fi continuat să spună asistenților că
+  se pot cumpăra locuri la o ediție trecută.
+- **`sitemap.ts`** are cele două rute noi; catalogul e `weekly`, restul lunar.
+- **Fără keyword stuffing.** Expresiile-cheie livrate de clientă sunt stocate în
+  colecție ca notițe de redactare (`keywords`) și **nu se randează în pagină**.
+
+---
+
 ## 5. CE NU ESTE FĂCUT
 
-### Faza 4 — Stripe ⏳ **următorul pas recomandat**
+### Faza 4 — Stripe ✅ **completă din 7 septembrie 2026** (vezi §4)
 
-Lipsesc `/api/stripe/checkout`, `/api/stripe/webhook` și emailurile de comandă.
-Există deja: clientul Stripe (`src/lib/stripe.ts`), sincronizarea prețurilor, colecția
-`orders` cu `stripeSessionId` **unic la nivel de bază de date** — cheia de idempotență
-a webhook-ului, pentru că Stripe reîncearcă livrarea evenimentelor — și câmpurile
-`packageNameSnapshot` / `amount`, copii, nu relații live.
-
-Prețul se citește **doar pe server**, din `packages.price`, niciodată din client.
-
-Trei lucruri sunt deja pregătite pentru faza 4 și așteaptă doar cheia:
-
-- `src/lib/email.ts` — trimite prin API-ul HTTP al Resend, fără SDK. Fără
-  `RESEND_API_KEY` se întoarce `skipped`, nu aruncă.
-- `/multumim` verifică `session_id` la Stripe, pe server. Fără cheie, afișează
-  varianta neutră: nu pretinde niciodată o plată neconfirmată.
-- `/comanda-anulata` citește `?pachet=` și trimite înapoi exact la pachetul respectiv.
-
-**Un singur loc de înlocuit în UI:** butonul „Vreau acest pachet" din
-`src/app/(frontend)/servicii/[slug]/page.tsx` duce azi la `/contact?pachet=<slug>`.
-Acolo intră `CheckoutButton`. Comentariul e în fișier.
+Ce rămâne de făcut e **configurare, nu cod**: cheile din §7.8 și abonarea
+endpointului de webhook la evenimente, în dashboard-ul Stripe. Fără ele site-ul
+funcționează, dar nu încasează — butonul de plată trimite cumpărătorul pe calea de
+rezervare fără plată online. Este o degradare intenționată, verificată.
 
 ### Faza 5b — SEO pentru restul site-ului ⏳
 
@@ -718,7 +905,10 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | Migrație aplicată pe bază de date curată, apoi seed | ✅ |
 | **Pagina randată din CMS vs. pagina din fallback** | ✅ HTML identic, vezi mai jos |
 | **Homepage, HEAD vs. faza 3b** | ✅ 11 diferențe, toate ancore→rute; text identic la caracter |
-| Cele 15 rute publice răspund 200 | ✅ |
+| Cele 15 rute publice răspund 200 | ✅ (17 după 7 septembrie 2026) |
+| **Ruta de plată, pe cele patru căi** | ✅ deschis → Stripe · închis → contact · inexistent → catalog · pachet → Stripe |
+| **Precompletarea din contact, pe cele trei situații** | ✅ rezervare cu dată · listă de așteptare · plată indisponibilă |
+| **Componente de client după faza 4** | ✅ tot patru — butonul de plată nu adaugă JS |
 | `/blog/inexistent`, `/servicii/inexistent`, `/blog/pagina/1` | ✅ 404 |
 | Formularul de contact, în browser, pe build de producție | ✅ trimite, salvează, confirmă |
 | Formular: date invalide, honeypot, limitare de rată | ✅ 400 / 400 / 429 |
@@ -925,6 +1115,44 @@ ferestrei): heroul are 1486px, banda de etichete stă între 53.8% și 60.6%, fo
 începe la 63.3%. **Prima variantă avea firul de aur exact peste etichete** — s-a văzut
 în browser și a fost scos; vezi §4 pentru de ce nu se reintroduce.
 
+### ✅ Conținutul real n-a rupt grila homepage-ului — verificat prin diff
+
+7 septembrie 2026. Aceeași metodă ca mai sus: build de producție pe `HEAD`, build de
+producție cu modificările, `curl` pe `/` în ambele, diff după normalizarea
+payload-ului RSC și a hash-urilor de chunk. **Atenție la citire: ambele build-uri au
+citit din ACEEAȘI bază de date, deja populată**, deci „înainte" înseamnă aici
+„cardurile cu listele complete din CMS", nu placeholderele din design.
+
+**Rezultat: 11 fragmente de text dispărute, 25 adăugate. Toate explicate:**
+
+| Dispărut | De ce |
+|---|---|
+| 8 rânduri din listele „Ce include" | `CARD_INCLUDES = 3` — vezi mai jos |
+| 3 × `EUR` | înlocuit cu `RON` |
+
+| Adăugat | De ce |
+|---|---|
+| „Workshopuri", „Recomandări" (×2 fiecare) | intrări noi în antet și subsol |
+| 21 de fragmente | secțiunea de recomandări, cerută de clientă (§9.21) |
+| 3 × `RON` | moneda reală |
+
+**Nimic altceva nu s-a mutat.**
+
+**Descoperirea importantă a acestei verificări.** Programele reale au între cinci și
+șase elemente în „Ce include". Randate integral, cardurile ar fi avut liste de
+lungimi diferite, iar cardul din mijloc ar fi crescut cu peste 60px — grila verificată
+la pixel s-ar fi rupt tăcut, la prima populare a CMS-ului. Numărat în cele trei surse:
+
+```
+build HEAD (liste complete din CMS)  →  [5, 6, 6]
+design/homepage-approved.html        →  [3, 3, 3]
+build acum (cu CARD_INCLUDES)        →  [3, 3, 3]
+```
+
+De aceea `mergePackages` taie lista la trei rânduri pe card. Elementele nu se pierd:
+apar integral pe pagina pachetului. Dacă cineva scoate plafonul „ca să se vadă tot",
+grila se rupe din nou — și nu se vede în niciun test.
+
 ### ⚠️ Placa cu portretul — verificată doar parțial în browser
 
 Runda a doua (fotografia tăiată de curbă, §4) a fost făcută pe 31 august 2026.
@@ -965,14 +1193,18 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 
 | # | Element | Cum se manifestă în cod acum | Blochează |
 |---|---|---|---|
-| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Homepage-ul și `/servicii` randează placeholderele din design. **Cât timp sunt ascunse, `/servicii/[slug]` nu are nicio rută** — `generateStaticParams` întoarce listă goală și orice slug dă 404, corect. Prima bifă „Vizibil pe site" aduce pachetul și în listă, și pe pagina lui. | Faza 4 (Stripe), paginile de pachet |
+| 1 | ~~**Pachetele de servicii**~~ ✅ **rezolvat pe 7 septembrie 2026** | Cele trei programe reale sunt în CMS, vizibile, cu preț în lei. Vezi §4, „Conținutul real". | — |
 | 2 | ~~**Portret profesional**~~ ✅ **rezolvat** | Fotografiile din ședința foto a clientei sunt în `public/images/`, câte una pe pagină. Placeholderul filigranat din pachetul de design a fost șters. | — |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
 | 4 | Email, telefon | Footerul, pagina de contact, `/multumim` și paginile legale afișează `[ email ]`, `[ telefon ]`. Formularul funcționează oricum: mesajele ajung în `submissions`, în admin | Contact, schema, notificarea pe email |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
-| 7 | Regim TVA, PFA sau SRL | — | Configurarea Stripe |
-| 8 | Cont Stripe | — | Faza 4 |
+| 7 | **Regim TVA, PFA sau SRL** | Prețurile se afișează ca sume simple, fără mențiune de TVA. Documentul CLAR cere explicit confirmarea: 5.100 lei este cu TVA inclus sau „+ TVA"? Se aplică la toate cele patru prețuri. | Afișarea prețurilor, configurarea Stripe |
+| 8 | **Cont Stripe + chei** | Codul e complet și verificat (§4, faza 4). Lipsesc `STRIPE_SECRET_KEY` și `STRIPE_WEBHOOK_SECRET`. Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
+| 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
+| 8d | **Funcția lui Bogdan Vasiliu** | Documentul primit semnează doar cu numele. Câmpul e gol, iar rândul nu se randează — nu inventăm o funcție pentru un om real. Se completează în admin, la recomandarea lui. | — (recomandarea e publicabilă și fără) |
+| 8e | **Scrierea numelui „Gabriela Tarna"** | Așa apare în document. Nu am completat diacritice ghicite pe numele unei persoane. De confirmat forma corectă. | Lansare |
+| 8c | **Datele ediţiilor de workshop de după decembrie 2026** | Trei ediții sunt programate (octombrie, noiembrie, decembrie 2026). Celelalte 11 workshopuri apar în catalog fără dată și fără buton de plată. Adriana le deschide punându-le o dată în admin — se pot cumpăra automat următoarele trei. | Vânzarea workshopurilor din 2027 |
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
 | 10 | **Validare juridică a paginilor legale** | Cele patru pagini EXISTĂ, cu text scris pe situația reală a site-ului, dar marcat vizibil ca draft. Nota se scoate din `LEGAL_DRAFT`, în `src/content/pages.ts` | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
@@ -1035,7 +1267,9 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Optsprezece, toate documentate în cod prin comentarii:
+Douăzeci și două, toate documentate în cod prin comentarii. **Ultimele patru
+(19–22) sunt din 7 septembrie 2026 și trei dintre ele ating homepage-ul** — două
+cerute de clientă, una impusă de conținutul real.
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -1225,6 +1459,53 @@ Optsprezece, toate documentate în cod prin comentarii:
     arăta fundalul din jurul lui. Coloana de text nu se mișcă. Comparația la pixel
     cu designul aprobat nu mai e valabilă pe heroul de desktop — vezi nota din §6.
 
+19. **A treisprezecea secțiune pe homepage: recomandările** (7 septembrie 2026).
+    `src/components/sections/Testimoniale.tsx`, între blocul de citat și pachete.
+    Designul aprobat are douăsprezece secțiuni. **Adăugarea a fost cerută explicit
+    de clientă**, odată cu livrarea celor trei recomandări.
+
+    Ce s-a păstrat, ca să nu se simtă lipită: aceeași grilă de trei carduri,
+    aceleași margini, aceeași etichetă versală și același `h2` ca la secțiunea de
+    servicii. Nicio formă vizuală nouă. Poziția e aleasă: dovada socială cade fix
+    înaintea prețurilor. Ritmul de fundal rămâne citit corect — ink, crem, hârtie.
+
+    Textele lungi NU sunt aici: cardul poartă o singură frază, iar recomandarea
+    întreagă stă pe `/testimoniale`. Trei texte de câte opt paragrafe ar fi rupt
+    pagina în două.
+
+    Secțiunea dispare singură dacă nicio recomandare nu e marcată pentru prima
+    pagină, deci nu i-am mai dat comutator propriu în CMS: `featured` și „Vizibil pe
+    site" pe fiecare recomandare fac deja treaba, mai fin.
+
+20. **A cincea intrare în navigație: „Workshopuri"** (`src/content/site.ts`).
+    Designul aprobat are patru. Nu contrazice designul, îl extinde: la momentul
+    aprobării, workshopurile nu existau ca ofertă. Sunt al doilea lucru vandabil din
+    site, cu pagină și preț propriu, iar o linie de produs care nu apare în
+    navigație nu se vinde. Măsurat la 1000px, pragul la care apare navigația pe
+    desktop, cele cinci intrări plus butonul de programare încap fără să se rupă
+    rândul. În meniul mobil și în subsol intră și „Recomandări".
+
+    Eticheta e scurtă, deși adresa e lungă (`/workshopuri-performanta-umana`, cea
+    recomandată în documentul clientei): adresa poartă expresia căutată în Google,
+    meniul poartă cuvântul pe care îl caută omul cu ochiul.
+
+21. **Lista „Ce include" e tăiată la trei rânduri pe card**
+    (`CARD_INCLUDES` în `src/content/packages.ts`). Programele reale au între cinci
+    și șase elemente. Randate integral, ar fi înălțat cardul din mijloc cu peste
+    60px și ar fi rupt grila verificată la pixel — tăcut, la prima populare a
+    CMS-ului. Cardul din designul aprobat are exact trei rânduri, iar plafonul le
+    readuce la trei. Elementele nu se pierd: apar integral pe pagina pachetului.
+    Măsurătoarea e în §6.
+
+22. **Cardul evidențiat rămâne cel din mijloc, deși „serviciul principal" e al
+    treilea.** Documentul clientei numește Executive Performance Program™
+    „serviciul principal al ecosistemului CHIRA Model™". Ordinea din pagină este
+    însă a angajamentului crescător — 3 ore, 8 săptămâni, 6 luni — iar în designul
+    aprobat cardul evidențiat este **poziția din mijloc**, nu un premiu acordat unui
+    produs. Evidențiat rămâne deci CLAR™. Dacă clienta vrea altfel, se mută bifa
+    „Card evidențiat" în admin, fără cod — dar atunci designul are două carduri de
+    aceeași greutate lângă unul evidențiat, la marginea grilei.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -1261,6 +1542,10 @@ pe homepage și nu au pagină proprie.
 | Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
 | Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
 | Un strat decorativ pus peste conținut înceață textul de dedesubt | `backdrop-filter` e singurul lucru care face un strat să pară corp fizic, dar tot el face ilizibil ce acoperă. Gutterul paginii (24–88px) e mai îngust decât orice obiect care merită văzut (84–132px), deci „îl pun în margine" nu e o soluție | Lasă-l să iasă din cadru și interzice-i deriva spre coloana de text (toate valorile de `translate` orizontal ≤ 0). Verifică, nu presupune: compară `getBoundingClientRect().right` al obiectului cu `x + paddingLeft` al lui `.ac-shell` |
+| `pnpm migrate` atârnă fără niciun mesaj, la fel ca `pnpm seed` | Aceeași cauză ca la seed: comanda inițializează Payload cu `push` activ (în dev), iar drizzle pune o întrebare interactivă. Peste ea, `payload migrate` mai are UN prompt propriu: „ai rulat în dev mode, se poate pierde date, continui?" | `NODE_ENV=production pnpm migrate` dezactivează `push`. Pentru al doilea prompt: `printf 'y\n' \| NODE_ENV=production pnpm exec payload migrate`. **Înainte, verifică `up()` migrației**: dacă are `DROP`/`DELETE`/`TRUNCATE`, nu răspunde „da" fără backup. `--force-accept-warning` NU funcționează pe versiunea din proiect |
+| Verificare care codifică starea de moment, nu regula | `verify-faza2.ts` cerea „publicul vede 0 pachete" — adevărat doar cât timp toate erau ascunse. Când pachetele au devenit vizibile, verificarea a picat pentru un motiv bun, ceea ce e chiar semnul că verifica altceva | Scrie regula: publicul vede EXACT documentele cu `active: true`, niciunul în plus. Se aplică identic la `packages`, `workshops` și `testimonials`, deci se verifică în buclă pe toate trei |
+| Referință `@id` care atârnă în datele structurate | `Event.organizer`, `Service.provider` și `Review.itemReviewed` trimit la `#serviciu`, dar nodul `ProfessionalService` se emitea doar pe homepage. Marcajul e valid sintactic, deci niciun validator nu se plânge — referința pur și simplu nu se rezolvă | `professionalServiceSchema(settings)` se emite pe fiecare pagină care îl referă. Regula: **graful unei pagini trebuie să se rezolve singur**, fără să depindă de ce a mai crawlat motorul |
+| Un fișier care depinde de data curentă, prerandat cu `force-static` | `llms.txt` enumeră edițiile deschise la înscriere, iar fereastra se mută lunar. Prerandat o dată la build, ar fi continuat să spună asistenților AI că se pot cumpăra locuri la o ediție trecută — exact răspunsul greșit pe care AEO-ul trebuie să îl prevină | `export const revalidate = 3600`. Regulă generală: orice ieșire care depinde de `new Date()` nu are voie să fie `force-static` |
 | Diacriticele devin mojibake după un `perl -i` (`și` → `Èi`, `î` → `Ã®`) | `perl -CSD` decodează intrarea ca UTF-8, dar șirul de înlocuire din linia de comandă vine deja ca octeți UTF-8 — rezultatul se codează a doua oară. Fișierul rămâne valid, deci nimic nu semnalează eroarea, iar textul stricat ajunge în commit | Editează fișierele cu diacritice prin unealta de editare, nu prin `perl -i`/`sed`. Dacă tot folosești un filtru, pune textul de înlocuire într-un fișier separat și splice-uiește-l cu `awk`. Verifică după: `grep -c "Ã\|È" <fișier>` trebuie să dea zero |
 | Comentariu care rupe compilarea într-un tag JSX | În lista de atribute, `{/* … */}` nu e valid — acolo se scriu comentarii JS simple, `/* … */`. Forma cu acolade merge doar între copii | `/* … */` între atribute, sau comentariul deasupra elementului |
 | Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
@@ -1291,6 +1576,8 @@ adriana-chira-repo/
 │  │  │  ├─ page.tsx               ← homepage
 │  │  │  ├─ despre/ · contact/ · multumim/ · comanda-anulata/
 │  │  │  ├─ servicii/{page,[slug]}
+│  │  │  ├─ workshopuri-performanta-umana/page.tsx   ← catalogul, o singură rută
+│  │  │  ├─ testimoniale/page.tsx                    ← recomandările, integral
 │  │  │  ├─ blog/{page,[slug],pagina/[numar],categorie/[slug]/…}
 │  │  │  ├─ politica-de-confidentialitate/ · politica-de-cookies/
 │  │  │  ├─ termeni-si-conditii/ · politica-de-retur/
@@ -1299,23 +1586,28 @@ adriana-chira-repo/
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
 │  │  │  └─ opengraph-image.tsx
-│  │  ├─ api/contact/route.ts      ← formularul; `/api/stripe/*` intră la faza 4
+│  │  ├─ api/contact/route.ts      ← formularul
+│  │  ├─ api/stripe/checkout/      ← pornirea plății (form POST → 303 spre Stripe)
+│  │  ├─ api/stripe/webhook/       ← singurul loc care scrie o comandă
 │  │  └─ (payload)/                ← generat de Payload, nu se editează manual
 │  │     ├─ layout.tsx             ← layout rădăcină al panoului
 │  │     ├─ admin/[[...segments]]/ + importMap.js · importMap.d.ts
 │  │     └─ api/{[...slug],graphql,graphql-playground}/
 │  ├─ access/                      ← regulile de acces, într-un singur loc
-│  ├─ collections/                 Posts · Categories · Packages · Faqs
-│  │                               Media · Orders · Submissions · Users
+│  ├─ collections/                 Posts · Categories · Packages · Workshops
+│  │                               Testimonials · Faqs · Media · Orders
+│  │                               Submissions · Users
 │  ├─ globals/                     SiteSettings · HomePage · AboutPage
 │  ├─ fields/                      slug.ts · seo.ts · section.ts
-│  ├─ hooks/                       revalidate.ts
+│  ├─ hooks/                       revalidate.ts · stripeSync.ts
 │  ├─ migrations/                  ← schema pentru producție
 │  ├─ seed/index.ts                ← pnpm seed
 │  ├─ components/{layout,sections,ui,consent,contact,seo}/
 │  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
+│  │                               packages.ts · workshops.ts · testimonials.ts
 │  │                               ← fallback ȘI sursa seed-ului
 │  ├─ lib/                         content.ts · payload.ts · stripe.ts · lexical.ts
+│  │                               checkout.ts · workshops.ts
 │  │                               consent.ts · schema.ts · seo.ts · routes.ts
 │  │                               email.ts · rate-limit.ts · cn.ts
 │  │                               validation/contact.ts

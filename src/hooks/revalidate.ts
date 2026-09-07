@@ -36,7 +36,7 @@ function revalidate(paths: string[]): void {
  * de câmpul „Unde apare". Invalidăm ambele: e mai ieftin decât să citim
  * documentul ca să aflăm care dintre ele s-a schimbat.
  */
-const FAQ_PATHS = ['/', '/servicii']
+const FAQ_PATHS = ['/', '/servicii', '/workshopuri-performanta-umana']
 
 export const revalidateHome: CollectionAfterChangeHook = ({ doc }) => {
   revalidate(FAQ_PATHS)
@@ -133,6 +133,40 @@ export const revalidatePackageAfterDelete: CollectionAfterDeleteHook = ({ doc })
   const paths = new Set(['/', '/servicii', '/sitemap.xml'])
   if (typeof doc?.slug === 'string') paths.add(`/servicii/${doc.slug}`)
   revalidate([...paths])
+  return doc
+}
+
+/**
+ * Workshopurile trăiesc pe o singură pagină, dar apar și în teaserul de pe
+ * `/servicii`. Sitemap-ul se invalidează pentru că schimbarea unei date mută
+ * `lastModified`-ul catalogului.
+ */
+const WORKSHOP_PATHS = ['/workshopuri-performanta-umana', '/servicii', '/sitemap.xml']
+
+export const revalidateWorkshop: CollectionAfterChangeHook = ({ doc }) => {
+  revalidate(WORKSHOP_PATHS)
+  return doc
+}
+
+export const revalidateWorkshopAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  revalidate(WORKSHOP_PATHS)
+  return doc
+}
+
+/**
+ * Recomandările apar pe prima pagină, pe pagina lor și, ca extras, pe
+ * `/despre` și `/servicii`. Sunt puține și se schimbă rar, deci le invalidăm
+ * pe toate în loc să citim documentul ca să aflăm dacă era una „featured".
+ */
+const TESTIMONIAL_PATHS = ['/', '/testimoniale', '/despre', '/servicii', '/sitemap.xml']
+
+export const revalidateTestimonial: CollectionAfterChangeHook = ({ doc }) => {
+  revalidate(TESTIMONIAL_PATHS)
+  return doc
+}
+
+export const revalidateTestimonialAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  revalidate(TESTIMONIAL_PATHS)
   return doc
 }
 
