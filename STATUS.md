@@ -9,7 +9,7 @@ e următorul pas concret.
 | Ultima actualizare | **8 septembrie 2026** |
 | Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · fazele 5b–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 8 septembrie 2026 |
-| Ultimul commit | `f529c3e` — Conținutul real al clientei, workshopurile și plata prin Stripe |
+| Ultimul commit | `c04ce33` — Pagini de vânzare pentru cele trei programe și submeniuri în navigație |
 
 > **Ce s-a schimbat pe 8 septembrie 2026.** Clienta a retrimis cele trei documente
 > de serviciu (Strategic Performance Assessment, CLAR, Executive Performance
