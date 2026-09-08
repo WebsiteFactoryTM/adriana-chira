@@ -55,6 +55,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Poate fi pentru tine dacă',
+    kind: 'checklist',
     list: [
       'muncești mult, dar rezultatele nu mai cresc proporțional;',
       'businessul a crescut, dar tu ai rămas prins în operațional;',
@@ -67,6 +68,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Human Performance Architecture™ — HPA 20',
+    kind: 'cards',
     paragraphs: [
       'Nu evaluăm doar rezultatul, ci sistemul uman care trebuie să îl producă. Evaluarea folosește Human Performance Architecture™ — HPA 20, o hartă de analiză formată din 20 de atribute asociate performanței, organizate în șase dimensiuni.',
     ],
@@ -105,6 +107,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Cum se desfășoară',
+    kind: 'steps',
     paragraphs: [
       'Aproximativ trei ore de analiză individuală. Procesul combină analiza strategică, interviul comportamental, autoevaluarea, observația profesională, analiza resurselor, identificarea vulnerabilităților, analiza contradicțiilor de performanță, identificarea gap-urilor și prioritizarea zonelor de dezvoltare.',
       'Pentru fiecare dimensiune urmărim trei niveluri: ce spui despre tine, ce exemple reale poți oferi și ce comportamente produci.',
@@ -129,6 +132,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Uneori calitatea ta poate deveni limitarea ta',
+    kind: 'cards',
     paragraphs: [
       'Nu căutăm un profil „perfect". Căutăm configurația de care ai nevoie pentru rezultatul pe care vrei să îl produci. Cele mai costisitoare blocaje nu vin din ce îți lipsește, ci din felul în care două calități reale se anulează reciproc.',
     ],
@@ -141,6 +145,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Ce primești la final',
+    kind: 'outcomes',
     list: [
       'Human Performance Map™ — harta celor șase dimensiuni ale performanței tale;',
       'profilul HPA 20™ — analiza celor 20 de atribute;',
@@ -162,6 +167,7 @@ const assessmentSections: PackageSection[] = [
   },
   {
     heading: 'Ce urmărim, în funcție de rolul tău',
+    kind: 'cards',
     paragraphs: [
       'Dimensiunile sunt aceleași pentru toată lumea; întrebările la care răspund se schimbă odată cu rolul. De aici pornește analiza, indiferent de unde vii.',
     ],
@@ -206,6 +212,7 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Te poți regăsi în una dintre situațiile acestea',
+    kind: 'checklist',
     list: [
       'amâni o decizie importantă, deși ai suficiente informații;',
       'muncești mult, dar nu înaintezi în direcția care contează;',
@@ -227,6 +234,7 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Metoda CLAR™, de la claritate la rezultate',
+    kind: 'cards',
     steps: [
       {
         index: 'C',
@@ -252,6 +260,7 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Ce putem lucra în program',
+    kind: 'checklist',
     paragraphs: [
       'Conținutul nu este identic pentru fiecare client. În funcție de obiectivul și profilul tău, procesul poate include:',
     ],
@@ -269,6 +278,7 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Cum se desfășoară',
+    kind: 'steps',
     paragraphs: [
       'Programul cuprinde șase sesiuni individuale de 90 de minute, distribuite pe parcursul a opt săptămâni. Ritmul oferă suficient spațiu pentru aplicare, observare și calibrare între întâlniri.',
       'Între sesiuni primești exerciții, aplicații și instrumente adaptate obiectivului tău, iar progresul este urmărit pe baza criteriilor stabilite la început.',
@@ -298,6 +308,7 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Cu ce pleci la final',
+    kind: 'outcomes',
     paragraphs: [
       'CLAR™ nu promite o versiune „perfectă" a ta și nici rezultate fără implicare. Îți oferă un cadru riguros de analiză, decizie, aplicare și feedback. La finalul programului vei avea:',
     ],
@@ -313,6 +324,8 @@ const clarSections: PackageSection[] = [
   },
   {
     heading: 'Cui i se potrivește și cui nu',
+    kind: 'split',
+    splitLabels: ['Este pentru tine dacă', 'Nu este programul potrivit dacă'],
     paragraphs: [
       'Programul este potrivit pentru tine dacă ești antreprenor sau soloprenor care trebuie să treacă de la reacție la conducere, manager sau lider care amână decizii ori evită conversații, profesionist într-o tranziție de rol sau de identitate profesională, ori o persoană competentă care știe mult, dar nu aplică suficient de consecvent. În toate cazurile, e nevoie să îți asumi partea ta de responsabilitate și să lucrezi între sesiuni.',
       'Nu este programul potrivit dacă vrei doar motivație de moment sau o soluție rapidă fără aplicare, dacă vrei ca altcineva să ia deciziile în locul tău, dacă nu ai disponibilitate pentru exercițiile dintre sesiuni sau dacă ai nevoie în primul rând de intervenție medicală, psihiatrică sau psihoterapeutică. CLAR™ este un program de performanță și nu înlocuiește aceste servicii.',
@@ -348,6 +361,7 @@ const executiveSections: PackageSection[] = [
   },
   {
     heading: 'Pentru cine este',
+    kind: 'checklist',
     paragraphs: [
       'Pentru antreprenori, executivi, manageri și lideri care:',
     ],
@@ -360,6 +374,7 @@ const executiveSections: PackageSection[] = [
   },
   {
     heading: 'Cum lucrăm',
+    kind: 'checklist',
     paragraphs: ['Programul poate include, în funcție de profilul tău:'],
     list: [
       'performanță individuală și leadership;',
@@ -372,6 +387,7 @@ const executiveSections: PackageSection[] = [
   },
   {
     heading: 'Structura programului',
+    kind: 'cards',
     list: [
       'Strategic Performance Assessment™ — diagnosticul inițial complet, de trei ore;',
       '12 sesiuni individuale, pe parcursul a șase luni;',
@@ -383,6 +399,7 @@ const executiveSections: PackageSection[] = [
   },
   {
     heading: 'Ce obții la final',
+    kind: 'outcomes',
     list: [
       'o înțelegere clară a propriului profil de performanță;',
       'o direcție strategică personală;',
@@ -396,6 +413,7 @@ const executiveSections: PackageSection[] = [
   },
   {
     heading: 'Promisiunea programului',
+    kind: 'statement',
     paragraphs: [
       'Nu îți promit că vei face mai mult. Te ajut să devii capabil să susții mai mult — cu claritate, eficiență și fără să plătești performanța cu propria sănătate, cu relațiile sau cu echilibrul personal.',
     ],

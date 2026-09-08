@@ -28,7 +28,7 @@ type Props = {
   id?: string
   tone?: Tone
   /** Secțiunile care continuă vizual precedenta nu au padding sus. */
-  padding?: 'default' | 'tight' | 'wide' | 'cta' | 'bottom-only' | 'none'
+  padding?: 'default' | 'tight' | 'wide' | 'cta' | 'body' | 'bottom-only' | 'none'
   /**
    * Aura de atenție. Pusă doar pe cele cinci secțiuni în care cititorul
    * trebuie să încetinească — vezi `SectionAura`. `isolate` e obligatoriu:
@@ -46,6 +46,8 @@ const PADDING: Record<NonNullable<Props['padding']>, string> = {
   tight: 'py-section-tight',
   wide: 'py-section-wide',
   cta: 'py-section-cta',
+  /* Benzile de conținut ale paginilor lungi. Vezi tokenul din globals.css. */
+  body: 'py-section-body',
   'bottom-only': 'pb-section',
   none: '',
 }

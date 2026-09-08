@@ -32,13 +32,19 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 27.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 30.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
   Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
   `CopyLinkButton`. **Butonul de plată nu e printre ele**: e un `<form method="post">`
   către `/api/stripe/checkout`, deci zero JS. Nu îl transforma în `onClick`.
-- Zero bibliotecă de animație. Zero bibliotecă de componente. Zero SDK acolo unde
-  ajunge un `fetch` (vezi `src/lib/email.ts`).
+- Zero bibliotecă de animație. Zero bibliotecă de componente. Zero bibliotecă de
+  iconuri — semnele se desenează în `ui/Glyph.tsx`, linie de 1px, ca restul
+  designului. Zero SDK acolo unde ajunge un `fetch` (vezi `src/lib/email.ts`).
+- Pe paginile lungi, o secțiune își declară felul (`kind` în `PackageSection`) și
+  primește banda potrivită, cu fundal alternat. Nu randa totul la fel: așa au
+  ajuns paginile să pară documente Word. Vezi `ui/PackageBody`.
+- `--ac-ink-50` NU se folosește pe suprafețe crem: dă 4.24:1, sub AA. Acolo,
+  textul secundar e `--ac-ink-70`.
 - Rich text-ul se randează pe server, cu `ui/RichText`, nu cu pachetul React al
   Payload — acela intră în bundle-ul de client.
 - Zero valori Tailwind implicite (`gray-900`, `rounded-lg`). Totul din tokenii

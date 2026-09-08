@@ -107,6 +107,15 @@
   --spacing-section-tight: clamp(6rem, 14vw, 12rem);
   --spacing-section-wide: clamp(8rem, 18vw, 16rem);
   --spacing-section-cta: clamp(8rem, 18vw, 15rem);
+  /*
+    Banda de conținut a paginilor lungi (programe, workshopuri).
+    Deliberat mai mică decât `--spacing-section`: acolo o pagină are 12
+    secțiuni-eveniment și fiecare merită aer, aici o pagină de program are
+    zece benzi la rând, iar ritmul din designul aprobat (7–14rem între ele)
+    ar transforma-o într-un chestionar de derulat. Diferența de fundal
+    (hârtie / crem, alternate) face separarea pe care acolo o face spațiul.
+  */
+  --spacing-section-body: clamp(3.5rem, 6vw, 6rem);
   --spacing-row: clamp(32px, 3.4vw, 48px);
   --spacing-row-x: clamp(12px, 2vw, 24px);
   --spacing-col-gap: clamp(48px, 6vw, 104px);

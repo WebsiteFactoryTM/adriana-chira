@@ -9,9 +9,23 @@ e următorul pas concret.
 | Ultima actualizare | **8 septembrie 2026** |
 | Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · fazele 5b–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 8 septembrie 2026 |
-| Ultimul commit | `c04ce33` — Pagini de vânzare pentru cele trei programe și submeniuri în navigație |
+| Ultimul commit | `08c2a17` — STATUS.md: commit-ul paginilor de program |
 
-> **Ce s-a schimbat pe 8 septembrie 2026.** Clienta a retrimis cele trei documente
+> **Ce s-a schimbat pe 8 septembrie 2026, runda a doua.** Clienta a semnalat că
+> paginile de program și cea de workshopuri „par pagini din Word" și a cerut ca
+> vizitatorul să nu se sperie de cât are de citit: secțiuni împărțite vizibil,
+> fundaluri diferite, pictograme, ierarhie clară și un antet sugestiv pentru
+> fiecare serviciu. **Nu s-a atins niciun cuvânt din textul clientei.**
+>
+> Ce a intrat: **benzi de secțiune cu fundal alternat și formă potrivită
+> conținutului** (`ui/PackageBody`), **un set propriu de pictograme desenate**
+> (`ui/Glyph`), **un desen de antet pentru fiecare program, care ESTE structura
+> lui** (`ui/ProgramMotif`), o **hartă a paginii** din chipsuri numerotate și
+> aceeași împărțire pe pagina de workshopuri, cu o bară de sărituri către oricare
+> dintre cele paisprezece. Detalii în §4 („Cum se citesc paginile lungi"),
+> §9.28–§9.30 și §6.
+
+> **Ce s-a schimbat pe 8 septembrie 2026, runda întâi.** Clienta a retrimis cele trei documente
 > de serviciu (Strategic Performance Assessment, CLAR, Executive Performance
 > Program) și a cerut pagini dedicate pentru fiecare program, cu CTA proprii, plus
 > submeniuri în navigație — programele sub „Servicii", workshopurile sub
@@ -959,6 +973,149 @@ toate cele 14 ancore din meniu au un card cu `id` pe `/workshopuri-performanta-u
 edițiile cu dată, cronologic, apoi restul catalogului. Cine coboară prin meniu
 găsește cardurile în aceeași succesiune.
 
+### Cum se citesc paginile lungi ✅ — 8 septembrie 2026, runda a doua
+
+Problema semnalată de clientă: paginile de program și cea de workshopuri „par
+pagini din Word". Avea dreptate, și cauza era una singură — **toate secțiunile
+erau randate identic**. Titlu, paragrafe, listă, blocuri numerotate, la rând,
+într-o coloană, cu același spațiu între ele. Pe un program cu zece secțiuni asta
+se citește ca o sarcină, nu ca o ofertă.
+
+Nu s-a schimbat niciun cuvânt din textul clientei. S-a schimbat ce știe pagina
+despre el.
+
+#### 1. Fiecare secțiune își declară felul
+
+`PackageSection` a primit `kind`, iar `src/content/packages.ts` îl scrie pe
+fiecare secțiune. Nu e o preferință de stil: e o afirmație despre conținut, de
+aceea stă lângă text, nu în componentă.
+
+| Fel | Ce e | Cum arată | Semn |
+|---|---|---|---|
+| `prose` | narațiune | coloană îngustă, ritm de articol | — |
+| `checklist` | situații în care te recunoști | grilă de rânduri cu bifă, 2 coloane | bifă |
+| `cards` | lucruri care stau alături | carduri, 2–3 pe rând | grilă |
+| `steps` | etape parcurse în ordine | verticală numerotată, cu firul care le leagă | traseu |
+| `outcomes` | ce primești la final | rânduri numerotate | romb |
+| `split` | aceeași întrebare, două răspunsuri | două coloane opuse | cerc tăiat |
+| `statement` | promisiunea programului | citat pe bloc întunecat | ghilimele |
+
+**Benzile de citit se deosebesc de cele de scanat.** Cele narative primesc doar
+numărul; toate celelalte primesc și un semn. Cine derulează repede vede din
+periferie unde e text de citit și unde e o listă din care poate lua doar ce îl
+privește. Asta e toată diferența dintre „am de citit mult" și „văd unde e ce mă
+interesează".
+
+#### 2. Fundalul alternează, spațiul nu crește
+
+Fiecare secțiune e acum o `<Section>` proprie, hârtie / crem, alternat.
+Separarea o face culoarea, nu spațiul: tokenul nou `--spacing-section-body`
+(`clamp(3.5rem, 6vw, 6rem)`) e mult mai strâns decât `--spacing-section` de pe
+prima pagină. Zece benzi la ritmul de acolo ar fi însemnat trei ecrane de gol.
+
+**Un singur bloc `ink` pe pagină**, exact ca pe prima pagină, unde acela e
+citatul. Îl primește `statement` — promisiunea programului. Un al doilea l-ar
+face pe primul să nu mai însemne nimic. Secțiunea `statement` **nu consumă un
+pas** din alternanță, ca hârtia și cremul să continue corect de o parte și de
+alta a ei.
+
+#### 3. Pictogramele sunt desenate, nu importate
+
+`src/components/ui/Glyph.tsx`, douăsprezece semne, **zero dependențe**. Regula 4
+din §2 interzice bibliotecile de componente, dar motivul real e de design:
+seturile obișnuite sunt desenate la 1.5–2px, cu colțuri rotunjite și cu un
+vocabular de aplicație. Peste Cormorant Garamond și peste hairline-urile de 1px
+ale designului aprobat ar arăta ca un panou de administrare lipit peste o pagină
+editorială. Ale noastre sunt trasate în limbajul paginii: **linie de 1px, în
+accent, fără umplere**, pe o casetă de 24 de unități.
+
+**Un semn per tip de bloc, nu unul per rând.** Un semn repetat pe fiecare
+element dintr-o listă de nouă nu mai transmite nimic — devine marcator de listă,
+și pentru asta există `<ul>`. Excepția e bifa, care chiar marchează elemente.
+Toate sunt `aria-hidden`: informația stă în titlul de lângă ele.
+
+#### 4. Antetul fiecărui program are un desen care ESTE programul
+
+`src/components/ui/ProgramMotif.tsx`. Paginile n-au fotografie proprie și nu vor
+avea: ședința foto a produs șase cadre, toate repartizate, iar același portret pe
+toate trei ar spune că programele sunt același lucru.
+
+| Program | Desenul | Ce spune |
+|---|---|---|
+| Strategic Performance Assessment™ | hartă radială, 6 axe | cele șase dimensiuni, cu **exact** atâtea puncte pe fiecare axă câte atribute are: 3+4+4+4+3+2 = 20 |
+| CLAR™ | traseu ascendent, 4 opriri | C → L → A → R, în ordine, pentru că ordinea e chiar metoda |
+| Executive Performance Program™ | linie de timp | evaluarea inițială (nodul mare), 12 sesiuni, două evaluări intermediare, evaluarea finală |
+
+**Numerele nu sunt decorative.** Dacă cineva schimbă câte atribute are o
+dimensiune, se schimbă și desenul — sunt aceleași date. Regulile de trasare sunt
+cele de la `HeroField`: linie de 1px, aurul rămâne fir și nu devine suprafață,
+geometria se calculează din date, nu se scrie ca șiruri de coordonate.
+
+#### 5. Harta paginii
+
+Chipsuri numerotate, una pe bandă, imediat sub antet. Numerele sunt aceleași cu
+cele de pe benzi pentru că vin din aceeași funcție (`packageOutline`), deci nu
+pot ajunge să spună lucruri diferite. Apare de la patru secțiuni în sus.
+
+#### 6. Antetul răspunde înainte de orice derulare
+
+Linia cu expresia căutată, numele, promisiunea, faptele scanabile, **prețul și
+butonul** — plus desenul, în dreapta. **Coloana sticky de achiziție a dispărut**:
+avea sens cât timp corpul paginii era o coloană de text, dar lângă benzi late
+le-ar fi tăiat în două pe toată înălțimea. Rolul ei l-a luat antetul.
+
+Cele trei fapte din ea — durată, format, pentru cine — au coborât în banda de
+investiție, adică fix acolo unde omul le recitește: în clipa în care decide.
+Verificat prin diff că nu s-a pierdut nimic pe drum; vezi §6.
+
+#### 7. Pagina de workshopuri, aceeași operație
+
+Partea comună — ce diferențiază seria, programul zilei, pentru cine e — era o
+singură coloană de trei ecrane, deasupra a paisprezece carduri. Acum sunt patru
+benzi: carduri pentru diferențiatori, tabel pentru orar (rămâne `<table>`
+semantic, pentru AEO — s-a schimbat doar cum arată: modulele au marginea în
+accent, pauzele stau retrase), bloc întunecat pentru fraza despre public.
+
+Catalogul a primit o **bară de sărituri** cu cele paisprezece titluri, în care
+punctul auriu marchează edițiile deschise. Înlocuiește fraza „Deschise acum: …",
+care spunea strict mai puțin și tot text era.
+
+**Cardul deschis se vede acum de la doi metri**, prin trei semnale deodată:
+fundal crem, margine în accent și pastila „Înscrieri deschise". Culoarea singură
+n-ar fi suficientă — cine n-o distinge ar rămâne fără informație, iar pastila o
+scrie în cuvinte. Secțiunea catalogului a trecut de pe crem pe hârtie tocmai ca
+să existe contrastul: înainte, cardurile crem stăteau pe o secțiune tot crem și
+nu se deosebeau deloc.
+
+#### Singura atingere a textului, și de ce
+
+`trimItem` scoate **la randare** punctul și virgula de la capătul elementelor de
+listă. Erau corecte când lista era o frază lungă întreruptă; într-o grilă de
+carduri, fiecare element se citește singur, iar `;`-ul rămas atârnă. Se scoate la
+randare, nu din conținut: fișierul rămâne sursa din care `pnpm seed` populează
+CMS-ul, iar acolo textul trebuie să fie cel livrat de clientă.
+
+Cardurile din `cards` își iau titlul din prima jumătate a propoziției, până la
+primul „: ". Propoziția clientei rămâne exact cum a scris-o.
+
+Singurele două șiruri adăugate sunt etichete de navigație, nu conținut:
+`splitLabels` pe secțiunea „Cui i se potrivește și cui nu" — „Este pentru tine
+dacă" / „Nu este programul potrivit dacă", care doar numesc ce spunea deja prima
+frază a fiecărui paragraf — și „Ziua de workshop", eticheta benzii cu orarul.
+
+#### Contrastul, recalculat pe suprafețele noi
+
+`--ac-ink-50` pe `--ac-cream-50` dă **4.24:1**, sub AA — aceeași cifră măsurată
+la câmpul heroului. Benzile crem și cardurile de workshop deschise sunt tocmai
+crem, deci textul secundar de pe ele a urcat la `--ac-ink-70` (**8.11:1**). Nu e
+o preferință: e aceeași regulă ca la `ac-accent-deep` pe `cream-100` (§9.3) —
+varianta mai închisă se folosește strict unde cea normală pică.
+
+Pastila cu semn (`GlyphBadge`) e în `--ac-accent-ink`, nu în `--ac-accent`:
+5.44:1 pe hârtie și 4.98:1 pe crem, adică peste pragul de 3:1 pentru elemente
+negrafice. Semnele mici inline rămân în `--ac-accent`, ca toate hairline-urile și
+numeralele designului aprobat — sunt decorative și dublează un text de lângă.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
@@ -1032,6 +1189,11 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **Ancorele workshopurilor din meniu vs. cardurile din catalog** | ✅ 14/14 |
 | **Variantele CSS ale submeniului, în bundle-ul compilat** | ✅ `group-hover:` și `group-focus-within:` emise pentru opacitate, `translate` și `pointer-events` |
 | **Componente de client după submeniuri** | ✅ tot patru |
+| **Homepage, înainte vs. după refacerea vizuală** | ✅ text identic la caracter — 12.985 în ambele |
+| **Text pierdut la refacerea paginilor de program** | ✅ zero, după ce diff-ul a găsit două scăpări și au fost reparate |
+| **CMS vs. fallback după refacerea vizuală** | ✅ identic pe `/`, pe toate trei paginile de program și pe workshopuri |
+| **Componente de client după refacerea vizuală** | ✅ tot patru — pictogramele și desenele sunt SVG randat pe server |
+| **Contrast pe suprafețele crem noi** | ✅ text secundar urcat la `ink-70` (8.11:1); `ink-50` pe crem dădea 4.24:1 |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -1302,6 +1464,65 @@ Verificarea a și găsit ce descrie §10: în build-ul fără bază de date, cel
 pagini de program răspundeau **404**. Nu se vedea altfel — rutele existau, sitemap-ul
 le lista, iar cu Postgres pornit totul era în regulă.
 
+### ✅ Refacerea vizuală n-a pierdut niciun cuvânt — verificat prin diff
+
+8 septembrie 2026, runda a doua. Riscul unei refaceri vizuale nu e ca ceva să
+arate prost — se vede —, ci ca o informație să dispară odată cu blocul care o
+purta. Metoda: `curl` pe pagina de dinainte și pe cea de după, textul vizibil
+extras din amândouă, apoi **fiecare linie dispărută căutată una câte una în
+pagina nouă**. Diff-ul simplu n-ar fi fost suficient: majoritatea liniilor se
+schimbă oricum, pentru că `;`-ul final se scoate și pentru că un element de listă
+se rupe în titlu de card plus corp.
+
+**Verificarea a găsit două scăpări reale**, amândouă venite din desființarea
+coloanei sticky de achiziție:
+
+1. `forWho` — „Antreprenori, lideri, manageri și profesioniști care vor să
+   înțeleagă ce susține și ce limitează rezultatele lor actuale." Dispăruse de
+   tot din pagină.
+2. „Plata se face securizat, prin Stripe." — singura mențiune de pe pagină
+   despre cine procesează plata.
+
+Amândouă au fost puse înapoi, în banda de investiție, împreună cu durata și
+formatul. **După reparație: zero linii pierdute** pe toate cele patru pagini.
+Restul diferențelor sunt exact cele intenționate — `;`-ul de la capătul
+elementelor de listă și împărțirea „titlu: explicație" în titlu de card plus
+corp, ambele verificate ca fiind prezente integral în pagina nouă.
+
+Pe workshopuri, singurul text scos e fraza „Deschise acum: …", înlocuită de bara
+de sărituri, care marchează aceleași trei ediții și le mai și numește pe toate
+paisprezece.
+
+**Homepage-ul nu s-a mișcat**, deși `globals.css` și `ui/Section` s-au atins:
+text vizibil identic la caracter, 12.985 în ambele, față de commit-ul anterior.
+
+Reproducere:
+
+```bash
+pnpm build && pnpm start -p 3000
+curl -s http://127.0.0.1:3000/servicii/strategic-performance-assessment -o acum.html
+# ... acelasi lucru pe commit-ul dinainte, apoi:
+# scoase <script>, <style> si tag-urile; spatiile normalizate; fiecare linie
+# disparuta cautata cu grep -F in pagina noua, nu doar diff
+```
+
+### ⚠️ Refacerea vizuală — NEverificată în browser
+
+Aceeași cauză ca mai jos, din aceeași sesiune. Ce se verifică la prima sesiune cu
+browser, la 1440px, ~1000px și 390px:
+
+1. ritmul benzilor — că alternanța hârtie / crem se citește ca separare și că
+   `--spacing-section-body` nu e nici prea strâns, nici prea larg;
+2. cele trei desene de antet la toate lățimile: caseta e comună (400×340), dar
+   textele din ele (`01`–`06`, `C L A R`, `L1`–`L6`) sunt trasate în coordonate
+   de viewBox și se scalează odată cu desenul;
+3. bara de chipsuri pe telefon, unde zece–paisprezece chipsuri se rup pe multe
+   rânduri;
+4. pastilele cu semn de lângă titluri — că semnul de 22px într-un cerc de 44px
+   nu pare nici pierdut, nici înghesuit;
+5. tabelul orarului sub 480px, unde are `min-w-[440px]` și derulează orizontal
+   în caseta lui.
+
 ### ⚠️ Submeniurile și paginile de program — NEverificate în browser
 
 Extensia de browser nu s-a putut conecta la serverul local în sesiunea din 8
@@ -1433,9 +1654,11 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Douăzeci și șapte, toate documentate în cod prin comentarii. **Ultimele trei
-(25–27) sunt din 8 septembrie 2026**: două cerute de clientă — submeniurile din
-navigație și CTA-urile proprii ale fiecărui program — și una impusă de prima.
+Treizeci, toate documentate în cod prin comentarii. **Ultimele șase (25–30) sunt
+din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
+fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
+paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
+impusă de prima dintre ele.
 
 > Numerele 21–24 au fost renumerotate pe 8 septembrie 2026. Erau scrise ca
 > „19, 20, 21, 22" după un 19 și un 20 care existau deja; Markdown le renumerota
@@ -1712,6 +1935,40 @@ navigație și CTA-urile proprii ale fiecărui program — și una impusă de pr
     pentru totdeauna. Paginile care declară altceva își păstrează valoarea proprie,
     inclusiv `force-static` de pe `opengraph-image.tsx`.
 
+28. **Un set propriu de pictograme, desenat de mână** (`src/components/ui/Glyph.tsx`,
+    8 septembrie 2026). Clienta a cerut pictograme. Regula 4 din §2 interzice
+    bibliotecile de componente, dar motivul real e de design și e mai important
+    decât regula: seturile obișnuite sunt trasate la 1.5–2px, cu colțuri
+    rotunjite și cu un vocabular de aplicație. Peste Cormorant Garamond și peste
+    hairline-urile de 1px ale designului aprobat ar arăta ca un panou de
+    administrare lipit peste o pagină editorială.
+
+    Cele douăsprezece semne de aici sunt desenate în limbajul paginii: linie de
+    1px, în accent, fără umplere, pe o casetă de 24 de unități. Un semn per tip
+    de bloc, nu unul per rând — un semn repetat pe fiecare element al unei liste
+    devine marcator de listă, și pentru asta există `<ul>`. Toate `aria-hidden`.
+
+29. **Un desen de antet pentru fiecare program** (`src/components/ui/ProgramMotif.tsx`,
+    8 septembrie 2026). Al patrulea strat vizual din afara designului aprobat,
+    după aură, lumina paginii și câmpul heroului — dar spre deosebire de ele,
+    acesta e **conținut**, nu atmosferă: fiecare desen este structura
+    programului, nu o metaforă lipită peste el. Cine se uită la el învață ceva
+    adevărat despre ce cumpără. Descris integral în §4.
+
+    Cerut de clientă („ceva sugestiv pentru fiecare serviciu"). Alternativa —
+    aceeași fotografie pe toate trei paginile — ar fi spus că programele sunt
+    același lucru.
+
+30. **Paginile lungi se citesc pe benzi, nu pe o coloană** (`ui/PackageBody`,
+    8 septembrie 2026). Cerut de clientă: „pare că sunt pagini din Word", cu
+    teama explicită că vizitatorul vede prea mult text. Descris integral în §4.
+
+    Ce NU s-a schimbat, și nu se schimbă nici la o cerere de „și mai vizual":
+    niciun cuvânt din textul clientei; zero componente de client noi (semnele și
+    desenele sunt SVG randat pe server); zero bibliotecă de iconuri sau de
+    componente; un singur bloc `ink` pe pagină; și `--ac-ink-50` nu se mai
+    folosește pe suprafețe crem, unde pică AA.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -1753,6 +2010,9 @@ pe homepage și nu au pagină proprie.
 | Referință `@id` care atârnă în datele structurate | `Event.organizer`, `Service.provider` și `Review.itemReviewed` trimit la `#serviciu`, dar nodul `ProfessionalService` se emitea doar pe homepage. Marcajul e valid sintactic, deci niciun validator nu se plânge — referința pur și simplu nu se rezolvă | `professionalServiceSchema(settings)` se emite pe fiecare pagină care îl referă. Regula: **graful unei pagini trebuie să se rezolve singur**, fără să depindă de ce a mai crawlat motorul |
 | Un fișier care depinde de data curentă, prerandat cu `force-static` | `llms.txt` enumeră edițiile deschise la înscriere, iar fereastra se mută lunar. Prerandat o dată la build, ar fi continuat să spună asistenților AI că se pot cumpăra locuri la o ediție trecută — exact răspunsul greșit pe care AEO-ul trebuie să îl prevină | `export const revalidate = 3600`. Regulă generală: orice ieșire care depinde de `new Date()` nu are voie să fie `force-static` |
 | Diacriticele devin mojibake după un `perl -i` (`și` → `Èi`, `î` → `Ã®`) | `perl -CSD` decodează intrarea ca UTF-8, dar șirul de înlocuire din linia de comandă vine deja ca octeți UTF-8 — rezultatul se codează a doua oară. Fișierul rămâne valid, deci nimic nu semnalează eroarea, iar textul stricat ajunge în commit | Editează fișierele cu diacritice prin unealta de editare, nu prin `perl -i`/`sed`. Dacă tot folosești un filtru, pune textul de înlocuire într-un fișier separat și splice-uiește-l cu `awk`. Verifică după: `grep -c "Ã\|È" <fișier>` trebuie să dea zero |
+| Un script de editare a tăiat jumătate din `STATUS.md`, fără nicio eroare | Fișierele `.md` din repo au terminatori **CRLF**. Un `s.indexOf('\n\n')` care caută o linie goală nu găsește nimic, întoarce `-1`, iar `s.slice(-1)` taie tot în afară de ultimul caracter. Scriptul rulează, tipărește „ok" și lasă fișierul trunchiat | Editează documentele cu unealta de editare, nu cu scripturi de tăiat șiruri. Dacă tot scrii un script, caută `\r?\n\r?\n` și **verifică rezultatul**: `wc -l` și `grep -n "^## "` înainte și după. Recuperare: `git checkout -- STATUS.md`, apoi refaci editările |
+| Text secundar ilizibil pe suprafețe crem | `--ac-ink-50` dă 4.64:1 pe hârtie, dar **4.24:1 pe `--ac-cream-50`** — sub AA. Se vede greu, deci nimeni nu-l semnalează; e chiar cifra măsurată la câmpul heroului | Pe crem, textul secundar e `--ac-ink-70` (8.11:1). Regula e scrisă și în `CLAUDE.md`. Când muți un bloc de pe hârtie pe crem, reverifică fiecare `ink-50` din el |
+| Un card colorat pus pe o secțiune de aceeași culoare | Cardurile de workshop deschise erau `bg-ac-cream-50` pe o secțiune `tone="cream"`, adică tot `cream-50`. Marcajul exista în cod și nu se vedea în pagină | Culoarea unui element se alege față de fundalul pe care ajunge, nu în abstract. Aici secțiunea a trecut pe hârtie. Și: un singur semnal nu ajunge — cardul deschis are fundal, margine în accent ȘI pastila scrisă în cuvinte |
 | Comentariu care rupe compilarea într-un tag JSX | În lista de atribute, `{/* … */}` nu e valid — acolo se scriu comentarii JS simple, `/* … */`. Forma cu acolade merge doar între copii | `/* … */` între atribute, sau comentariul deasupra elementului |
 | Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
 | Rută prerandată care dă 404 imediat ce baza de date tace | `getPackageBySlug` începea cu `if (!payload) return null`, deși `getPackages` — pe care oricum îl chema imediat după — știe să cadă pe textul aprobat. `generateStaticParams` producea deci cele trei rute din `src/content/packages.ts`, iar pagina le refuza pe toate. Cu Postgres pornit nu se vedea nimic | Ieșirea scurtă a fost scoasă. **Regula: verificarea „avem CMS?" se face o singură dată, în funcția care chiar citește din CMS.** Un resolver care doar filtrează rezultatul altuia nu are ce decide. Se prinde cu `DATABASE_URI="" pnpm build && pnpm start`, apoi `curl` pe rutele prerandate — nu doar pe `/` |
@@ -1813,6 +2073,10 @@ adriana-chira-repo/
 │  ├─ migrations/                  ← schema pentru producție
 │  ├─ seed/index.ts                ← pnpm seed
 │  ├─ components/{layout,sections,ui,consent,contact,seo}/
+│  │                               ui/Glyph.tsx        ← semnele, desenate
+│  │                               ui/ProgramMotif.tsx ← antetul fiecărui program
+│  │                               ui/PackageBody.tsx  ← benzile paginilor lungi
+│  │                               layout/NavDropdown.tsx ← submeniul din antet
 │  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
 │  │                               packages.ts · workshops.ts · testimonials.ts
 │  │                               ← fallback ȘI sursa seed-ului

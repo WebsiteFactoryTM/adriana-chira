@@ -316,10 +316,55 @@ export type PostDetail = PostSummary & {
  * `src/content/packages.ts`, iar pagina randează rich text-ul din CMS doar
  * atunci când chiar există.
  */
+/**
+ * Cum se vede o secțiune din descrierea lungă.
+ *
+ * Nu e o preferință de stil, ci o afirmație despre conținut — de aceea stă în
+ * `src/content/`, lângă text, și nu în componentă. O listă de simptome în care
+ * cititorul se caută pe sine (`checklist`) și o listă de rezultate pe care le
+ * primește (`outcomes`) se citesc complet diferit, chiar dacă amândouă sunt
+ * `string[]`. Randate identic — cum erau —, pagina devine documentul Word din
+ * care a venit textul.
+ *
+ * | Fel | Ce e | Cum arată |
+ * |---|---|---|
+ * | `prose` | narațiune | o coloană îngustă, ritmul de articol |
+ * | `checklist` | situații în care te recunoști | grilă de rânduri cu bifă |
+ * | `cards` | lucruri care stau alături, nu în ordine | carduri, 2–3 pe rând |
+ * | `steps` | etape parcurse în ordine | proces vertical, numerotat |
+ * | `outcomes` | ce primești la final | rânduri numerotate, cu romb |
+ * | `split` | aceeași întrebare, două răspunsuri | două coloane opuse |
+ * | `statement` | promisiune, principiu | citat pe bloc întunecat |
+ */
+export type PackageSectionKind =
+  | 'prose'
+  | 'checklist'
+  | 'cards'
+  | 'steps'
+  | 'outcomes'
+  | 'split'
+  | 'statement'
+
 export type PackageSection = {
   heading: string
+  /** Implicit `prose`, ca secțiunile vechi să rămână valide fără atingere. */
+  kind?: PackageSectionKind
+  /**
+   * Fundalul benzii. Lipsă = alternanță automată hârtie / crem.
+   *
+   * Se scrie doar când banda trebuie să iasă din alternanță — de obicei
+   * niciodată: alternanța există tocmai ca nimeni să nu numere secțiunile.
+   */
+  tone?: 'paper' | 'cream'
   paragraphs?: string[]
   list?: string[]
+  /**
+   * Etichetele celor două coloane la `split`. Prima e cazul favorabil.
+   *
+   * Sunt singurul text pe care îl adaugă prezentarea, și adaugă doar un nume
+   * pentru ceva ce paragraful spunea deja în prima frază.
+   */
+  splitLabels?: [string, string]
   /** Blocuri numerotate: metoda CLAR, dimensiunile HPA, etapele procesului. */
   steps?: { index: string; title: string; body: string }[]
 }
