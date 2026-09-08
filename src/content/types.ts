@@ -9,6 +9,18 @@
 export type NavItem = {
   label: string
   href: string
+  /**
+   * Submeniul intrării, în antet și în meniul mobil.
+   *
+   * NU se scrie în `src/content/site.ts`: cele două submeniuri existente —
+   * programele și workshopurile — sunt conținut viu (un program nou în admin,
+   * o ediție căreia i s-a pus dată) și se atașează pe server, în
+   * `src/lib/nav.ts`. Navigația statică rămâne lista de rute; submeniul e
+   * derivat din ce se vinde astăzi.
+   */
+  children?: NavItem[]
+  /** Rândul mic de sub etichetă, în submeniu: durata, prețul, data ediției. */
+  detail?: string
 }
 
 export type SocialLink = {
@@ -312,18 +324,50 @@ export type PackageSection = {
   steps?: { index: string; title: string; body: string }[]
 }
 
+/**
+ * CTA-urile paginii unui program.
+ *
+ * Fiecare document livrat de clientă își numește singur butoanele — „Aplică
+ * pentru programul CLAR™", „Programează Strategic Performance Assessment™",
+ * „Rezervă-ți locul" — și nu sunt interschimbabile: un buton care spune ce
+ * urmează („aplici", „programezi", „rezervi") convertește altfel decât unul
+ * generic. De aceea textele stau în conținut, lângă program, nu în componentă.
+ */
+export type PackageCta = {
+  /** Butonul de plată, în coloana de achiziție și în banda de investiție. */
+  buy: string
+  /** Calea fără plată online, de sub buton. */
+  ask: string
+  /** Blocul final al paginii. */
+  finalEyebrow: string
+  finalHeading: string
+  finalBody: string
+  finalLabel: string
+}
+
 export type PackageDetail = {
   numeral: string
   slug: string
   href: string
   name: string | null
+  /**
+   * Linia de deasupra titlului. Poartă expresia căutată în Google, în timp ce
+   * `h1` rămâne numele programului — adică termenul de brand pe care oamenii
+   * îl caută după ce l-au auzit o dată.
+   */
+  kicker?: string
   tagline: string | null
+  /** Faptele scanabile de sub lead: durată, format, ce primești la final. */
+  highlights?: string[]
   forWho: string | null
   includes: (string | null)[]
   duration: string | null
   format: 'online' | 'fata-in-fata' | 'hibrid'
   price: number | null
   currency: string
+  /** Ce acoperă prețul, tranșele, factura pe firmă. Banda de investiție. */
+  investmentNotes?: string[]
+  cta?: PackageCta
   featured: boolean
   longDescription: RichTextDocument
   /** Descrierea aprobată, folosită când CMS-ul n-a primit încă rich text. */

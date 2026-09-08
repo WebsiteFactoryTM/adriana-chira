@@ -1,4 +1,16 @@
 import type { PackageSection } from '@/content/types'
+import { slugifyAnchor } from '@/lib/lexical'
+
+/**
+ * Ancora unei secțiuni din descrierea lungă.
+ *
+ * Aceeași funcție calculează și ancorele din cuprinsul articolelor de blog,
+ * deci cuprinsul paginii de program și titlurile pe care le țintește nu pot
+ * devia — exact regula din STATUS §4, mutată de pe articole pe programe.
+ */
+export function packageSectionAnchor(heading: string): string {
+  return slugifyAnchor(heading)
+}
 
 /**
  * Descrierea lungă a unui pachet, în varianta din textul aprobat.
@@ -22,7 +34,13 @@ export function PackageBody({ sections }: { sections: PackageSection[] }) {
   return (
     <div className="grid gap-[clamp(40px,5vw,64px)]">
       {sections.map((section) => (
-        <section key={section.heading}>
+        <section
+          key={section.heading}
+          id={packageSectionAnchor(section.heading)}
+          /* 132px = înălțimea barei sticky. Fără el, cuprinsul ar ateriza cu
+             titlul ascuns sub antet. */
+          className="scroll-mt-[132px]"
+        >
           <h2 className="font-display text-h3-lg font-normal">{section.heading}</h2>
 
           {section.paragraphs?.map((paragraph, index) => (

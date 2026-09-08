@@ -6,10 +6,26 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **7 septembrie 2026** |
-| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 3 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · homepage-ul a primit o a 13-a secțiune, cerută de clientă · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 7 septembrie 2026 |
-| Ultimul commit | `84c7ecb` — STATUS.md: commit-ul fotografiilor în antet |
+| Ultima actualizare | **8 septembrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 8 septembrie 2026 |
+| Ultimul commit | `f529c3e` — Conținutul real al clientei, workshopurile și plata prin Stripe |
+
+> **Ce s-a schimbat pe 8 septembrie 2026.** Clienta a retrimis cele trei documente
+> de serviciu (Strategic Performance Assessment, CLAR, Executive Performance
+> Program) și a cerut pagini dedicate pentru fiecare program, cu CTA proprii, plus
+> submeniuri în navigație — programele sub „Servicii", workshopurile sub
+> „Workshopuri", fiecare workshop ducând la cardul lui din catalog.
+>
+> **Rutele nu s-au schimbat: erau deja `/servicii/[slug]`**, exact formatul cerut.
+> Ce s-a schimbat este pagina de la capătul lor: din pagină de detaliu de pachet a
+> devenit pagină de vânzare, cu cuprins, bandă de investiție și trei puncte de
+> cumpărare. Detalii în §4 („Paginile de program"), §9.23–§9.25 și §6.
+>
+> **Un 404 tăcut a fost reparat pe drum.** `getPackageBySlug` ieșea din funcție cu
+> `null` când baza de date nu răspundea, deci toate cele trei pagini de program
+> dădeau 404 pe calea de rezervă — deși `generateStaticParams` le producea rutele
+> din textul aprobat. Vezi §10.
 
 > **Ce s-a schimbat pe 7 septembrie 2026.** Clienta a livrat materialele finale:
 > cele trei programe individuale (Strategic Performance Assessment, CLAR,
@@ -850,6 +866,101 @@ vorba la fiecare mesaj.
 
 ---
 
+### Paginile de program ✅ — 8 septembrie 2026
+
+`/servicii/[slug]`, trei rute, formatul cerut de clientă. Ruta exista din faza 3b;
+ce s-a schimbat este ce randează.
+
+| Bloc | De unde vine | De ce e acolo |
+|---|---|---|
+| Linia de deasupra titlului (`kicker`) | `packages.ts` | poartă expresia căutată în Google, ca `h1` să rămână numele programului — termenul de brand |
+| Faptele scanabile (`highlights`) | `packages.ts` | „3 ore · 20 de atribute · 6 dimensiuni", cifrele din document; spun ce cumperi înainte de preț |
+| Caseta de achiziție | `packages` (CMS) | preț, durată, format, buton — **prima în DOM**, vezi mai jos |
+| Cuprinsul | titlurile din `body` | programele au 8–10 secțiuni; fără el, pe telefon sunt un perete |
+| Corpul | `body` din `packages.ts` | textul aprobat, structurat |
+| Banda de investiție | `includes` + `investmentNotes` | lista integrală, tranșele, factura pe firmă, al doilea buton |
+| Întrebări frecvente | `packages.faq` | neschimbat |
+| Celelalte programe | `getPackages()` | neschimbat |
+| Blocul final | `cta` din `packages.ts` | al treilea buton, cu textul propriu al programului |
+
+**Ordinea din DOM e gândită pentru telefon, nu pentru desktop.** Peste 1000px pagina
+are două coloane și caseta de preț stă lipită de titlu, în dreapta. Sub 1000px grila
+cade pe o coloană — iar cu ordinea de desktop, prețul și butonul ar fi ajuns **după**
+cele nouă secțiuni de text, adică la câteva mii de pixeli de primul ecran. De aceea
+caseta e prima în DOM și trece în dreapta abia pe desktop, din `order`.
+
+**Trei puncte de cumpărare, nu unul, și fiecare are textul lui.** Documentele
+clientei își numesc singure butoanele — „Aplică pentru programul CLAR™",
+„Programează conversația de potrivire", „Rezervă-ți locul" — și cer explicit CTA în
+trei poziții: sus, la investiție și la final. Un buton care spune ce urmează
+convertește altfel decât unul generic, deci textele stau în conținut, lângă program
+(`PackageCta` în `src/content/types.ts`), nu în componentă.
+
+**Câmpurile noi NU sunt în schemă, și e o decizie.** `kicker`, `highlights`,
+`investmentNotes` și `cta` vin exclusiv din `src/content/packages.ts`, prin aceeași
+poartă ca `body`: `toPackageDetail` le citește din pachetul aprobat, potrivit pe
+slug. Sunt redactare de pagină de vânzare, nu date pe care cineva să le țină
+sincronizate în admin — iar patru câmpuri noi în colecție ar fi însemnat o migrație
+pentru text care oricum se schimbă odată cu documentul clientei. Un pachet creat
+direct în CMS rămâne fără ele și cade pe variantele generice din `CTA_FALLBACK`.
+
+**Ancorele cuprinsului se calculează cu `slugifyAnchor`**, aceeași funcție care le
+pune pe titlurile articolelor de blog, deci nu pot devia. Verificat: cele 11 ancore
+din cuprinsul paginii SPA au fiecare un `<section id>` corespunzător.
+
+**Textul nou din documente**, față de ce era deja în site: secțiunea „Ce urmărim, în
+funcție de rolul tău" (antreprenori / lideri și manageri / profesioniști), din
+documentul Strategic Performance Assessment. Restul documentelor era deja în
+`packages.ts` din 7 septembrie.
+
+### Submeniurile din navigație ✅ — 8 septembrie 2026
+
+„Servicii" și „Workshopuri" se deschid, în antet și în meniul mobil.
+
+| | Antet (≥1000px) | Meniu mobil |
+|---|---|---|
+| Componenta | `layout/NavDropdown.tsx` — **Server Component** | `<details>` nativ, în `MobileNav` |
+| Ce îl deschide | `:hover` și `:focus-within`, pur CSS | apăsarea pe `<summary>` |
+| JavaScript | zero | zero în plus — `MobileNav` era deja componentă de client |
+
+**Componentele de client sunt tot exact patru.** Un meniu care se deschide pare, din
+reflex, o chestiune de stare. Nu este: `:hover` rezolvă mouse-ul, `:focus-within`
+rezolvă tastatura, iar acordeonul nativ le rezolvă pe amândouă pe telefon.
+
+**Panoul se ascunde din `opacity`, niciodată din `display` sau `visibility`.** Ambele
+din urmă scot linkurile din ordinea de tabulare — iar atunci `:focus-within` nu se
+mai poate declanșa niciodată, pentru că nimic din interior nu mai poate primi focus.
+Rezultatul ar fi un meniu perfect cu mouse-ul și inaccesibil de la tastatură. Cu
+`opacity: 0` + `pointer-events: none`, prima tastă Tab intră în panou, `:focus-within`
+devine adevărat și panoul se aprinde; mouse-ul nu poate apăsa ce nu se vede.
+
+**Paddingul de sus stă pe învelișul poziționat, nu pe cartelă**, ca spațiul dintre
+intrarea din meniu și panou să facă parte din zona de hover. Fără puntea asta, meniul
+se închide când cobori mouse-ul spre el.
+
+**Panoul e ancorat la dreapta** (`right-0`): crește spre interiorul paginii, deci nu
+iese din ecran nici la 1000px, unde „Workshopuri" stă deja aproape de marginea din
+dreapta. Catalogul de paisprezece primește panoul pe două coloane; cele trei programe,
+o singură coloană.
+
+**Submeniurile se atașează pe server, într-un singur loc** — `src/lib/nav.ts`, chemat
+din layout — și merg **și** în `nav`, **și** în `mobileNav`, deci antetul și meniul
+mobil nu pot ajunge să arate lucruri diferite. Nu sunt scrise în `src/content/site.ts`:
+navigația statică e o listă de rute, iar submeniul e inventarul a ceea ce se vinde
+astăzi. Scris de mână, un program redenumit din admin ar fi apărut cu numele vechi în
+meniu și cu cel nou în pagină.
+
+**Workshopurile duc la ancore, nu la rute proprii.** Catalogul e o singură pagină —
+cerință de conținut, partea comună a celor paisprezece se scrie o dată, în capul ei.
+Fiecare card are deja `id={slug}` și `scroll-mt-[132px]` cât bara sticky. Verificat:
+toate cele 14 ancore din meniu au un card cu `id` pe `/workshopuri-performanta-umana`.
+
+**Ordinea din submeniu e ordinea din pagină**, calculată de `prepareWorkshops`: întâi
+edițiile cu dată, cronologic, apoi restul catalogului. Cine coboară prin meniu
+găsește cardurile în aceeași succesiune.
+
+---
+
 ## 5. CE NU ESTE FĂCUT
 
 ### Faza 4 — Stripe ✅ **completă din 7 septembrie 2026** (vezi §4)
@@ -914,6 +1025,13 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | Formular: date invalide, honeypot, limitare de rată | ✅ 400 / 400 / 429 |
 | Ordinea de tabulare pe o pagină interioară | ✅ 28 elemente, fără capcane |
 | `/sitemap.xml`, `/llms.txt` după faza 3b | ✅ toate rutele noi |
+| **Homepage, HEAD vs. paginile de program + submeniuri** | ✅ zero linii dispărute, 40 adăugate — toate în cele două submeniuri din antet |
+| **Pagina randată din CMS vs. din fallback, după schimbări** | ✅ text identic pe `/` și pe toate trei paginile de program |
+| **Cele trei pagini de program, fără bază de date** | ✅ 200 (înainte: 404 — vezi §10) |
+| **Ancorele cuprinsului vs. `id`-urile secțiunilor** | ✅ 11/11 pe SPA |
+| **Ancorele workshopurilor din meniu vs. cardurile din catalog** | ✅ 14/14 |
+| **Variantele CSS ale submeniului, în bundle-ul compilat** | ✅ `group-hover:` și `group-focus-within:` emise pentru opacitate, `translate` și `pointer-events` |
+| **Componente de client după submeniuri** | ✅ tot patru |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -1153,6 +1271,54 @@ De aceea `mergePackages` taie lista la trei rânduri pe card. Elementele nu se p
 apar integral pe pagina pachetului. Dacă cineva scoate plafonul „ca să se vadă tot",
 grila se rupe din nou — și nu se vede în niciun test.
 
+### ✅ Submeniurile n-au atins niciun cuvânt din homepage — verificat prin diff
+
+8 septembrie 2026. Antetul e pe toate paginile, deci un submeniu prost pus e o
+regresie pe toate. Metoda din §12.5: build de producție pe `HEAD` (`git stash -u`),
+build de producție cu schimbările, `curl` pe `/` în ambele, comparație pe textul
+vizibil după scoaterea tag-urilor și normalizarea spațiilor.
+
+**Rezultat: zero linii dispărute, 40 adăugate — toate în cele două submeniuri.**
+Nouă rânduri pentru cele trei programe (nume + durata și prețul) și 31 pentru
+catalogul de paisprezece (titlu + subtitlu), plus cele două rânduri „vezi tot". Nicio
+altă schimbare: aceleași 296 de linii de dinainte se regăsesc, în aceeași ordine.
+
+Cele două submeniuri sunt în HTML-ul livrat, nu injectate după hidratare — deci și
+crawlerele care nu execută JS văd legăturile către cele trei programe și către cele
+paisprezece workshopuri. Submeniurile din meniul mobil **nu** apar în HTML-ul inițial,
+pentru că panoul mobil se randează doar când e deschis; e comportamentul dinainte al
+lui `MobileNav`, neschimbat.
+
+### ✅ CMS-ul și fallback-ul dau aceleași pagini de program — verificat prin diff
+
+Aceeași zi, aceeași metodă ca la §6 „CMS-ul nu schimbă pagina aprobată", extinsă la
+cele trei pagini de program: build cu `DATABASE_URI` setat, build cu el gol, `curl` pe
+`/` și pe cele trei rute, comparație pe text vizibil.
+
+**Rezultat: identic pe toate patru** — `/` 12.985 caractere, SPA 15.592, CLAR 13.770,
+EPP 9.634, aceleași cifre în ambele build-uri.
+
+Verificarea a și găsit ce descrie §10: în build-ul fără bază de date, cele trei
+pagini de program răspundeau **404**. Nu se vedea altfel — rutele existau, sitemap-ul
+le lista, iar cu Postgres pornit totul era în regulă.
+
+### ⚠️ Submeniurile și paginile de program — NEverificate în browser
+
+Extensia de browser nu s-a putut conecta la serverul local în sesiunea din 8
+septembrie 2026: serverul răspunde `200` din PowerShell, pe `127.0.0.1` și pe
+`localhost`, dar Chrome dă `ERR_CONNECTION_REFUSED` pe ambele. Nu e o problemă a
+site-ului — build-ul, HTML-ul livrat și CSS-ul compilat sunt verificate mai sus — dar
+înseamnă că **nimeni nu a văzut cu ochii** următoarele, și se verifică la prima
+sesiune cu browser, la 1440px, ~1000px și 390px:
+
+1. panoul de submeniu care se deschide la hover și la Tab, și **puntea de hover**
+   (mouse-ul coboară de pe „Servicii" în panou fără să se închidă);
+2. panoul lat al catalogului la exact 1000px — calculul spune că încape ancorat la
+   dreapta, dar marginea e strânsă;
+3. acordeoanele din meniul mobil, cu cele paisprezece intrări;
+4. ordinea de pe telefon a paginii de program: caseta de preț înainte de corp;
+5. săritura din cuprins, cu titlul dedesubtul barei sticky (`scroll-mt-[132px]`).
+
 ### ⚠️ Placa cu portretul — verificată doar parțial în browser
 
 Runda a doua (fotografia tăiată de curbă, §4) a fost făcută pe 31 august 2026.
@@ -1204,7 +1370,7 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
 | 8d | **Funcția lui Bogdan Vasiliu** | Documentul primit semnează doar cu numele. Câmpul e gol, iar rândul nu se randează — nu inventăm o funcție pentru un om real. Se completează în admin, la recomandarea lui. | — (recomandarea e publicabilă și fără) |
 | 8e | **Scrierea numelui „Gabriela Tarna"** | Așa apare în document. Nu am completat diacritice ghicite pe numele unei persoane. De confirmat forma corectă. | Lansare |
-| 8c | **Datele ediţiilor de workshop de după decembrie 2026** | Trei ediții sunt programate (octombrie, noiembrie, decembrie 2026). Celelalte 11 workshopuri apar în catalog fără dată și fără buton de plată. Adriana le deschide punându-le o dată în admin — se pot cumpăra automat următoarele trei. | Vânzarea workshopurilor din 2027 |
+| 8c | **Datele edițiilor de workshop de după decembrie 2026** | Trei ediții sunt programate (octombrie, noiembrie, decembrie 2026). Celelalte 11 workshopuri apar în catalog fără dată și fără buton de plată. Adriana le deschide punându-le o dată în admin — se pot cumpăra automat următoarele trei. | Vânzarea workshopurilor din 2027 |
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
 | 10 | **Validare juridică a paginilor legale** | Cele patru pagini EXISTĂ, cu text scris pe situația reală a site-ului, dar marcat vizibil ca draft. Nota se scoate din `LEGAL_DRAFT`, în `src/content/pages.ts` | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
@@ -1267,9 +1433,13 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Douăzeci și două, toate documentate în cod prin comentarii. **Ultimele patru
-(19–22) sunt din 7 septembrie 2026 și trei dintre ele ating homepage-ul** — două
-cerute de clientă, una impusă de conținutul real.
+Douăzeci și șapte, toate documentate în cod prin comentarii. **Ultimele trei
+(25–27) sunt din 8 septembrie 2026**: două cerute de clientă — submeniurile din
+navigație și CTA-urile proprii ale fiecărui program — și una impusă de prima.
+
+> Numerele 21–24 au fost renumerotate pe 8 septembrie 2026. Erau scrise ca
+> „19, 20, 21, 22" după un 19 și un 20 care existau deja; Markdown le renumerota
+> singur la afișare, deci nu se vedea, dar în fișier trimiteau în două locuri.
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -1459,7 +1629,7 @@ cerute de clientă, una impusă de conținutul real.
     arăta fundalul din jurul lui. Coloana de text nu se mișcă. Comparația la pixel
     cu designul aprobat nu mai e valabilă pe heroul de desktop — vezi nota din §6.
 
-19. **A treisprezecea secțiune pe homepage: recomandările** (7 septembrie 2026).
+21. **A treisprezecea secțiune pe homepage: recomandările** (7 septembrie 2026).
     `src/components/sections/Testimoniale.tsx`, între blocul de citat și pachete.
     Designul aprobat are douăsprezece secțiuni. **Adăugarea a fost cerută explicit
     de clientă**, odată cu livrarea celor trei recomandări.
@@ -1477,7 +1647,7 @@ cerute de clientă, una impusă de conținutul real.
     pagină, deci nu i-am mai dat comutator propriu în CMS: `featured` și „Vizibil pe
     site" pe fiecare recomandare fac deja treaba, mai fin.
 
-20. **A cincea intrare în navigație: „Workshopuri"** (`src/content/site.ts`).
+22. **A cincea intrare în navigație: „Workshopuri"** (`src/content/site.ts`).
     Designul aprobat are patru. Nu contrazice designul, îl extinde: la momentul
     aprobării, workshopurile nu existau ca ofertă. Sunt al doilea lucru vandabil din
     site, cu pagină și preț propriu, iar o linie de produs care nu apare în
@@ -1489,7 +1659,7 @@ cerute de clientă, una impusă de conținutul real.
     recomandată în documentul clientei): adresa poartă expresia căutată în Google,
     meniul poartă cuvântul pe care îl caută omul cu ochiul.
 
-21. **Lista „Ce include" e tăiată la trei rânduri pe card**
+23. **Lista „Ce include" e tăiată la trei rânduri pe card**
     (`CARD_INCLUDES` în `src/content/packages.ts`). Programele reale au între cinci
     și șase elemente. Randate integral, ar fi înălțat cardul din mijloc cu peste
     60px și ar fi rupt grila verificată la pixel — tăcut, la prima populare a
@@ -1497,7 +1667,7 @@ cerute de clientă, una impusă de conținutul real.
     readuce la trei. Elementele nu se pierd: apar integral pe pagina pachetului.
     Măsurătoarea e în §6.
 
-22. **Cardul evidențiat rămâne cel din mijloc, deși „serviciul principal" e al
+24. **Cardul evidențiat rămâne cel din mijloc, deși „serviciul principal" e al
     treilea.** Documentul clientei numește Executive Performance Program™
     „serviciul principal al ecosistemului CHIRA Model™". Ordinea din pagină este
     însă a angajamentului crescător — 3 ore, 8 săptămâni, 6 luni — iar în designul
@@ -1505,6 +1675,42 @@ cerute de clientă, una impusă de conținutul real.
     produs. Evidențiat rămâne deci CLAR™. Dacă clienta vrea altfel, se mută bifa
     „Card evidențiat" în admin, fără cod — dar atunci designul are două carduri de
     aceeași greutate lângă unul evidențiat, la marginea grilei.
+
+25. **Navigația are submeniuri, deși designul aprobat are o bară plată**
+    (8 septembrie 2026, `src/components/layout/NavDropdown.tsx`). Cerută explicit de
+    clientă: programele sub „Servicii", workshopurile sub „Workshopuri", fiecare
+    workshop ducând în dreptul cardului lui.
+
+    Nu contrazice designul, îl extinde — la momentul aprobării nu exista nici
+    catalogul de paisprezece workshopuri, nici cele trei programe cu nume. Bara
+    însăși nu se schimbă cu un pixel: submeniul e `position: absolute`, sub bară,
+    ascuns din `opacity`, deci intrările din meniu rămân exact unde erau. Verificat
+    prin diff — zero cuvinte mutate pe homepage, vezi §6.
+
+    Ce NU s-a schimbat, și nu se schimbă nici la o cerere de „mai mult": zero
+    JavaScript (`:hover` + `:focus-within` pe desktop, `<details>` nativ pe telefon),
+    componentele de client rămân patru, iar linkurile submeniului sunt în HTML-ul
+    livrat, nu injectate după hidratare.
+
+26. **Paginile de program au trei butoane de cumpărare, cu texte proprii**
+    (8 septembrie 2026). Documentele clientei cer explicit CTA în trei poziții —
+    hero, investiție, final — și își numesc singure butoanele: „Aplică pentru
+    programul CLAR™", „Programează conversația de potrivire", „Rezervă-ți locul".
+
+    Pe o pagină de 8–10 secțiuni, un singur buton sus se pierde; iar un buton generic
+    („Cumpără") pierde exact informația pentru care documentul l-a formulat: ce
+    urmează după apăsare. Textele stau deci în conținut, lângă program (`PackageCta`),
+    nu în componentă. Prețul rămâne același în toate trei și se citește pe server.
+
+27. **`revalidate = 3600` pe layout-ul site-ului**
+    (`src/app/(frontend)/layout.tsx`). E o consecință, nu o preferință: de când
+    antetul poartă submeniul de workshopuri, fiecare pagină conține o listă a cărei
+    ordine se calculează din ziua curentă. Paginile fără `revalidate` propriu — prima
+    pagină, `/despre`, cele patru pagini legale — se prerandau o singură dată, la
+    build, deci ar fi păstrat ordinea de atunci până la următorul deploy. Este exact
+    capcana din §10: o ieșire care depinde de `new Date()` nu are voie să fie statică
+    pentru totdeauna. Paginile care declară altceva își păstrează valoarea proprie,
+    inclusiv `force-static` de pe `opengraph-image.tsx`.
 
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
@@ -1549,6 +1755,10 @@ pe homepage și nu au pagină proprie.
 | Diacriticele devin mojibake după un `perl -i` (`și` → `Èi`, `î` → `Ã®`) | `perl -CSD` decodează intrarea ca UTF-8, dar șirul de înlocuire din linia de comandă vine deja ca octeți UTF-8 — rezultatul se codează a doua oară. Fișierul rămâne valid, deci nimic nu semnalează eroarea, iar textul stricat ajunge în commit | Editează fișierele cu diacritice prin unealta de editare, nu prin `perl -i`/`sed`. Dacă tot folosești un filtru, pune textul de înlocuire într-un fișier separat și splice-uiește-l cu `awk`. Verifică după: `grep -c "Ã\|È" <fișier>` trebuie să dea zero |
 | Comentariu care rupe compilarea într-un tag JSX | În lista de atribute, `{/* … */}` nu e valid — acolo se scriu comentarii JS simple, `/* … */`. Forma cu acolade merge doar între copii | `/* … */` între atribute, sau comentariul deasupra elementului |
 | Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
+| Rută prerandată care dă 404 imediat ce baza de date tace | `getPackageBySlug` începea cu `if (!payload) return null`, deși `getPackages` — pe care oricum îl chema imediat după — știe să cadă pe textul aprobat. `generateStaticParams` producea deci cele trei rute din `src/content/packages.ts`, iar pagina le refuza pe toate. Cu Postgres pornit nu se vedea nimic | Ieșirea scurtă a fost scoasă. **Regula: verificarea „avem CMS?" se face o singură dată, în funcția care chiar citește din CMS.** Un resolver care doar filtrează rezultatul altuia nu are ce decide. Se prinde cu `DATABASE_URI="" pnpm build && pnpm start`, apoi `curl` pe rutele prerandate — nu doar pe `/` |
+| Un submeniu CSS care merge cu mouse-ul și e inaccesibil de la tastatură | Panoul ascuns cu `display: none` sau `visibility: hidden`. Ambele scot linkurile din ordinea de tabulare, deci nimic din interior nu mai poate primi focus — și atunci `:focus-within`, care ar fi trebuit să îl deschidă, nu se declanșează niciodată | Ascunde-l din `opacity: 0` + `pointer-events: none`. Linkurile rămân focusabile, prima tastă Tab aprinde panoul, iar mouse-ul tot nu poate apăsa ce nu se vede. Vezi `NavDropdown.tsx` |
+| Un submeniu care se închide când cobori mouse-ul spre el | Spațiul dintre intrarea din meniu și cartelă nu aparținea niciunui element hoverabil | Paddingul de sus stă pe **învelișul poziționat**, nu pe cartelă: spațiul devine parte din zona de hover |
+| `transition-transform` nu animează nimic pe `translate-y-*` | În Tailwind v4 utilitarele `translate-*`, `scale-*` și `rotate-*` scriu proprietățile CSS independente (`translate`, `scale`, `rotate`), nu `transform`. Tranziția ascultă o proprietate care nu se schimbă | `transition-[translate]`, `transition-[scale]` etc. Aceeași cauză ca la capcana „două animații pe același element se anulează" |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---
@@ -1607,7 +1817,7 @@ adriana-chira-repo/
 │  │                               packages.ts · workshops.ts · testimonials.ts
 │  │                               ← fallback ȘI sursa seed-ului
 │  ├─ lib/                         content.ts · payload.ts · stripe.ts · lexical.ts
-│  │                               checkout.ts · workshops.ts
+│  │                               checkout.ts · workshops.ts · nav.ts
 │  │                               consent.ts · schema.ts · seo.ts · routes.ts
 │  │                               email.ts · rate-limit.ts · cn.ts
 │  │                               validation/contact.ts

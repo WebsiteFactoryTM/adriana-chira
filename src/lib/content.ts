@@ -723,7 +723,18 @@ function toPackageDetail(doc: Package, index: number): PackageDetail {
     slug: doc.slug,
     href: `/servicii/${doc.slug}`,
     name: nullableText(doc.name, null),
+    /*
+      Linia de deasupra titlului, faptele scanabile, notele de investiție și
+      textele butoanelor vin exclusiv din textul aprobat, exact ca `body`: sunt
+      redactare de pagină de vânzare, nu date pe care cineva să le țină
+      sincronizate în admin. Un pachet creat direct în CMS rămâne fără ele, iar
+      pagina cade pe variantele generice — vezi `servicii/[slug]/page.tsx`.
+    */
+    kicker: approved?.kicker,
     tagline: nullableText(doc.tagline, null),
+    highlights: approved?.highlights,
+    investmentNotes: approved?.investmentNotes,
+    cta: approved?.cta,
     forWho: nullableText(doc.forWho, null),
     includes:
       Array.isArray(doc.includes) && doc.includes.length > 0
@@ -898,19 +909,23 @@ export async function getTestimonials(): Promise<Testimonial[]> {
   }
 }
 
+/**
+ * Un program după slug.
+ *
+ * Trece prin `getPackages` intenționat, ca `getWorkshopBySlug`: numerotarea
+ * romană din design vine din POZIȚIA pachetului în listă, nu din document, iar
+ * pagina de detaliu trebuie să arate același numeral ca homepage-ul.
+ *
+ * **Nu se pune aici o ieșire scurtă pe `getPayloadClientSafe()`.** A existat
+ * una — `if (!payload) return null` — și era un 404 tăcut: `generateStaticParams`
+ * producea cele trei rute din textul aprobat, iar funcția asta le refuza pe
+ * toate imediat ce baza de date nu răspundea. Adică exact scenariul pe care
+ * regula de îmbinare îl protejează peste tot altundeva. `getPackages` știe
+ * deja să cadă pe `src/content/packages.ts`; aici nu mai e nimic de decis.
+ */
 export async function getPackageBySlug(slug: string): Promise<PackageDetail | null> {
-  const payload = await getPayloadClientSafe()
-  if (!payload) return null
-
-  try {
-    // Numerotarea romană din design vine din poziția pachetului în listă, nu
-    // din document. Ca pagina de detaliu să arate același numeral ca pe
-    // homepage, citim lista și alegem din ea.
-    const packages = await getPackages()
-    return packages.find((item) => item.slug === slug) ?? null
-  } catch {
-    return null
-  }
+  const packages = await getPackages()
+  return packages.find((item) => item.slug === slug) ?? null
 }
 
 /**

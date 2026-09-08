@@ -161,6 +161,29 @@ const assessmentSections: PackageSection[] = [
     ],
   },
   {
+    heading: 'Ce urmărim, în funcție de rolul tău',
+    paragraphs: [
+      'Dimensiunile sunt aceleași pentru toată lumea; întrebările la care răspund se schimbă odată cu rolul. De aici pornește analiza, indiferent de unde vii.',
+    ],
+    steps: [
+      {
+        index: '01',
+        title: 'Pentru antreprenori',
+        body: 'Businessul poate ajunge într-un punct în care următoarea limită nu mai este piața, ci capacitatea antreprenorului de a susține următoarea etapă: capacitatea de decizie, focusul și disciplina, adaptabilitatea, energia și toleranța la incertitudine, viziunea și responsabilitatea, relația cu feedbackul, ieșirea din controlul excesiv și capacitatea de a susține presiunea creșterii.',
+      },
+      {
+        index: '02',
+        title: 'Pentru lideri și manageri',
+        body: 'Înainte să conduci performanța altora, trebuie să îți poți conduce propriul sistem: decizia, comportamentul sub presiune, autoreglarea, responsabilitatea și încrederea, feedbackul, adaptabilitatea și autonomia.',
+      },
+      {
+        index: '03',
+        title: 'Pentru profesioniști',
+        body: 'Următorul nivel al carierei tale nu mai cere doar competențe tehnice: mai multă autonomie, curaj și vizibilitate, capacitate de decizie, toleranță la disconfort, responsabilitate, adaptabilitate și o identitate profesională diferită.',
+      },
+    ],
+  },
+  {
     heading: 'După evaluare',
     paragraphs: [
       'Evaluarea poate rămâne un serviciu independent. Primești harta, prioritățile și planul tău și poți continua singur.',
@@ -396,8 +419,29 @@ export const packagesFallback: PackageDetail[] = [
     slug: 'strategic-performance-assessment',
     href: '/servicii/strategic-performance-assessment',
     name: 'Strategic Performance Assessment™',
+    kicker: 'Evaluare strategică de performanță pentru antreprenori, lideri și profesioniști',
     tagline:
       'Înainte să schimbi strategia, află dacă omul care trebuie să o execute este pregătit pentru următorul nivel.',
+    highlights: [
+      '3 ore, o singură sesiune',
+      '20 de atribute, 6 dimensiuni',
+      'Human Performance Map™',
+      '3 priorități strategice',
+      'Plan de 90 de zile',
+    ],
+    investmentNotes: [
+      'Prețul acoperă sesiunea de aproximativ trei ore și tot ce primești la final: harta celor șase dimensiuni, profilul HPA 20™, resursele, zonele de dezvoltare, riscurile, contradicțiile, cele trei priorități strategice și planul de 90 de zile.',
+      'Pentru colaborările achitate de companie se poate emite contract și factură. Dacă preferi transferul bancar sau ai o întrebare înainte de plată, scrie-mi.',
+    ],
+    cta: {
+      buy: 'Programează evaluarea',
+      ask: 'Întreabă înainte de a plăti',
+      finalEyebrow: 'Următorul pas',
+      finalHeading: 'Nu mai dezvolta totul. Dezvoltă ceea ce contează.',
+      finalBody:
+        'Poate nu ai nevoie de încă un curs. Poate nu trebuie să muncești mai mult. Poate trebuie să decizi diferit, să te adaptezi mai repede, să folosești mai bine o resursă pe care deja o ai sau să renunți la un comportament care cândva te-a ajutat.',
+      finalLabel: 'Programează evaluarea',
+    },
     forWho:
       'Antreprenori, lideri, manageri și profesioniști care vor să înțeleagă ce susține și ce limitează rezultatele lor actuale.',
     includes: [
@@ -454,8 +498,30 @@ export const packagesFallback: PackageDetail[] = [
     slug: 'program-performanta-clar',
     href: '/servicii/program-performanta-clar',
     name: 'CLAR™ Performance Transformation',
+    kicker: 'Program de performanță pentru antreprenori, manageri și profesioniști',
     tagline:
       'Transformă ceea ce ai înțeles despre tine în decizii, comportamente și rezultate pe care le poți susține.',
+    highlights: [
+      '8 săptămâni',
+      '6 sesiuni de 90 de minute',
+      'Individual, personalizat',
+      'Online sau în Timișoara',
+      'Plan de implementare la final',
+    ],
+    investmentNotes: [
+      'Investiția acoperă întregul proces de opt săptămâni și toate componentele de mai sus. Se poate achita integral sau în două tranșe egale de 2.550 lei; dacă alegi tranșele, scrie-mi înainte de plată ca să stabilim calendarul.',
+      'Pentru colaborările achitate de companie se poate emite contract și factură, cu respectarea confidențialității procesului individual.',
+      'Strategic Performance Assessment™ este un serviciu separat. Dacă ai parcurs deja evaluarea, programul pornește direct de la concluziile ei; dacă nu, stabilim în conversația de potrivire dacă evaluarea este necesară pentru obiectivul tău.',
+    ],
+    cta: {
+      buy: 'Aplică pentru programul CLAR™',
+      ask: 'Programează conversația de potrivire',
+      finalEyebrow: 'Următorul pas',
+      finalHeading: 'Nu îți mai lipsește informația, ci implementarea.',
+      finalBody:
+        'Ai nevoie de un cadru în care să transformi ceea ce știi în ceea ce faci. Înscrierea se confirmă după o conversație de potrivire, ca să verificăm împreună dacă programul răspunde situației și obiectivului tău.',
+      finalLabel: 'Aplică pentru CLAR™',
+    },
     forWho:
       'Antreprenori, manageri, lideri și profesioniști care știu ce au de făcut, dar nu reușesc să susțină schimbarea.',
     includes: [
@@ -523,8 +589,30 @@ export const packagesFallback: PackageDetail[] = [
     slug: 'executive-performance-program',
     href: '/servicii/executive-performance-program',
     name: 'Executive Performance Program™',
+    kicker: 'Programul premium de performanță pentru antreprenori și executivi, în Timișoara',
     tagline:
       'Performanță fără autodistrugere: șase luni de diagnostic, plan strategic și implementare susținută.',
+    highlights: [
+      '6 luni',
+      'Strategic Performance Assessment™ inclus',
+      '12 sesiuni individuale',
+      'Plan strategic personal',
+      'Evaluări intermediare și finală',
+    ],
+    investmentNotes: [
+      'Prețul include evaluarea inițială Strategic Performance Assessment™, toate cele 12 sesiuni individuale, planul strategic personal, monitorizarea progresului, evaluările intermediare și evaluarea finală.',
+      'Este programul cel mai complet din ecosistemul CHIRA Model™, recomandat celor care vor rezultate susținute pe termen mediu, nu o intervenție punctuală.',
+      'Programul poate fi contractat și achitat de organizație, cu contract și factură, cu respectarea confidențialității procesului individual.',
+    ],
+    cta: {
+      buy: 'Rezervă-ți locul în program',
+      ask: 'Programează o discuție înainte',
+      finalEyebrow: 'Următorul pas',
+      finalHeading: 'Performanță fără autodistrugere.',
+      finalBody:
+        'Dacă simți că nivelul actual de performanță are un cost personal prea mare și vrei un proces complet, nu o soluție rapidă, acesta este programul potrivit. Prima discuție este despre situația ta, nu despre program.',
+      finalLabel: 'Programează Executive Performance Program™',
+    },
     forWho:
       'Antreprenori, executivi și lideri aflați în creștere, schimbare sau presiune ridicată, care vor un proces complet, nu intervenții izolate.',
     includes: [

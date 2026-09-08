@@ -32,7 +32,7 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 22.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 27.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
   Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
   `CopyLinkButton`. **Butonul de plată nu e printre ele**: e un `<form method="post">`
@@ -48,6 +48,9 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 - Diacritice cu virgulă: `ș` U+0219, `ț` U+021B. `grep -rn "ş\|ţ" src/` = zero.
 - Prețurile se citesc pe server, niciodată din client.
 - Admin Payload în română, fiecare etichetă.
+- Submeniurile din navigație sunt CSS pur (`:hover` + `:focus-within` pe desktop,
+  `<details>` pe telefon) și se ascund din `opacity`, niciodată din `display` sau
+  `visibility` — altfel `:focus-within` nu se mai poate declanșa. Vezi `STATUS.md` §10.
 
 ## Comenzi
 
