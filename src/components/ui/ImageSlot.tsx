@@ -15,6 +15,10 @@ const ASPECT: Record<ImageSlotContent['slot'], string> = {
   'hero-portrait': 'aspect-[3/4]',
   'about-portrait': 'aspect-[4/5]',
   'post-cover': 'aspect-[4/3]',
+  // Antetele paginilor interioare. Raportul e chiar cel al fotografiilor din
+  // ședința foto (2:3 vertical, 3:2 orizontal), deci acolo nu se taie nimic.
+  'page-portrait': 'aspect-[2/3]',
+  'page-wide': 'aspect-[3/2]',
 }
 
 type Props = {

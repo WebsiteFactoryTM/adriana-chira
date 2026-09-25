@@ -7,7 +7,8 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { PageLight } from '@/components/ui/PageLight'
 import { RevealFallback } from '@/components/ui/RevealFallback'
 import { buildConsentBootstrap } from '@/lib/consent'
-import { getSiteSettings } from '@/lib/content'
+import { getPackages, getSiteSettings, getWorkshops } from '@/lib/content'
+import { navWithSubmenus } from '@/lib/nav'
 import { SITE_URL } from '@/lib/site-url'
 import { graph, personSchema } from '@/lib/schema'
 import { display, sans } from '../fonts'
@@ -46,8 +47,40 @@ export const viewport: Viewport = {
   colorScheme: 'light',
 }
 
+/**
+ * O oră, pe tot layout-ul — și e o consecință, nu o preferință.
+ *
+ * De când antetul poartă submeniul de workshopuri, fiecare pagină conține o
+ * listă a cărei ORDINE se calculează din ziua curentă (`prepareWorkshops`).
+ * Paginile fără `revalidate` propriu — prima pagină, `/despre`, cele patru
+ * pagini legale — se prerandau o singură dată, la build, deci ar fi păstrat
+ * ordinea de atunci până la următorul deploy. Este exact capcana din
+ * STATUS §10: o ieșire care depinde de `new Date()` nu are voie să fie
+ * statică pentru totdeauna.
+ *
+ * Paginile care declară altceva își păstrează valoarea proprie; `force-static`
+ * de pe `opengraph-image.tsx` rămâne valabil, pentru că imaginea nu depinde de
+ * dată.
+ */
+export const revalidate = 3600
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const settings = await getSiteSettings()
+  const [settings, packages, workshops] = await Promise.all([
+    getSiteSettings(),
+    getPackages(),
+    getWorkshops(),
+  ])
+
+  /*
+    Submeniurile se atașează aici, o singură dată pentru tot site-ul: și
+    antetul, și meniul mobil citesc aceeași listă, deci nu pot ajunge să arate
+    lucruri diferite. Regula de atașare stă în `src/lib/nav.ts`.
+  */
+  const navSettings = {
+    ...settings,
+    nav: navWithSubmenus(settings.nav, { packages, workshops }),
+    mobileNav: navWithSubmenus(settings.mobileNav, { packages, workshops }),
+  }
 
   return (
     <html lang="ro" className={`${display.variable} ${sans.variable}`}>
@@ -94,13 +127,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             secțiunilor, deci nu trece niciodată peste text. */}
         <PageLight />
 
-        <Header settings={settings} />
+        <Header settings={navSettings} />
         {children}
         <Footer settings={settings} />
 
         <ConsentBanner policyHref="/politica-de-cookies" />
 
-        <JsonLd data={graph([personSchema(settings, '/images/adriana-portret.jpg')])} />
+        <JsonLd data={graph([personSchema(settings, '/images/adriana-despre.jpg')])} />
       </body>
     </html>
   )

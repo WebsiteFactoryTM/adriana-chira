@@ -67,6 +67,13 @@ const VARIANTS: Record<AuraVariant, Variant> = {
    * `--ac-ink-50` la 11px, singurul text din pagină fără marjă peste AA. Ținute
    * la peste ~70% din raza câmpului, primesc sub 1% accent, adică nimic
    * măsurabil. Lumina rămâne unde e titlul, adică unde trebuie să se uite omul.
+   *
+   * ACCENTUL E AICI MAI MIC DECÂT PE ORICE ALTĂ SECȚIUNE, și nu întâmplător.
+   * Rețeta câmpului are un halou de aur între 50% și 82% din rază — pe fundal
+   * încărcat trece neobservat, dar pe coala de fildeș a heroului refăcut
+   * (vezi `HeroField`) ar reapărea exact ca inelul pe care clienta a cerut să
+   * îl eliminăm. La 0.12 rămâne temperatură, nu contur. Restul variantelor nu
+   * se ating: ele stau pe secțiuni cu fundal propriu.
    */
   hero: {
     mode: 'wake',
@@ -76,7 +83,7 @@ const VARIANTS: Record<AuraVariant, Variant> = {
         y: '24%',
         size: 1.4,
         peak: 0.8,
-        accent: 0.32,
+        accent: 0.12,
         xSm: '58%',
         ySm: '18%',
         sizeSm: 1.25,
@@ -86,7 +93,7 @@ const VARIANTS: Record<AuraVariant, Variant> = {
         y: '26%',
         size: 0.9,
         peak: 0.5,
-        accent: 0.3,
+        accent: 0.1,
         xSm: '18%',
         ySm: '44%',
         sizeSm: 0.95,

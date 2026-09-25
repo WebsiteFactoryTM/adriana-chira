@@ -4,6 +4,7 @@ import { blogPage, legalPages } from '@/content/pages'
 import { siteSettings } from '@/content/site'
 import { getCategories, getPackages, getPostSlugs } from '@/lib/content'
 import { blogHref, categoryHref } from '@/lib/routes'
+import { WORKSHOPS_PATH } from '@/lib/workshops'
 
 /**
  * Sitemap.
@@ -32,6 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url('/'), lastModified: now, changeFrequency: 'monthly', priority: 1 },
     { url: url('/despre'), lastModified: now, changeFrequency: 'yearly', priority: 0.8 },
     { url: url('/servicii'), lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+    // Catalogul se schimbă mai des decât restul: fereastra de înscriere se
+    // mută lunar, iar edițiile primesc date noi.
+    { url: url(WORKSHOPS_PATH), lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: url('/testimoniale'), lastModified: now, changeFrequency: 'yearly', priority: 0.6 },
     { url: url('/blog'), lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: url('/contact'), lastModified: now, changeFrequency: 'yearly', priority: 0.7 },
   ]

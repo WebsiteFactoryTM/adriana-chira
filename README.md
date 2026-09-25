@@ -190,7 +190,7 @@ nu ignorat.
 | # | Element | Efect în cod acum |
 |---|---|---|
 | 1 | **Pachetele de servicii** | Cele 3 carduri randează `[ Nume pachet ]`, `[ 000 ] EUR` etc. Structura e finală — la popularea datelor nu se schimbă niciun layout. |
-| 2 | **Portret profesional** | Se folosește `public/images/adriana-portret.jpg` din pachetul de design. La înlocuire, `ImageSlot` fixează raportul, deci CLS rămâne 0. |
+| 2 | ~~**Portret profesional**~~ ✅ rezolvat | Fotografiile reale sunt în `public/images/`, câte una pe pagină. `ImageSlot` fixase raportul, deci înlocuirea nu a mișcat niciun layout. |
 | 4 | Email, telefon | Footerul afișează `[ email ]`, `[ telefon ]`. Nu inventăm date de contact. |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din schema `Person` până la confirmare. |
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]`. |

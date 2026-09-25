@@ -25,10 +25,17 @@ export const Orders: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'packageNameSnapshot',
-    defaultColumns: ['packageNameSnapshot', 'customerName', 'amount', 'status', 'createdAt'],
+    defaultColumns: [
+      'packageNameSnapshot',
+      'itemType',
+      'customerName',
+      'amount',
+      'status',
+      'createdAt',
+    ],
     group: 'Administrare',
     description:
-      'Comenzile plătite prin Stripe. Se creează automat; nu se pot edita de aici.',
+      'Comenzile plătite prin Stripe — pachete de consultanță și locuri la workshopuri. Se creează automat; nu se pot edita de aici.',
   },
   access: {
     read: isAdmin,
@@ -53,6 +60,18 @@ export const Orders: CollectionConfig = {
       admin: { readOnly: true, position: 'sidebar' },
     },
     {
+      name: 'itemType',
+      type: 'select',
+      label: 'Ce s-a cumpărat',
+      required: true,
+      defaultValue: 'pachet',
+      options: [
+        { label: 'Pachet de consultanță', value: 'pachet' },
+        { label: 'Loc la workshop', value: 'workshop' },
+      ],
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
       name: 'package',
       type: 'relationship',
       relationTo: 'packages',
@@ -60,14 +79,54 @@ export const Orders: CollectionConfig = {
       admin: {
         readOnly: true,
         description: 'Relația se poate rupe dacă pachetul e șters. Numele de mai jos rămâne.',
+        condition: (data) => data?.itemType !== 'workshop',
+      },
+    },
+    {
+      name: 'workshop',
+      type: 'relationship',
+      relationTo: 'workshops',
+      label: 'Workshop',
+      admin: {
+        readOnly: true,
+        description: 'Relația se poate rupe dacă workshopul e șters. Numele de mai jos rămâne.',
+        condition: (data) => data?.itemType === 'workshop',
       },
     },
     {
       name: 'packageNameSnapshot',
       type: 'text',
-      label: 'Numele pachetului la momentul comenzii',
+      label: 'Numele produsului la momentul comenzii',
       required: true,
       admin: { readOnly: true },
+    },
+    {
+      /**
+       * Data ediției, copiată la fel ca numele.
+       *
+       * Un workshop își schimbă `sessionDate` la fiecare ediție nouă. Fără
+       * copia asta, o comandă din octombrie ar arăta, în ianuarie, că omul a
+       * plătit pentru ediția din februarie — adică lista de participanți ar
+       * deveni greșită exact când e nevoie de ea.
+       */
+      name: 'sessionDateSnapshot',
+      type: 'text',
+      label: 'Data ediției plătite',
+      admin: {
+        readOnly: true,
+        condition: (data) => data?.itemType === 'workshop',
+      },
+    },
+    {
+      name: 'quantity',
+      type: 'number',
+      label: 'Număr de locuri',
+      required: true,
+      defaultValue: 1,
+      admin: {
+        readOnly: true,
+        description: 'La workshopuri, câte locuri au fost plătite într-o singură comandă.',
+      },
     },
     {
       name: 'amount',
@@ -76,7 +135,7 @@ export const Orders: CollectionConfig = {
       required: true,
       admin: {
         readOnly: true,
-        description: 'În unități întregi ale monedei, așa cum a fost încasată.',
+        description: 'Totalul încasat, în unități întregi ale monedei.',
       },
     },
     {
@@ -84,7 +143,7 @@ export const Orders: CollectionConfig = {
       type: 'text',
       label: 'Monedă',
       required: true,
-      defaultValue: 'EUR',
+      defaultValue: 'RON',
       admin: { readOnly: true },
     },
     { name: 'customerName', type: 'text', label: 'Nume client', admin: { readOnly: true } },

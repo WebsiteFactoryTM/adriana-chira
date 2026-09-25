@@ -15,7 +15,9 @@ import { Orders } from '@/collections/Orders'
 import { Packages } from '@/collections/Packages'
 import { Posts } from '@/collections/Posts'
 import { Submissions } from '@/collections/Submissions'
+import { Testimonials } from '@/collections/Testimonials'
 import { Users } from '@/collections/Users'
+import { Workshops } from '@/collections/Workshops'
 import { AboutPage } from '@/globals/AboutPage'
 import { HomePage } from '@/globals/HomePage'
 import { SiteSettings } from '@/globals/SiteSettings'
@@ -77,7 +79,18 @@ export default buildConfig({
     // Fără livePreview deocamdată: paginile interioare intră la faza 3b.
   },
 
-  collections: [Posts, Categories, Packages, Faqs, Media, Orders, Submissions, Users],
+  collections: [
+    Posts,
+    Categories,
+    Packages,
+    Workshops,
+    Testimonials,
+    Faqs,
+    Media,
+    Orders,
+    Submissions,
+    Users,
+  ],
   globals: [SiteSettings, HomePage, AboutPage],
 
   editor: lexicalEditor(),

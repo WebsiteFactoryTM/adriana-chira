@@ -1,7 +1,9 @@
 import Link from 'next/link'
 
 import { MobileNav } from './MobileNav'
-import type { SiteSettings } from '@/content/types'
+import { NavDropdown } from './NavDropdown'
+import type { NavItem, SiteSettings } from '@/content/types'
+import { WORKSHOPS_PATH } from '@/lib/workshops'
 
 /**
  * Header sticky, translucid peste tot conținutul.
@@ -11,6 +13,22 @@ import type { SiteSettings } from '@/content/types'
  * mereu `rgba(paper, .82)` cu blur. Am implementat varianta aprobată — care
  * are și avantajul că elimină un Client Component (starea de scroll).
  */
+/**
+ * Eticheta rândului final din fiecare submeniu.
+ *
+ * Stă aici, nu în `NavDropdown`: componenta desenează un submeniu oarecare,
+ * iar textul „Vezi toate programele" e conținut, legat de intrarea din meniu.
+ */
+const ALL_LABEL: Record<string, string> = {
+  '/servicii': 'Vezi toate programele',
+  [WORKSHOPS_PATH]: 'Vezi tot catalogul',
+}
+
+/** Numai catalogul de paisprezece are nevoie de panoul pe două coloane. */
+function isWide(item: NavItem): boolean {
+  return item.href === WORKSHOPS_PATH
+}
+
 export function Header({ settings }: { settings: SiteSettings }) {
   // Ținta CTA-ului era ancora `#cta` cât timp site-ul era o pagină unică.
   // De la faza 3b duce la pagina de contact, ca peste tot altundeva.
@@ -32,15 +50,24 @@ export function Header({ settings }: { settings: SiteSettings }) {
           aria-label="Navigație principală"
           className="ml-auto hidden flex-nowrap items-center gap-[clamp(14px,2vw,30px)] min-[1000px]:flex"
         >
-          {settings.nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="ac-underline flex min-h-11 items-center py-3 text-nav whitespace-nowrap"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {settings.nav.map((item) =>
+            item.children && item.children.length > 0 ? (
+              <NavDropdown
+                key={item.href}
+                item={{ ...item, children: item.children }}
+                wide={isWide(item)}
+                allLabel={ALL_LABEL[item.href] ?? 'Vezi tot'}
+              />
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="ac-underline flex min-h-11 items-center py-3 text-nav whitespace-nowrap"
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         <Link

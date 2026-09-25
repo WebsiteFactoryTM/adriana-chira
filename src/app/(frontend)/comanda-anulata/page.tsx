@@ -4,10 +4,11 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Arrow, Button } from '@/components/ui/Button'
 import { Section, Shell } from '@/components/ui/Section'
 import { canceledPage } from '@/content/pages'
-import { getPackageBySlug } from '@/lib/content'
+import { getPackageBySlug, getWorkshopBySlug } from '@/lib/content'
 import { pageMetadata } from '@/lib/seo'
+import { WORKSHOPS_PATH } from '@/lib/workshops'
 
-type Props = { searchParams: Promise<{ pachet?: string }> }
+type Props = { searchParams: Promise<{ pachet?: string; workshop?: string }> }
 
 export const metadata: Metadata = pageMetadata({
   title: 'Comanda nu a fost finalizată',
@@ -24,8 +25,20 @@ export const metadata: Metadata = pageMetadata({
  * primul buton îl duce înapoi exact acolo, nu în lista generală.
  */
 export default async function ComandaAnulataPage({ searchParams }: Props) {
-  const { pachet } = await searchParams
-  const pkg = pachet ? await getPackageBySlug(pachet) : null
+  const { pachet, workshop: workshopSlug } = await searchParams
+
+  const [pkg, workshop] = await Promise.all([
+    pachet ? getPackageBySlug(pachet) : null,
+    workshopSlug ? getWorkshopBySlug(workshopSlug) : null,
+  ])
+
+  // De unde a plecat, acolo se întoarce. Workshopurile trăiesc pe o pagină
+  // comună, deci întoarcerea e la ancora lor, nu la începutul catalogului.
+  const back = workshop
+    ? { href: `${WORKSHOPS_PATH}#${workshop.slug}`, label: `Înapoi la ${workshop.title}` }
+    : pkg
+      ? { href: pkg.href, label: `Înapoi la ${pkg.name ?? 'pachet'}` }
+      : null
 
   return (
     <main id="continut">
@@ -38,19 +51,29 @@ export default async function ComandaAnulataPage({ searchParams }: Props) {
       <Section padding="bottom-only">
         <Shell>
           <div className="flex flex-wrap gap-4">
-            {pkg ? (
-              <Button href={pkg.href} variant="primary" size="lg">
-                Înapoi la {pkg.name ?? 'pachet'}
+            {back ? (
+              <Button href={back.href} variant="primary" size="lg">
+                {back.label}
                 <Arrow />
               </Button>
             ) : (
               <Button href="/servicii" variant="primary" size="lg">
-                Vezi pachetele
+                Vezi serviciile
                 <Arrow />
               </Button>
             )}
 
-            <Button href="/contact" variant="soft" size="lg">
+            <Button
+              href={
+                workshop
+                  ? `/contact?workshop=${workshop.slug}`
+                  : pkg
+                    ? `/contact?pachet=${pkg.slug}`
+                    : '/contact'
+              }
+              variant="soft"
+              size="lg"
+            >
               Prefer să vorbim întâi
             </Button>
           </div>

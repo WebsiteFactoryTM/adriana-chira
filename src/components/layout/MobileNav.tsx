@@ -77,19 +77,81 @@ export function MobileNav({ items, cta, availability, children }: Props) {
             aria-label="Navigație mobilă"
             className="grid px-[clamp(20px,6vw,32px)] pt-2 pb-5"
           >
-            {items.map((item, index) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex min-h-11 items-baseline justify-between gap-4 border-b border-ac-line py-5"
-              >
-                <span className="font-display text-2xl leading-[1.2] font-normal">{item.label}</span>
-                <span className="font-medium text-[11px] tracking-[0.18em] text-ac-accent-ink">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-              </Link>
-            ))}
+            {items.map((item, index) => {
+              const numeral = String(index + 1).padStart(2, '0')
+
+              /*
+                Intrările cu submeniu se deschid pe `<details>` nativ, nu pe o
+                a doua stare de React. Aceeași alegere ca la FAQ și la
+                workshopuri, din același motiv: acordeonul nativ este gratuit
+                în JavaScript, e accesibil de la tastatură fără nicio linie de
+                cod și își păstrează conținutul în DOM și când e închis.
+              */
+              if (item.children && item.children.length > 0) {
+                return (
+                  <details key={item.href} className="border-b border-ac-line">
+                    <summary className="flex min-h-11 items-baseline justify-between gap-4 py-5">
+                      <span className="font-display text-2xl leading-[1.2] font-normal">
+                        {item.label}
+                      </span>
+                      <span className="flex items-baseline gap-4">
+                        <span className="font-medium text-[11px] tracking-[0.18em] text-ac-accent-ink">
+                          {numeral}
+                        </span>
+                        <span data-plus aria-hidden="true" className="text-xl leading-none text-ac-accent">
+                          +
+                        </span>
+                      </span>
+                    </summary>
+
+                    <ul className="pb-6">
+                      <li>
+                        <Link
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="flex min-h-11 items-center border-t border-ac-line py-4 font-medium text-[11px] tracking-[0.18em] uppercase text-ac-accent-ink"
+                        >
+                          Vezi pagina {item.label.toLowerCase()} →
+                        </Link>
+                      </li>
+
+                      {item.children.map((child) => (
+                        <li key={child.href}>
+                          <Link
+                            href={child.href}
+                            onClick={() => setOpen(false)}
+                            className="block border-t border-ac-line py-4"
+                          >
+                            <span className="block text-body text-ac-ink">{child.label}</span>
+                            {child.detail && (
+                              <span className="mt-1 block text-body-sm leading-[1.5] text-ac-ink-50">
+                                {child.detail}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-11 items-baseline justify-between gap-4 border-b border-ac-line py-5"
+                >
+                  <span className="font-display text-2xl leading-[1.2] font-normal">
+                    {item.label}
+                  </span>
+                  <span className="font-medium text-[11px] tracking-[0.18em] text-ac-accent-ink">
+                    {numeral}
+                  </span>
+                </Link>
+              )
+            })}
 
             <Link
               href={cta.href}

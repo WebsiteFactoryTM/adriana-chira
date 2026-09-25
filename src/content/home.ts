@@ -1,3 +1,4 @@
+import { packagePreviews } from './packages'
 import type { HomeContent } from './types'
 
 /**
@@ -20,12 +21,17 @@ export const homeContent: HomeContent = {
     badges: ['Psihologie și strategie', 'Lucru 1:1', 'Timișoara și online'],
     portrait: {
       slot: 'hero-portrait',
-      src: '/images/adriana-portret.jpg',
+      src: '/images/adriana-hero.jpg',
       alt: 'Portret Adriana Chira',
-      width: 1716,
-      height: 2048,
+      width: 1067,
+      height: 1600,
       placeholderLabel: 'Portret · Hero',
-      objectPosition: '50% 26%',
+      /**
+       * Fotografia e 2:3, cutia e 3:4 — se taie 11% pe verticală. 60% mută
+       * decupajul spre partea de jos: rămâne spațiu deasupra capului și nu se
+       * pierd pantofii.
+       */
+      objectPosition: '50% 60%',
       caption: 'ADRIANA CHIRA',
     },
   },
@@ -137,12 +143,13 @@ export const homeContent: HomeContent = {
     link: { label: 'Citește povestea completă', href: '/despre' },
     portrait: {
       slot: 'about-portrait',
-      src: '/images/adriana-portret.jpg',
+      src: '/images/adriana-despre.jpg',
       alt: 'Adriana Chira, portret',
-      width: 1716,
-      height: 2048,
+      width: 1067,
+      height: 1600,
       placeholderLabel: 'Portret · Despre',
-      objectPosition: '50% 42%',
+      /** Cadru strâns: decupajul urcă, ca să rămână spațiu deasupra capului. */
+      objectPosition: '50% 16%',
       caption: 'Sociologie · Strategie · Psihologie',
     },
   },
@@ -193,49 +200,17 @@ export const homeContent: HomeContent = {
     intro:
       'Fiecare pachet spune clar ce conține, cât durează și pentru cine este potrivit. Poți achiziționa direct din pagină, cu plata securizată prin card.',
     /**
-     * Pachetele nu sunt încă definite de clientă (brief §13.1). Structura este
-     * completă și identică cu cea finală; `null` randează marcajul „[ ... ]"
-     * din designul aprobat. La popularea colecției Payload `packages`,
-     * cardurile se completează fără nicio modificare de layout.
+     * Cele trei programe individuale reale, din `src/content/packages.ts`.
+     *
+     * Până în septembrie 2026, aici erau trei carduri cu toate câmpurile
+     * `null`, care randau marcajul „[ ... ]" din designul aprobat — clienta nu
+     * decisese încă numele și prețurile (blocajul §7.1 din STATUS.md).
+     * Blocajul s-a ridicat, iar structura cardului nu s-a schimbat cu nimic:
+     * aceleași câmpuri, aceeași grilă, doar cu text în locul placeholderelor.
+     *
+     * Lista rămâne fallback-ul. Ce e completat în CMS are întâietate.
      */
-    packages: [
-      {
-        numeral: 'I',
-        name: null,
-        tagline: null,
-        forWho: null,
-        includes: [null, null, null],
-        duration: null,
-        price: null,
-        currency: 'EUR',
-        href: '#cta',
-        featured: false,
-      },
-      {
-        numeral: 'II',
-        name: null,
-        tagline: null,
-        forWho: null,
-        includes: [null, null, null],
-        duration: null,
-        price: null,
-        currency: 'EUR',
-        href: '#cta',
-        featured: true,
-      },
-      {
-        numeral: 'III',
-        name: null,
-        tagline: null,
-        forWho: null,
-        includes: [null, null, null],
-        duration: null,
-        price: null,
-        currency: 'EUR',
-        href: '#cta',
-        featured: false,
-      },
-    ],
+    packages: packagePreviews,
     reassurance: [
       'Plată securizată prin Stripe',
       'Confirmare automată pe email',

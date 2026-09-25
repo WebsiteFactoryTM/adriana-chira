@@ -272,12 +272,32 @@ check(
   `vizibile public: ${publicPosts.totalDocs}`,
 )
 
-const publicPackages = await payload.find({ collection: 'packages', overrideAccess: false })
-check(
-  'Publicul nu vede pachetele ascunse',
-  publicPackages.totalDocs === 0,
-  `vizibile public: ${publicPackages.totalDocs}`,
-)
+/**
+ * Regula, nu starea de moment.
+ *
+ * Prima variantă a acestei verificări cerea `totalDocs === 0`, adică „niciun
+ * pachet nu e vizibil public". Era adevărat doar cât timp toate pachetele erau
+ * ascunse, în așteptarea prețurilor. Din septembrie 2026 cele trei programe
+ * sunt vizibile, iar verificarea ar fi picat pentru un motiv bun — ceea ce e
+ * chiar semnul că verifica altceva decât regula.
+ *
+ * Regula pe care se sprijină `content.ts` este: prin API-ul public se văd
+ * EXACT documentele cu `active: true`, niciunul în plus. Se aplică identic la
+ * pachete, workshopuri și recomandări, deci se verifică la fel pe toate trei.
+ */
+for (const collection of ['packages', 'workshops', 'testimonials'] as const) {
+  const all = await payload.find({ collection, limit: 200, overrideAccess: true })
+  const publicDocs = await payload.find({ collection, limit: 200, overrideAccess: false })
+
+  const activeCount = all.docs.filter((doc) => doc.active === true).length
+  const leaked = publicDocs.docs.filter((doc) => doc.active !== true)
+
+  check(
+    `Publicul vede din „${collection}" exact documentele vizibile`,
+    leaked.length === 0 && publicDocs.totalDocs === activeCount,
+    `vizibile: ${publicDocs.totalDocs}, marcate vizibil: ${activeCount}, scăpate: ${leaked.length}`,
+  )
+}
 
 const publicSubmissions = await payload
   .find({ collection: 'submissions', overrideAccess: false })

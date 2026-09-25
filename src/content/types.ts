@@ -9,6 +9,18 @@
 export type NavItem = {
   label: string
   href: string
+  /**
+   * Submeniul intrării, în antet și în meniul mobil.
+   *
+   * NU se scrie în `src/content/site.ts`: cele două submeniuri existente —
+   * programele și workshopurile — sunt conținut viu (un program nou în admin,
+   * o ediție căreia i s-a pus dată) și se atașează pe server, în
+   * `src/lib/nav.ts`. Navigația statică rămâne lista de rute; submeniul e
+   * derivat din ce se vinde astăzi.
+   */
+  children?: NavItem[]
+  /** Rândul mic de sub etichetă, în submeniu: durata, prețul, data ediției. */
+  detail?: string
 }
 
 export type SocialLink = {
@@ -66,7 +78,7 @@ export type HeroContent = {
 }
 
 export type ImageSlotContent = {
-  slot: 'hero-portrait' | 'about-portrait' | 'post-cover'
+  slot: 'hero-portrait' | 'about-portrait' | 'post-cover' | 'page-portrait' | 'page-wide'
   src: string | null
   alt: string
   width: number
@@ -295,22 +307,211 @@ export type PostDetail = PostSummary & {
   seo: SeoOverrides
 }
 
+/**
+ * O secțiune din descrierea lungă a unui pachet, în forma de rezervă.
+ *
+ * Există pentru că `longDescription` este rich text venit din Payload, iar un
+ * document Lexical scris de mână în TypeScript e nelizibil și imposibil de
+ * corectat. Textul aprobat al celor trei programe stă deci structurat, în
+ * `src/content/packages.ts`, iar pagina randează rich text-ul din CMS doar
+ * atunci când chiar există.
+ */
+/**
+ * Cum se vede o secțiune din descrierea lungă.
+ *
+ * Nu e o preferință de stil, ci o afirmație despre conținut — de aceea stă în
+ * `src/content/`, lângă text, și nu în componentă. O listă de simptome în care
+ * cititorul se caută pe sine (`checklist`) și o listă de rezultate pe care le
+ * primește (`outcomes`) se citesc complet diferit, chiar dacă amândouă sunt
+ * `string[]`. Randate identic — cum erau —, pagina devine documentul Word din
+ * care a venit textul.
+ *
+ * | Fel | Ce e | Cum arată |
+ * |---|---|---|
+ * | `prose` | narațiune | o coloană îngustă, ritmul de articol |
+ * | `checklist` | situații în care te recunoști | grilă de rânduri cu bifă |
+ * | `cards` | lucruri care stau alături, nu în ordine | carduri, 2–3 pe rând |
+ * | `steps` | etape parcurse în ordine | proces vertical, numerotat |
+ * | `outcomes` | ce primești la final | rânduri numerotate, cu romb |
+ * | `split` | aceeași întrebare, două răspunsuri | două coloane opuse |
+ * | `statement` | promisiune, principiu | citat pe bloc întunecat |
+ */
+export type PackageSectionKind =
+  | 'prose'
+  | 'checklist'
+  | 'cards'
+  | 'steps'
+  | 'outcomes'
+  | 'split'
+  | 'statement'
+
+export type PackageSection = {
+  heading: string
+  /** Implicit `prose`, ca secțiunile vechi să rămână valide fără atingere. */
+  kind?: PackageSectionKind
+  /**
+   * Fundalul benzii. Lipsă = alternanță automată hârtie / crem.
+   *
+   * Se scrie doar când banda trebuie să iasă din alternanță — de obicei
+   * niciodată: alternanța există tocmai ca nimeni să nu numere secțiunile.
+   */
+  tone?: 'paper' | 'cream'
+  paragraphs?: string[]
+  list?: string[]
+  /**
+   * Etichetele celor două coloane la `split`. Prima e cazul favorabil.
+   *
+   * Sunt singurul text pe care îl adaugă prezentarea, și adaugă doar un nume
+   * pentru ceva ce paragraful spunea deja în prima frază.
+   */
+  splitLabels?: [string, string]
+  /** Blocuri numerotate: metoda CLAR, dimensiunile HPA, etapele procesului. */
+  steps?: { index: string; title: string; body: string }[]
+}
+
+/**
+ * CTA-urile paginii unui program.
+ *
+ * Fiecare document livrat de clientă își numește singur butoanele — „Aplică
+ * pentru programul CLAR™", „Programează Strategic Performance Assessment™",
+ * „Rezervă-ți locul" — și nu sunt interschimbabile: un buton care spune ce
+ * urmează („aplici", „programezi", „rezervi") convertește altfel decât unul
+ * generic. De aceea textele stau în conținut, lângă program, nu în componentă.
+ */
+export type PackageCta = {
+  /** Butonul de plată, în coloana de achiziție și în banda de investiție. */
+  buy: string
+  /** Calea fără plată online, de sub buton. */
+  ask: string
+  /** Blocul final al paginii. */
+  finalEyebrow: string
+  finalHeading: string
+  finalBody: string
+  finalLabel: string
+}
+
 export type PackageDetail = {
   numeral: string
   slug: string
   href: string
   name: string | null
+  /**
+   * Linia de deasupra titlului. Poartă expresia căutată în Google, în timp ce
+   * `h1` rămâne numele programului — adică termenul de brand pe care oamenii
+   * îl caută după ce l-au auzit o dată.
+   */
+  kicker?: string
   tagline: string | null
+  /** Faptele scanabile de sub lead: durată, format, ce primești la final. */
+  highlights?: string[]
   forWho: string | null
   includes: (string | null)[]
   duration: string | null
   format: 'online' | 'fata-in-fata' | 'hibrid'
   price: number | null
   currency: string
+  /** Ce acoperă prețul, tranșele, factura pe firmă. Banda de investiție. */
+  investmentNotes?: string[]
+  cta?: PackageCta
   featured: boolean
   longDescription: RichTextDocument
+  /** Descrierea aprobată, folosită când CMS-ul n-a primit încă rich text. */
+  body?: PackageSection[]
   faq: QaItem[]
   seo: SeoOverrides
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workshopuri                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Un workshop, așa cum e scris în catalog sau în CMS.
+ *
+ * Ce NU e aici: durata, programul zilei, prețul, „Cum se desfășoară" și
+ * „Pentru cine" — sunt identice la toate cele 14 și stau o singură dată, în
+ * `WORKSHOP_COMMON` (vezi `src/content/workshops.ts`).
+ */
+export type WorkshopEntry = {
+  slug: string
+  /** Titlul creativ. Devine `h3` pe card. */
+  title: string
+  /** Competența căutată în Google. Devine subtitlul de sub titlu. */
+  subtitle: string
+  /** Data ediției, ISO `AAAA-LL-ZZ`. `null` = încă neprogramat. */
+  sessionDate: string | null
+  /** Una-două fraze pe card, înainte de „Citește tot programul". */
+  summary: string
+  what: string
+  problems: string
+  /** Fraza proprie despre ce se lucrează efectiv în ziua respectivă. */
+  workMethod: string
+  outcomes: string[]
+  /** Expresiile-cheie recomandate de clientă. Nu se randează în pagină. */
+  keywords: string[]
+}
+
+/**
+ * Un workshop pregătit pentru randare.
+ *
+ * `purchasable` NU vine din CMS: se calculează din dată, în `lib/workshops.ts`.
+ * Sunt de vânzare întotdeauna doar următoarele trei ediții programate.
+ */
+export type Workshop = WorkshopEntry & {
+  numeral: string
+  href: string
+  price: number
+  currency: string
+  purchasable: boolean
+  /** Ediția are dată, dar nu a intrat (încă) în fereastra de înscriere. */
+  scheduled: boolean
+}
+
+export type WorkshopAgendaRow = { time: string; body: string }
+
+export type WorkshopsPageContent = {
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  intro: string
+  positioning: string
+  image: ImageSlotContent
+  metaTitle: string
+  metaDescription: string
+  faq: FaqItem[]
+}
+
+/* -------------------------------------------------------------------------- */
+/* Recomandări                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export type Testimonial = {
+  slug: string
+  author: string
+  /**
+   * Funcția și organizația. `null` când autorul nu și-a trecut una.
+   *
+   * Nu e o scăpare de modelare: nu toate recomandările vin semnate cu o
+   * funcție, iar a completa noi una ar însemna să atribuim unui om real o
+   * poziție pe care nu a declarat-o. Cardul și pagina o omit pur și simplu.
+   */
+  role: string | null
+  /** În ce context a lucrat autorul cu Adriana. Scurt, factual. */
+  context: string | null
+  /** Fraza scoasă în evidență. COPIATĂ din `paragraphs`, nu rezumată. */
+  excerpt: string
+  paragraphs: string[]
+  /** Apare în secțiunea de pe homepage. */
+  featured: boolean
+  order: number
+}
+
+export type TestimonialsPageContent = {
+  eyebrow: Eyebrow
+  title: string
+  lead: string
+  metaDescription: string
+  note: string
 }
 
 /** O pagină cu text fix: legalele, mulțumirile, comanda anulată. */

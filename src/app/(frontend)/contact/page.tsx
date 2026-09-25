@@ -8,11 +8,14 @@ import { Arrow, Button } from '@/components/ui/Button'
 import { Rule, Section, Shell } from '@/components/ui/Section'
 import { TextLink } from '@/components/ui/TextLink'
 import { contactPage } from '@/content/pages'
-import { getPackageBySlug, getSiteSettings } from '@/lib/content'
+import { getPackageBySlug, getSiteSettings, getWorkshopBySlug } from '@/lib/content'
 import { breadcrumbSchema, contactPageSchema, graph } from '@/lib/schema'
 import { pageMetadata } from '@/lib/seo'
+import { formatSessionDate } from '@/lib/workshops'
 
-type Props = { searchParams: Promise<{ pachet?: string }> }
+type Props = {
+  searchParams: Promise<{ pachet?: string; workshop?: string; motiv?: string }>
+}
 
 const TRAIL: Crumb[] = [
   { label: 'Acasă', href: '/' },
@@ -31,15 +34,48 @@ export const metadata: Metadata = pageMetadata({
 /**
  * Pagina de contact.
  *
- * `searchParams` face ruta dinamică — necesar pentru `?pachet=`, prin care
- * pagina unui pachet precompletează mesajul. Nu e o pierdere: pagina n-are ce
- * cache-ui, iar formularul e oricum interactiv.
+ * `searchParams` face ruta dinamică — necesar pentru `?pachet=` și
+ * `?workshop=`, prin care pagina unui produs precompletează mesajul. Nu e o
+ * pierdere: pagina n-are ce cache-ui, iar formularul e oricum interactiv.
+ *
+ * ## Calea de rezervare fără plată online
+ *
+ * Pagina asta este și a doua cale de cumpărare, nu doar un formular de
+ * întrebări. Ajung aici trei feluri de oameni: cine vrea factură pe firmă sau
+ * transfer bancar, cine își anunță interesul pentru un workshop neprogramat, și
+ * cine a apăsat pe plată, dar Stripe n-a putut porni sesiunea. Fiecare
+ * primește alt text precompletat, ca Adriana să nu ghicească despre ce e vorba.
+ *
+ * `motiv` vine din ruta de plată și NU se afișează ca atare: din el se alege un
+ * mesaj scris pentru om. Un cod de eroare într-o pagină publică e o notă
+ * pentru dezvoltator lipită pe ușa clientului.
  */
 export default async function ContactPage({ searchParams }: Props) {
-  const [{ pachet }, settings] = await Promise.all([searchParams, getSiteSettings()])
+  const [{ pachet, workshop: workshopSlug, motiv }, settings] = await Promise.all([
+    searchParams,
+    getSiteSettings(),
+  ])
 
-  const pkg = pachet ? await getPackageBySlug(pachet) : null
-  const initialMessage = pkg?.name ? contactPage.packagePrefill(pkg.name) : ''
+  const [pkg, workshop] = await Promise.all([
+    pachet ? getPackageBySlug(pachet) : null,
+    workshopSlug ? getWorkshopBySlug(workshopSlug) : null,
+  ])
+
+  const initialMessage = workshop
+    ? workshop.purchasable
+      ? contactPage.workshopPrefill(
+          workshop.title,
+          workshop.sessionDate ? formatSessionDate(workshop.sessionDate) : null,
+        )
+      : contactPage.waitlistPrefill(workshop.title)
+    : pkg?.name
+      ? contactPage.packagePrefill(pkg.name)
+      : ''
+
+  // Doar motivele care chiar vin dinspre plată. Orice altă valoare din URL e
+  // ignorată: pagina nu are de ce să repete ce i-a scris cineva în adresă.
+  const checkoutFailed =
+    motiv === 'plata-indisponibila' || motiv === 'fara-pret' || motiv === 'inchis'
 
   return (
     <>
@@ -50,6 +86,7 @@ export default async function ContactPage({ searchParams }: Props) {
           eyebrow={contactPage.eyebrow}
           title={contactPage.title}
           lead={contactPage.lead}
+          image={contactPage.image}
           tight
         />
 
@@ -59,11 +96,24 @@ export default async function ContactPage({ searchParams }: Props) {
               <h2 id="formular-titlu" className="font-display text-h3 font-normal">
                 Trimite-mi un mesaj
               </h2>
-              <p className="mt-4 mb-9 max-w-[46ch] text-body text-ac-ink-70">
+              <p className="mt-4 max-w-[46ch] text-body text-ac-ink-70">
                 {contactPage.formIntro}
               </p>
 
-              <ContactForm initialMessage={initialMessage} privacyHref={PRIVACY_HREF} />
+              {checkoutFailed && (
+                <p
+                  role="status"
+                  className="mt-7 max-w-[46ch] border-l-2 border-ac-accent bg-ac-cream-50 p-5 text-body-sm leading-[1.75] text-ac-ink-70"
+                >
+                  {motiv === 'inchis'
+                    ? 'Ediția aceasta nu mai este deschisă la înscriere. Scrie-mi aici și te anunț imediat ce se programează următoarea.'
+                    : contactPage.checkoutFallbackNote}
+                </p>
+              )}
+
+              <div className="mt-9">
+                <ContactForm initialMessage={initialMessage} privacyHref={PRIVACY_HREF} />
+              </div>
             </section>
 
             <aside aria-labelledby="date-contact-titlu">

@@ -107,6 +107,15 @@
   --spacing-section-tight: clamp(6rem, 14vw, 12rem);
   --spacing-section-wide: clamp(8rem, 18vw, 16rem);
   --spacing-section-cta: clamp(8rem, 18vw, 15rem);
+  /*
+    Banda de conținut a paginilor lungi (programe, workshopuri).
+    Deliberat mai mică decât `--spacing-section`: acolo o pagină are 12
+    secțiuni-eveniment și fiecare merită aer, aici o pagină de program are
+    zece benzi la rând, iar ritmul din designul aprobat (7–14rem între ele)
+    ar transforma-o într-un chestionar de derulat. Diferența de fundal
+    (hârtie / crem, alternate) face separarea pe care acolo o face spațiul.
+  */
+  --spacing-section-body: clamp(3.5rem, 6vw, 6rem);
   --spacing-row: clamp(32px, 3.4vw, 48px);
   --spacing-row-x: clamp(12px, 2vw, 24px);
   --spacing-col-gap: clamp(48px, 6vw, 104px);
@@ -894,57 +903,81 @@ details[open] summary [data-plus] {
 }
 
 /* ==========================================================================
-   CÂMPUL HEROULUI — fundalul care se mișcă în timp
+   CÂMPUL HEROULUI — coala de fildeș pe care stă fotografia
    Vezi `src/components/ui/HeroField.tsx` pentru ce este și de ce arată așa.
    Al treilea strat care nu vine din designul aprobat; `position: absolute`,
    `z-index: -1`, deci nu mută niciun nod de text.
 
    Trei straturi, în ordinea în care se pictează:
-     corpuri de lumină  → temperatura (hârtia pare luminată dintr-o parte)
-     voaluri de mătase  → mișcarea    (lumina alunecă pe suprafață)
-     inele de aur       → structura   (ochiul are ce urmări)
+     fondul  → spălarea caldă de fildeș, sub coloana de text
+     lumina  → un singur corp difuz, în spatele portretului
+     curba   → linia organică dintre text și fotografie, cu fir de aur
 
    Patru reguli care nu se încalcă:
-   1. Nimic nu ajunge nicăieri. Voalurile se rotesc, corpurile derivă, inelele
-      își plimbă lumina pe circumferință — dar niciun element nu traversează
-      ecranul și nu se oprește undeva. Un fundal cu destinație devine film, iar
-      filmul cere să fie privit până la capăt.
-   2. Suprafețele mari au plafon de aur, firele nu. Un voal de 900px la 10%
-      aur mută luminanța hârtiei; un fir de 1.25px la 60% nu o mută deloc.
-      De aceea inelele au voie să fie clar vizibile, iar voalurile nu.
-   3. Sub banda de etichete, tot stratul e stins. Acolo stau singurele texte
-      din pagină fără marjă peste AA (`--ac-ink-50` la 11px, 4.64:1). Masca
-      din `[data-hero-field]` e regula asta făcută vizibilă.
-   4. Durate prime, toate diferite (71/89/101s corpurile, 149/191/233s
-      voalurile, 163/211s inelele). Dacă s-ar sincroniza, ochiul ar prinde un
-      puls, iar pulsul e ceas.
+   1. O SINGURĂ formă. Compoziția asta a înlocuit, la cererea clientei și pe
+      baza unei fotografii de referință, trei corpuri de lumină care derivau,
+      trei voaluri conice care se roteau și două inele de aur. Nu se adaugă a
+      doua formă „ca să fie mai interesant": interesul îl face fotografia, iar
+      fundalul o pune în valoare.
+   2. Un singur strat întunecă hârtia — fondul —, și doar el poartă masca de
+      contrast. Lumina și umplutura curbei RIDICĂ luminanța, deci nu au nevoie
+      de mască. Firul de aur se stinge singur, din gradientul lui.
+   3. Aurul e fir, niciodată suprafață. Un fir de 1.1px la 62% nu mută
+      luminanța medie a hârtiei de sub un rând de text; o suprafață aurie de
+      900px la 10% o mută. De aceea accentul stă exclusiv pe cele două linii.
+   4. Sub banda de etichete nu ajunge nimic. Acolo stau singurele texte din
+      pagină fără marjă peste AA (`--ac-ink-50` la 11px, 4.64:1). Masca stinge
+      fondul, iar gradientul stinge firul, amândouă înainte de ele.
    ========================================================================== */
 
 :root {
-  /* Raza de bază a unui corp de lumină. Scalează cu ecranul: pe telefon
-     rămâne lumină, nu spălare de fundal. */
-  --ac-hero-field-size: clamp(320px, 44vw, 760px);
-  /* Diametrul de bază al unui voal și al unui inel. */
-  --ac-hero-veil-size: clamp(360px, 54vw, 940px);
-  --ac-hero-ring-size: clamp(340px, 55vw, 960px);
-  /* Raza firului, în procente din caseta inelului. Nu 100%: sub și peste fir
-     stă haloul, iar haloul are nevoie de ~26px de fiecare parte. */
-  --ac-hero-ring-r: 88%;
-  /* Cât de departe bate haloul, în px, de o parte și de alta a firului. */
-  --ac-hero-ring-glow: 26px;
-  /* Grosimea firului de aur. Fixă în px, la orice ecran: un hairline care
-     scalează cu viewportul încetează să mai fie hairline. */
-  --ac-hero-ring-width: 1.25px;
-  /* Regulator global. `0` stinge tot câmpul dintr-un singur loc. */
-  --ac-hero-field-gain: 1;
   /*
-    Tinta caldă: aur încălzit cu miez, nu aur curat. Două motive.
-    (1) Contrast: la aceeași cantitate de „cald" scade luminanța hârtiei mult
-    mai puțin — vezi tabelul de la lumina paginii. (2) Banding: un gradient
-    care trece din alb-cald direct în aur pur schimbă și nuanța, nu doar
-    opacitatea, iar saltul de nuanță se vede ca inel pe fundal plat.
+    Fildeșul primului ecran. Între hârtie și crem, mai aproape de crem: destul
+    cât suprafața să se citească altfel decât restul paginii, nu atât cât să
+    scadă contrastul. Măsurat: `--ac-cream-50` plin sub `--ac-ink-50` la 11px
+    dă 4.24:1, adică sub AA — de aceea fondul nu urcă niciodată acolo, și de
+    aceea are mască.
+  */
+  --ac-hero-ivory: color-mix(in srgb, var(--ac-cream-50) 62%, var(--ac-paper));
+  /*
+    Aurul încălzit cu miez, nu aur curat. Două motive. (1) Contrast: la aceeași
+    cantitate de „cald" scade luminanța hârtiei mult mai puțin. (2) Banding: un
+    gradient care trece din alb-cald direct în aur pur schimbă și nuanța, nu
+    doar opacitatea, iar saltul de nuanță se vede ca inel pe fundal plat.
   */
   --ac-hero-warm: color-mix(in srgb, var(--ac-accent) 52%, var(--ac-aura-core));
+  /* Raza corpului de lumină. Pe desktop stă în dreptul curbei, nu în spatele
+     portretului: acolo portretul e o placă opacă, deci lumina n-ar face decât
+     să fie acoperită. Ce se vede din ea e jumătatea dinspre fildeș, care dă
+     adâncime tăieturii. */
+  --ac-hero-halo-size: clamp(460px, 66vw, 1180px);
+  --ac-hero-halo-x: 55%;
+  --ac-hero-halo-y: 38%;
+  /*
+    Placa cu portretul. Marginea ei stângă e FIXĂ în procente, nu `clamp()`:
+    pe ea se sprijină schimbarea de scară din `HeroField.tsx` care traduce
+    curba de fundal în masca plăcii. Se schimbă în amândouă locurile odată,
+    niciodată doar aici. Vezi blocul „PLACA CU PORTRETUL" de mai jos.
+  */
+  --ac-hero-plate-left: 48%;
+  /*
+    Stingerea de la baza plăcii. Fotografia de referință iese din ecran pe jos;
+    heroul nostru are un capăt vizibil, deci fotografia trebuie să se termine
+    ca lumină, nu ca muchie orizontală lipită de secțiunea următoare. Lasă
+    dedesubt fâșia pe care stă legenda, pe fildeș curat.
+  */
+  --ac-hero-plate-fade: linear-gradient(to bottom, #000 0%, #000 80%, #000000a6 89%, transparent 96%);
+  /* Grosimea firului de aur. Fixă în px, la orice ecran: un hairline care
+     scalează cu viewportul încetează să mai fie hairline. */
+  --ac-hero-line-width: 1.1px;
+  /*
+    Masca de contrast, scrisă o singură dată. O poartă doar straturile care
+    întunecă hârtia: fondul și granulația. Stinsul e lung (50% → 92%), ca să
+    citească drept lumină care vine de sus, nu drept margine tăiată.
+  */
+  --ac-hero-dim: linear-gradient(to bottom, #000 0%, #000 50%, #00000075 72%, transparent 92%);
+  /* Regulator global. `0` stinge tot câmpul dintr-un singur loc. */
+  --ac-hero-field-gain: 1;
 }
 
 [data-hero-field] {
@@ -953,33 +986,61 @@ details[open] summary [data-plus] {
   z-index: -1;
   pointer-events: none;
   /* Taie straturile la marginile heroului ȘI scutește pictarea cât e în afara
-     ecranului. Fără el, lumina ar curge în secțiunea următoare — și, mai
-     important, inelele s-ar vedea întregi. Un cerc întreg pe fundal devine
-     logo; unul tăiat de cadru rămâne arc de lumină care trece prin ecran. */
+     ecranului. Fără el, lumina și curba ar curge în secțiunea următoare. */
   contain: paint;
   opacity: var(--ac-hero-field-gain);
-  /*
-    Masca. Nu e decor, e regula de contrast făcută vizibilă: în treimea de jos
-    a heroului stau singurele texte din pagină fără marjă peste AA — cele trei
-    etichete de sub butoane și legenda portretului, `--ac-ink-50` la 11px, la
-    4.64:1, adică 0.14 peste prag. Câmpul se stinge complet înainte de ele,
-    deci pe acele litere nu ajunge nici aur, nici fir, în niciun moment al
-    mișcării. Stinsul e lung (50% → 92%), ca să citească drept lumină care
-    vine de sus, nu drept margine tăiată.
-  */
-  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, #00000075 72%, transparent 92%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, #00000075 72%, transparent 92%);
+}
+
+/* --------------------------------------------------------------------------
+   1. FONDUL — spălarea caldă de fildeș
+   -------------------------------------------------------------------------- */
+
+/*
+  Singurul strat care întunecă hârtia, deci singurul cu plafon și cu mască.
+
+  Diagonala merge de la stânga-sus spre dreapta-jos și se stinge complet pe la
+  76% din lățime — adică înainte de fotografie. Asta e jumătate din tranziția
+  organică: partea de text stă pe fildeș cald, partea de fotografie pe lumină.
+  Cealaltă jumătate o face curba.
+
+  Unsprezece stopuri la fond ar fi risipă — e un gradient liniar, nu radial,
+  deci n-are inele; cinci ajung, cu rampe lungi între ele.
+*/
+[data-hero-wash] {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      101deg,
+      color-mix(in srgb, var(--ac-hero-ivory) 92%, transparent) 0%,
+      color-mix(in srgb, var(--ac-hero-ivory) 70%, transparent) 26%,
+      color-mix(in srgb, var(--ac-hero-ivory) 40%, transparent) 46%,
+      color-mix(in srgb, var(--ac-hero-ivory) 14%, transparent) 62%,
+      transparent 76%
+    ),
+    /* Un rest de cald în colțul de jos-stânga, cât să nu pară hârtie tipărită
+       plat. Sub 10% peste tot: e temperatură, nu culoare. */
+      radial-gradient(
+        118% 92% at 3% 90%,
+        color-mix(in srgb, var(--ac-hero-warm) 9%, transparent) 0%,
+        color-mix(in srgb, var(--ac-hero-warm) 4%, transparent) 34%,
+        transparent 68%
+      );
+  mask-image: var(--ac-hero-dim);
+  -webkit-mask-image: var(--ac-hero-dim);
 }
 
 /*
   Granulația. Un strat static de zgomot fin peste tot câmpul, la ~5%.
   Face două lucruri, amândouă necesare:
-  (1) Rupe banding-ul. Voalurile și corpurile trăiesc în doi-trei pași de
-      cuantizare pe 8 biți; fără granulație, tranzițiile lor lungi se văd ca
-      inele concentrice desenate pe hârtie.
-  (2) Dă textură de hârtie. Fundalul e crem cald — fără granulă arată ca un
-      ecran, cu ea arată ca o coală. E singura parte a compoziției care NU se
-      mișcă, și tocmai de asta ancorează restul.
+  (1) Rupe banding-ul. Fondul și lumina trăiesc în doi-trei pași de cuantizare
+      pe 8 biți; fără granulație, tranzițiile lor lungi se văd ca inele
+      concentrice desenate pe hârtie.
+  (2) Dă textură de hârtie. Fundalul e fildeș cald — fără granulă arată ca un
+      ecran, cu ea arată ca o coală.
+  Zgomotul e neutru, deci întunecă puțin: poartă aceeași mască de contrast ca
+  fondul.
 */
 [data-hero-field]::after {
   content: '';
@@ -988,390 +1049,287 @@ details[open] summary [data-plus] {
   opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
   background-size: 180px 180px;
+  mask-image: var(--ac-hero-dim);
+  -webkit-mask-image: var(--ac-hero-dim);
 }
 
 /* --------------------------------------------------------------------------
-   1. CORPURILE DE LUMINĂ — temperatura
+   2. LUMINA — corpul difuz din spatele portretului
    -------------------------------------------------------------------------- */
 
-[data-hero-mass] {
+/*
+  Un singur corp, centrat pe fotografie. Rolul lui e să ridice luminanța
+  hârtiei exact acolo unde stă portretul, ca acesta să pară că iese din pagină.
+  Fiind lumină (miez alb-cald), nu are plafon de contrast și nu are nevoie de
+  mască: tot ce face e să lumineze hârtia sub un text închis.
+
+  UNSPREZECE STOPURI, NU PATRU, și asta e partea importantă. Un fundal atât de
+  palid trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere de
+  pantă în alfa se vede ca INEL desenat pe hârtie. Stopurile de mai jos
+  aproximează o cădere gaussiană (fiecare pas ~0.62 din precedentul) și ajung
+  la zero abia la 100%. Dacă le rărește cineva „ca să fie mai curat CSS-ul",
+  inelul se întoarce.
+
+  Aurul apare abia în treimea exterioară, sub 6%: e temperatura marginii, nu
+  accent. Accentul e firul curbei, și doar el.
+*/
+[data-hero-halo] {
   display: block;
   position: absolute;
-  left: var(--mx, 50%);
-  top: var(--my, 50%);
-  width: calc(var(--ac-hero-field-size) * var(--ms, 1));
+  left: var(--ac-hero-halo-x);
+  top: var(--ac-hero-halo-y);
+  width: var(--ac-hero-halo-size);
   aspect-ratio: 1;
   /* Centrare din margini negative, nu din `translate`: `translate` e rezervat
-     derivei, iar `scale` respirației. Două proprietăți separate se compun
-     fără să se suprascrie — vezi aceeași soluție la lumina paginii. */
-  margin-left: calc(var(--ac-hero-field-size) * var(--ms, 1) * -0.5);
-  margin-top: calc(var(--ac-hero-field-size) * var(--ms, 1) * -0.5);
+     derivei, iar `scale` respirației. Două proprietăți separate se compun fără
+     să se suprascrie. */
+  margin-left: calc(var(--ac-hero-halo-size) * -0.5);
+  margin-top: calc(var(--ac-hero-halo-size) * -0.5);
   border-radius: 50%;
-  opacity: var(--mo, 0.5);
-  /*
-    Miez de lumină, halou cald — efecte opuse asupra contrastului: miezul
-    ridică luminanța hârtiei, haloul o scade.
-
-    UNSPREZECE STOPURI, NU PATRU, și asta e partea importantă. Un fundal atât
-    de palid trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere
-    de pantă în alfa se vede ca INEL desenat pe hârtie. Stopurile de mai jos
-    aproximează o cădere gaussiană (fiecare pas ~0.62 din precedentul) și
-    ajung la zero abia la 100%, deci nu există niciun punct în care panta se
-    schimbă brusc. Dacă rărești stopurile, inelul se întoarce.
-  */
   background: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--ac-aura-core) calc(70% * var(--mk, 1)), transparent) 0%,
-    color-mix(in srgb, var(--ac-aura-core) calc(57% * var(--mk, 1)), transparent) 16%,
-    color-mix(in srgb, var(--ac-aura-core) calc(38% * var(--mk, 1)), transparent) 30%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(24% * var(--ma, 1)), transparent) 42%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(15.5% * var(--ma, 1)), transparent) 53%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(9.5% * var(--ma, 1)), transparent) 63%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(5.5% * var(--ma, 1)), transparent) 72%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(3% * var(--ma, 1)), transparent) 80%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(1.5% * var(--ma, 1)), transparent) 87%,
-    color-mix(in srgb, var(--ac-hero-warm) calc(0.6% * var(--ma, 1)), transparent) 93%,
+    color-mix(in srgb, var(--ac-aura-core) 74%, transparent) 0%,
+    color-mix(in srgb, var(--ac-aura-core) 60%, transparent) 15%,
+    color-mix(in srgb, var(--ac-aura-core) 41%, transparent) 28%,
+    color-mix(in srgb, var(--ac-aura-core) 26%, transparent) 39%,
+    color-mix(in srgb, var(--ac-aura-core) 16%, transparent) 49%,
+    color-mix(in srgb, var(--ac-hero-warm) 6%, transparent) 58%,
+    color-mix(in srgb, var(--ac-hero-warm) 3.5%, transparent) 67%,
+    color-mix(in srgb, var(--ac-hero-warm) 2%, transparent) 76%,
+    color-mix(in srgb, var(--ac-hero-warm) 1%, transparent) 84%,
+    color-mix(in srgb, var(--ac-hero-warm) 0.4%, transparent) 92%,
     transparent 100%
   );
+  /*
+    Singura mișcare rămasă în tot heroul, și e deliberat aproape invizibilă:
+    o derivă de sub 2vw și o respirație de 6%, pe două durate prime diferite
+    (127s și 97s), deci ansamblul nu se repetă la vedere. Clienta a cerut
+    „foarte minimalist" — asta înseamnă că lumina are voie să respire, dar nu
+    să se plimbe. Amândouă animează proprietăți compuse pe GPU (`translate`,
+    `scale`): zero repictare per cadru.
+  */
   animation:
-    acHeroDrift var(--mdur, 71s) cubic-bezier(0.45, 0, 0.55, 1) infinite both,
-    acHeroSwell var(--msdur, 37s) ease-in-out infinite both;
-  animation-delay: var(--mdelay, 0s), var(--msdelay, 0s);
+    acHeroHaloDrift 127s cubic-bezier(0.45, 0, 0.55, 1) infinite both,
+    acHeroHaloBreath 97s ease-in-out infinite both;
+  animation-delay: -23s, -11s;
   will-change: translate, scale;
 }
 
-/* Trei trasee diferite. Dacă toate trei ar merge pe același drum, ochiul ar
-   citi „o singură pată care se plimbă", nu aer în mișcare. Amplitudinile stau
-   sub ~9vw: peste, corpurile ies din hero și deriva devine vizibilă ca atare. */
-@keyframes acHeroDrift {
+@keyframes acHeroHaloDrift {
   0%,
   100% {
     translate: 0 0;
   }
-  33% {
-    translate: 6vw 3.5vh;
-  }
-  66% {
-    translate: -4vw 6vh;
+  50% {
+    translate: -1.8vw 2vh;
   }
 }
 
-[data-hero-mass='b'] {
-  animation-name: acHeroDriftB, acHeroSwell;
-}
-
-@keyframes acHeroDriftB {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  30% {
-    translate: -5.5vw 5vh;
-  }
-  70% {
-    translate: -2vw -4vh;
-  }
-}
-
-[data-hero-mass='c'] {
-  animation-name: acHeroDriftC, acHeroSwell;
-}
-
-@keyframes acHeroDriftC {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  40% {
-    translate: 8vw -5vh;
-  }
-  75% {
-    translate: 3vw 4vh;
-  }
-}
-
-/* Respirația. Ușor neuniformă pe cele două axe: lumina care intră într-o
-   cameră nu se umflă egal, iar scalarea uniformă citește ca zoom. */
-@keyframes acHeroSwell {
+/* Ușor neuniformă pe cele două axe: lumina care intră într-o cameră nu se
+   umflă egal, iar scalarea uniformă citește ca zoom. */
+@keyframes acHeroHaloBreath {
   0%,
   100% {
     scale: 1 1;
   }
   50% {
-    scale: 1.14 1.08;
+    scale: 1.06 1.03;
   }
 }
 
 /* --------------------------------------------------------------------------
-   2. VOALURILE — mișcarea
+   3. CURBA — tranziția dintre coloana de text și fotografie
    -------------------------------------------------------------------------- */
 
 /*
-  DE CE ROTAȚIE, ȘI NU DERIVĂ. Deriva mută lumina dintr-un loc în altul —
-  ochiul o pierde, pentru că nu are muchie de urmărit. Rotația unui gradient
-  conic mută MUCHIA dintre sectoare de-a lungul unei curbe: se vede că
-  suprafața e vie, fără ca ceva să plece efectiv de undeva.
+  Un singur SVG întins peste toată caseta heroului, cu `preserveAspectRatio:
+  none`. Întinderea e intenționată: coordonatele viewBox-ului se citesc atunci
+  ca procente din hero, deci curba stă mereu în același raport față de grilă,
+  la orice lățime. Geometria și motivele ei sunt în `HeroField.tsx`.
 
-  Măsurat la 1440px: sectorul luminos al voalului mare parcurge ~1.9°/s, adică
-  muchia lui trece prin dreptul unui punct fix în ~7 secunde. E de trei ori mai
-  mult decât deriva corpurilor și tocmai de asta se VEDE — dar tot atât de
-  lent încât nu poate fi urmărită ca obiect.
+  DE CE SVG ȘI NU `border-radius`. O formă din `border-radius` e o elipsă:
+  simetrică, previzibilă, și se citește ca obiect geometric. O cale Bézier are
+  curbură variabilă — se citește ca linie trasată de mână. Diferența dintre
+  cele două e exact diferența dintre „decor" și „editorial".
 
-  Cusătura de la 0°/360° nu există: primul și ultimul stop sunt amândouă
-  transparente, deci gradientul se închide singur.
+  Curba NU se mișcă. O muchie care se mișcă se citește ca tremur, nu ca
+  respirație; singurul strat care are voie să se miște e lumina de dedesubt.
 */
-[data-hero-veil] {
+[data-hero-curve] {
   display: block;
   position: absolute;
-  left: var(--vx, 50%);
-  top: var(--vy, 50%);
-  width: calc(var(--ac-hero-veil-size) * var(--vs, 1));
-  aspect-ratio: 1;
-  margin-left: calc(var(--ac-hero-veil-size) * var(--vs, 1) * -0.5);
-  margin-top: calc(var(--ac-hero-veil-size) * var(--vs, 1) * -0.5);
-  border-radius: 50%;
-  opacity: var(--vo, 0.5);
-  /*
-    Pânza: sectoare largi de cald și de miez, cu rampe lungi între ele.
-    Rampele sunt lungi din același motiv pentru care corpurile au unsprezece
-    stopuri — un sector conic cu muchie scurtă se vede ca felie de tort, nu
-    ca lumină pe mătase. Vârful de cald e 19%, iar cu opacitatea voalului
-    ajunge la ~10% efectiv pe hârtie: măsurat, `--ac-ink-50` la 11px rămâne
-    la 4.55:1, adică peste AA, chiar și cumulat cu un corp de lumină dedesubt.
-    Peste pragul ăsta nu se urcă fără să se refacă măsurătoarea.
-  */
-  background: conic-gradient(
-    from var(--vfrom, 0deg) at 50% 50%,
-    transparent 0%,
-    color-mix(in srgb, var(--ac-hero-warm) 10%, transparent) 8%,
-    color-mix(in srgb, var(--ac-hero-warm) 19%, transparent) 17%,
-    color-mix(in srgb, var(--ac-aura-core) 38%, transparent) 27%,
-    transparent 38%,
-    color-mix(in srgb, var(--ac-hero-warm) 13%, transparent) 50%,
-    color-mix(in srgb, var(--ac-hero-warm) 18%, transparent) 60%,
-    transparent 70%,
-    color-mix(in srgb, var(--ac-aura-core) 32%, transparent) 82%,
-    color-mix(in srgb, var(--ac-hero-warm) 11%, transparent) 92%,
-    transparent 100%
-  );
-  /* Fără mască, discul conic are muchie perfect circulară — adică e obiect.
-     Stinsul radial îl transformă înapoi în lumină. */
-  mask-image: radial-gradient(
-    closest-side,
-    #000 0%,
-    #000000e0 26%,
-    #000000a8 44%,
-    #00000063 62%,
-    #00000029 78%,
-    transparent 100%
-  );
-  -webkit-mask-image: radial-gradient(
-    closest-side,
-    #000 0%,
-    #000000e0 26%,
-    #000000a8 44%,
-    #00000063 62%,
-    #00000029 78%,
-    transparent 100%
-  );
-  animation:
-    acHeroSpin var(--vdur, 149s) linear infinite both,
-    acHeroVeilSwell var(--vsdur, 53s) ease-in-out infinite both;
-  animation-delay: var(--vdelay, 0s), var(--vsdelay, 0s);
-  animation-direction: var(--vdir, normal), normal;
-  will-change: rotate, scale;
-}
-
-/* Respirația voalului e mai mică decât a corpurilor: pânza se rotește deja,
-   iar două mișcări ample pe același element se citesc ca tremur. */
-@keyframes acHeroVeilSwell {
-  0%,
-  100% {
-    scale: 1 1;
-  }
-  50% {
-    scale: 1.07 1.04;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   3. INELELE — structura
-   -------------------------------------------------------------------------- */
-
-/*
-  Inelul e o ELIPSĂ care se rotește, și distincția asta e tot ce contează.
-  Un cerc perfect care se rotește nu arată nimic: e simetric față de propria
-  axă, deci după rotație e identic cu el însuși. Turtit cu 16–24%, se vede că
-  se întoarce — același drum, la nesfârșit, fără început și fără capăt.
-
-  De aceea inelul are două noduri:
-    `[data-hero-ring]`      — învelișul: poziție, mărime, ROTAȚIA formei
-    `[data-hero-ring-body]` — corpul: gradientul, masca, TURTIREA, respirația
-
-  Ordinea nu e negociabilă. Turtirea trebuie să stea sub rotație: dacă ar fi
-  invers, elipsa ar rămâne fixă pe ecran și s-ar roti doar desenul dinăuntru,
-  ceea ce arată exact ca un cerc nemișcat.
-
-  Culoarea variază pe circumferință, deci zona luminoasă se plimbă odată cu
-  forma: nu e un contur care se învârte, e lumină care face ocolul, iar și iar.
-
-  Firul e singurul loc din compoziție unde aurul are voie să fie tare (până la
-  82% în vârful sectorului). 1.25px de aur nu mută luminanța hârtiei de sub un
-  rând de text — plafonul de la regula 2 e al suprafețelor, nu al firelor.
-  Aici se duce, de fapt, atenția pe care a cerut-o clienta.
-*/
-[data-hero-ring] {
-  display: block;
-  position: absolute;
-  left: var(--rx, 50%);
-  top: var(--ry, 50%);
-  width: calc(var(--ac-hero-ring-size) * var(--rs, 1));
-  aspect-ratio: 1;
-  margin-left: calc(var(--ac-hero-ring-size) * var(--rs, 1) * -0.5);
-  margin-top: calc(var(--ac-hero-ring-size) * var(--rs, 1) * -0.5);
-  opacity: var(--ro, 0.5);
-  animation: acHeroSpin var(--rdur, 163s) linear infinite both;
-  animation-delay: var(--rdelay, 0s);
-  animation-direction: var(--rdir, normal);
-  will-change: rotate;
-}
-
-[data-hero-ring-body] {
-  display: block;
+  inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(
-    from var(--rfrom, 0deg) at 50% 50%,
-    transparent 0deg,
-    color-mix(in srgb, var(--ac-accent) 24%, transparent) 26deg,
-    color-mix(in srgb, var(--ac-accent) 82%, transparent) 62deg,
-    color-mix(in srgb, var(--ac-accent) 38%, transparent) 104deg,
-    transparent 158deg,
-    transparent 196deg,
-    color-mix(in srgb, var(--ac-accent) 32%, transparent) 244deg,
-    color-mix(in srgb, var(--ac-accent) 58%, transparent) 286deg,
-    color-mix(in srgb, var(--ac-accent) 12%, transparent) 322deg,
-    transparent 360deg
-  );
   /*
-    Masca face inelul din nimic: un fir de `--ac-hero-ring-width`, cu un halou
-    care se stinge la ~26px de o parte și de alta.
-
-    Haloul e partea care schimbă totul. Un fir singur pe hârtie e o linie
-    trasată — corectă, dar moartă. Firul cu halou e un filament aprins: se vede
-    că lumina VINE din el, nu că cineva a desenat un cerc. Iar în zona în care
-    sectorul conic e la vârf, haloul se aprinde odată cu firul și pleacă mai
-    departe — ăsta e, de fapt, tot efectul.
-
-    Marginile stopurilor sunt decalate cu fracțiuni de px ca să prindă
-    antialiasingul: un hairline cu muchii dure sfârâie la scalare.
+    Nu poartă masca de contrast, și motivul e că n-are ce să strice: umplutura
+    e lumină (ridică luminanța hârtiei), iar firul se stinge singur, din
+    gradientul lui, la 86% din înălțime — deasupra benzii de etichete. Aici e
+    doar un stins scurt la marginea de jos, ca forma să nu se taie sec în
+    secțiunea următoare.
   */
-  --ring-mask: radial-gradient(
-    closest-side,
-    transparent calc(var(--ac-hero-ring-r) - var(--ac-hero-ring-glow)),
-    #0000002e calc(var(--ac-hero-ring-r) - 10px),
-    #00000082 calc(var(--ac-hero-ring-r) - 3px),
-    #000 calc(var(--ac-hero-ring-r) - var(--ac-hero-ring-width)),
-    #000 calc(var(--ac-hero-ring-r) - 0.35px),
-    #00000038 calc(var(--ac-hero-ring-r) + 8px),
-    transparent calc(var(--ac-hero-ring-r) + var(--ac-hero-ring-glow))
-  );
-  mask-image: var(--ring-mask);
-  -webkit-mask-image: var(--ring-mask);
-  /* Turtirea + respirația, pe aceeași proprietate: `scale` nu se poate scrie
-     de două ori pe același element fără ca a doua declarație s-o șteargă pe
-     prima. Respirația e 2.5% — cât să nu pară elipsă trasată cu șablonul, nu
-     atât cât să se vadă că inelul crește. */
-  /* Valoarea statică e aici ca elipsa să rămână elipsă și când animațiile
-     sunt oprite din `prefers-reduced-motion`. Cât timp animația rulează, ea are
-     întâietate. */
-  scale: 1 var(--rflat, 0.84);
-  animation: acHeroRingBreath var(--rsdur, 71s) ease-in-out infinite both;
-  animation-delay: var(--rsdelay, 0s);
-  will-change: scale;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
 }
 
-@keyframes acHeroRingBreath {
-  0%,
-  100% {
-    scale: 1 var(--rflat, 0.84);
-  }
-  50% {
-    scale: 1.025 calc(var(--rflat, 0.84) * 1.03);
-  }
+/* Culorile stau în fișierul de tokeni, nu în markup: `stop-color` se scrie
+   aici, iar `stop-opacity` în componentă, unde e geometria. */
+[data-hero-stop='fill'] {
+  stop-color: var(--ac-aura-core);
 }
 
-/* Rotația, comună voalurilor și inelelor. Sensul vine din `--vdir` / `--rdir`:
-   două forme care se întorc în același sens se citesc ca un singur obiect.
-   O tură completă durează între 149s și 233s — adică între două și patru
-   minute. Nimic nu pornește și nimic nu se termină; asta e ideea. */
-@keyframes acHeroSpin {
-  from {
-    rotate: 0deg;
+[data-hero-stop='line'] {
+  stop-color: var(--ac-accent);
+}
+
+/*
+  `non-scaling-stroke` e obligatoriu, nu opțional. Fără el, întinderea
+  neuniformă a viewBox-ului ar face firul mai gros pe orizontală decât pe
+  verticală — adică un hairline care se îngroașă pe măsură ce curba se
+  orizontalizează. Cu el, firul are aceeași grosime pe tot traseul, la orice
+  raport al heroului.
+*/
+[data-hero-curve] path {
+  stroke-width: var(--ac-hero-line-width);
+  vector-effect: non-scaling-stroke;
+}
+
+/* Compoziția de telefon e ascunsă pe desktop, și invers. Comutarea o face
+   media query-ul, nu JavaScript: decorul nu are voie să depindă de JS. */
+/* --------------------------------------------------------------------------
+   4. PLACA CU PORTRETUL — fotografia tăiată de curbă
+   -------------------------------------------------------------------------- */
+
+/*
+  Pe desktop portretul nu mai e o casetă în grilă, ci o PLACĂ lipită de
+  marginea dreaptă a ecranului, de sus până jos, cu latura stângă tăiată chiar
+  de curbă. Asta era cererea: fotografia să fie integrată în fundal și în
+  linie, nu un dreptunghi așezat lângă ele.
+
+  CUM STAU CELE DOUĂ CURBE ÎN ACELAȘI LOC. Curba de fundal e desenată într-un
+  viewBox de 1000×1000 întins peste tot heroul; masca plăcii, într-unul întins
+  peste placă. Ca să fie aceeași linie la orice lățime, placa are marginea
+  stângă FIXATĂ în procente (`--ac-hero-plate-left`, 48%), iar masca se
+  calculează din aceleași puncte, în `HeroField.tsx`, printr-o schimbare de
+  scară. Un `clamp()` pe lățimea plăcii ar rupe potrivirea peste tot în afara
+  punctului în care a fost calibrată — de aceea nu există niciunul aici.
+
+  MASCA ARE DOUĂ STRATURI, compuse cu `intersect`: tăietura curbă pe stânga și
+  o stingere pe verticală la bază. A doua nu e ornament — heroul are un capăt
+  vizibil, spre deosebire de fotografia de referință, unde placa iese din
+  ecran. Fără stingere, jos ar rămâne o muchie orizontală dreaptă exact acolo
+  unde începe secțiunea următoare, adică fix dreptunghiul pe care îl scoatem.
+
+  LEGENDA fotografiei coboară la baza plăcii, pe fildeș curat: stingerea
+  termină fotografia la 92%, iar legenda stă sub ea. Sunt 11px în
+  `--ac-ink-50`, adică textul fără marjă peste AA — nu are voie să ajungă
+  peste fotografie, unde luminanța nu e garantată.
+*/
+@media (min-width: 1000px) {
+  [data-hero-plate] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: var(--ac-hero-plate-left);
+    /* Sub textul heroului: placa se suprapune cu ultimul procent al coloanei
+       de text, dar exact acolo e transparentă. `z-index` mic o ține oricum
+       sub rândurile de text, deci selecția și click-urile rămân ale textului. */
+    z-index: 0;
+    width: auto;
+    max-width: none;
   }
-  to {
-    rotate: 360deg;
+
+  /*
+    Slotul își pierde raportul fix: pe placă înălțimea o dă heroul, nu imaginea.
+    `object-cover` se ocupă de decupaj. Caseta nu depinde deci de imagine, ci de
+    laturile secțiunii — imaginea nu poate muta nimic când se încarcă, deci CLS
+    rămâne zero, exact ca la raportul fix.
+
+    MASCA STĂ AICI, NU PE FIGURĂ, și motivul e legenda. `mask-image` se aplică
+    întregului subarbore: pe figură ar fi șters și `figcaption`-ul, care stă
+    tocmai în zona în care stingerea de jos e deja transparentă. Cutia imaginii
+    are exact aceleași dimensiuni ca placa (`inset` pe verticală, lățime plină),
+    deci geometria măștii e neschimbată.
+  */
+  [data-hero-plate] [data-image-slot='hero-portrait'] {
+    height: 100%;
+    aspect-ratio: auto;
+    /* Fundalul crem al slotului ar apărea ca dungă în zona tăiată, înainte să
+       se încarce imaginea. Pe placă nu are ce căuta: forma o dă masca. */
+    background-color: transparent;
+    mask-image: var(--ac-hero-plate-mask), var(--ac-hero-plate-fade);
+    -webkit-mask-image: var(--ac-hero-plate-mask), var(--ac-hero-plate-fade);
+    mask-size: 100% 100%;
+    -webkit-mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-composite: intersect;
+    -webkit-mask-composite: source-in;
+  }
+
+  [data-hero-plate] figcaption {
+    position: absolute;
+    right: var(--spacing-gutter);
+    bottom: 0;
+    margin-top: 0;
   }
 }
 
 /* --------------------------------------------------------------------------
-   Telefon
+   Telefon și tabletă
    -------------------------------------------------------------------------- */
 
-/* Sub 768px heroul trece pe o coloană și devine mult mai înalt: straturile
-   calibrate pentru coloana din dreapta ar cădea pe nimic. Se repoziționează,
-   se micșorează și pierd din intensitate — pe ecran mic, aceeași cantitate de
-   lumină acoperă proporțional mult mai mult text. Al treilea voal și inelul
-   mic ies de tot: suprapuse pe lățime de telefon, ar da noroi, nu compoziție. */
-@media (max-width: 767px) {
+/*
+  Sub 1000px grila trece pe o coloană: portretul ajunge sub text, iar heroul
+  devine mult mai înalt (măsurat la 390px lățime: 1486px înălțime). O curbă
+  verticală ar cădea pe nimic, iar lumina calibrată pentru coloana din dreapta
+  ar sta în gol. Amândouă se rotesc cu 90°: unda trece pe deasupra fotografiei,
+  lumina coboară în dreptul ei.
+
+  PRAGUL E 1000px, NU 768px, și e important. Grila heroului e
+  `repeat(auto-fit, minmax(min(100%, 420px), 1fr))` cu gap `clamp(40px, 6vw,
+  96px)`: măsurat, trece pe o coloană exact sub 1000px. Prima variantă comuta
+  compoziția la 768px, deci între 768 și 999px desena curba verticală peste un
+  layout care era deja pe o coloană. Pragul decorului urmează grila, nu
+  breakpoint-ul generic de telefon.
+*/
+@media (max-width: 999px) {
   :root {
-    --ac-hero-field-size: clamp(280px, 68vw, 430px);
-    /* Voalul: sub o lățime de ecran. Peste atât nu mai e formă, e spălare de
-       fundal — ochiul nu-i vede marginile, deci nu-i vede nici mișcarea. */
-    --ac-hero-veil-size: clamp(280px, 84vw, 440px);
-    /* Inelul: încape ÎNTREG, cu marjă. Pe desktop are voie să fie tăiat de
-       cadru; pe telefon, un cerc retezat de marginea ecranului citește ca
-       greșeală, nu ca intenție. */
-    --ac-hero-ring-size: clamp(250px, 78vw, 400px);
-    /* Haloul se strânge odată cu inelul: 26px în jurul unui fir de 130px rază
-       ar acoperi o cincime din formă. */
-    --ac-hero-ring-glow: 18px;
-    --ac-hero-field-gain: 0.86;
+    /* Sub o lățime de ecran. Peste atât nu mai e lumină, e spălare de fundal:
+       ochiul nu-i vede marginile, deci nu-i vede nici forma. */
+    --ac-hero-halo-size: clamp(300px, 92vw, 520px);
+    --ac-hero-halo-x: 56%;
+    --ac-hero-halo-y: 72%;
+    /* Masca. Pe o coloană banda de etichete ajunge pe la 92% din hero, iar
+       fotografia ocupă ultima treime — fondul se stinge mai devreme, ca peste
+       ea să rămână doar lumină. */
+    --ac-hero-dim: linear-gradient(to bottom, #000 0%, #000 46%, #00000075 68%, transparent 86%);
   }
-  [data-hero-mass] {
-    left: var(--mx-sm, var(--mx, 50%));
-    top: var(--my-sm, var(--my, 50%));
-    width: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)));
-    margin-left: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)) * -0.5);
-    margin-top: calc(var(--ac-hero-field-size) * var(--ms-sm, var(--ms, 1)) * -0.5);
-  }
-  [data-hero-veil] {
-    left: var(--vx-sm, var(--vx, 50%));
-    top: var(--vy-sm, var(--vy, 50%));
-    width: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)));
-    margin-left: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)) * -0.5);
-    margin-top: calc(var(--ac-hero-veil-size) * var(--vs-sm, var(--vs, 1)) * -0.5);
-  }
-  [data-hero-ring] {
-    left: var(--rx-sm, var(--rx, 50%));
-    top: var(--ry-sm, var(--ry, 50%));
-    width: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)));
-    margin-left: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)) * -0.5);
-    margin-top: calc(var(--ac-hero-ring-size) * var(--rs-sm, var(--rs, 1)) * -0.5);
-  }
-  [data-hero-veil='sm-hidden'],
-  [data-hero-ring='sm-hidden'] {
+
+  /* Curba de fundal e calibrată pe grila de două coloane. Aici nu mai există
+     două coloane, deci n-are ce despărți: tăietura se mută pe fotografie. */
+  [data-hero-curve] {
     display: none;
   }
-  /* Masca. Pe o coloană heroul are ~1418px înălțime, iar banda de etichete
-     ajunge pe la 92% din el. Stinsul se termină la 86%: decorul acoperă și
-     zona butoanelor, dar peste etichetele de 11px tot nu ajunge nimic.
-     Prima variantă stingea la 82% pornind de la 38%, adică lăsa două treimi
-     din heroul de telefon complet goale. */
-  [data-hero-field] {
-    mask-image: linear-gradient(to bottom, #000 0%, #000 46%, #00000075 68%, transparent 86%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, #00000075 68%, transparent 86%);
+
+  /*
+    Fotografia își păstrează caseta (3:4, cel mult 520px, sub text), dar nu mai
+    începe cu o muchie orizontală dreaptă: unda din `PLATE_PATH_SM` îi taie
+    marginea de sus, deci apare din fildeș în loc să fie lipită peste el.
+    Aceeași idee ca placa de desktop, rotită cu 90°.
+
+    Fără stingerea de jos: aici fotografia nu se întinde până la capătul
+    heroului, se termină acolo unde se termină caseta, iar sub ea urmează
+    legenda, ca înainte.
+  */
+  [data-hero-plate] [data-image-slot='hero-portrait'] {
+    mask-image: var(--ac-hero-plate-mask-sm);
+    -webkit-mask-image: var(--ac-hero-plate-mask-sm);
+    mask-size: 100% 100%;
+    -webkit-mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
   }
 }
 
@@ -1401,19 +1359,12 @@ details[open] summary [data-plus] {
   [data-page-light] {
     opacity: calc(0.3 * var(--ac-light-gain) * 0.5) !important;
   }
-  /* Câmpul heroului rămâne ca lumină, dar nu mai derivă, nu se mai rotește și
-     nu mai respiră: regula de sus i-a oprit toate animațiile, deci fiecare
-     strat stă în poziția de start. Toate coboară la 55%, ca celelalte două
-     straturi — cine cere mai puțină mișcare primește și mai puțin decor.
-     Compoziția rămâne însă întreagă: corpuri, voaluri și inele, doar
-     nemișcate. Un hero golit de decor n-ar mai fi același hero. */
-  [data-hero-mass] {
-    opacity: calc(var(--mo, 0.5) * 0.55) !important;
-  }
-  [data-hero-veil] {
-    opacity: calc(var(--vo, 0.5) * 0.55) !important;
-  }
-  [data-hero-ring] {
-    opacity: calc(var(--ro, 0.5) * 0.55) !important;
-  }
+  /* Câmpul heroului nu are nevoie de nicio regulă aici, și asta e o
+     consecință a rețetei, nu o omisiune. Fondul și curba sunt statice prin
+     construcție; singura mișcare e respirația luminii din spatele
+     portretului, iar regula de sus i-a oprit-o deja. Ce rămâne e exact
+     compoziția de start, la intensitate plină — spre deosebire de aura de
+     secțiune și de lumina paginii, aici nu e nimic de temperat: cine cere mai
+     puțină mișcare primește o coală de fildeș nemișcată, adică fix ce a cerut
+     clienta. Se stinge de tot, dacă e nevoie, din `--ac-hero-field-gain`. */
 }

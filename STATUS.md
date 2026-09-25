@@ -6,10 +6,51 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **25 august 2026** |
-| Stadiu general | Fazele 1, 2 și 3b complete · **site-ul are toate cele 15 rute publice** · homepage neatins la nivel de text · trei straturi decorative peste designul aprobat (aură, lumină, câmpul heroului) · **câmpul heroului refăcut pe 25 august: acum atrage atenția, la cererea clientei** · fazele 4–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **10/10**, rulat pe 25 august 2026 |
-| Ultimul commit | `d478a74` — STATUS.md: capcana de codificare la editarea cu perl |
+| Ultima actualizare | **8 septembrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 8 septembrie 2026 |
+| Ultimul commit | `f72612c` — Paginile lungi se citesc pe benzi, nu pe o coloană |
+
+> **Ce s-a schimbat pe 8 septembrie 2026, runda a doua.** Clienta a semnalat că
+> paginile de program și cea de workshopuri „par pagini din Word" și a cerut ca
+> vizitatorul să nu se sperie de cât are de citit: secțiuni împărțite vizibil,
+> fundaluri diferite, pictograme, ierarhie clară și un antet sugestiv pentru
+> fiecare serviciu. **Nu s-a atins niciun cuvânt din textul clientei.**
+>
+> Ce a intrat: **benzi de secțiune cu fundal alternat și formă potrivită
+> conținutului** (`ui/PackageBody`), **un set propriu de pictograme desenate**
+> (`ui/Glyph`), **un desen de antet pentru fiecare program, care ESTE structura
+> lui** (`ui/ProgramMotif`), o **hartă a paginii** din chipsuri numerotate și
+> aceeași împărțire pe pagina de workshopuri, cu o bară de sărituri către oricare
+> dintre cele paisprezece. Detalii în §4 („Cum se citesc paginile lungi"),
+> §9.28–§9.30 și §6.
+
+> **Ce s-a schimbat pe 8 septembrie 2026, runda întâi.** Clienta a retrimis cele trei documente
+> de serviciu (Strategic Performance Assessment, CLAR, Executive Performance
+> Program) și a cerut pagini dedicate pentru fiecare program, cu CTA proprii, plus
+> submeniuri în navigație — programele sub „Servicii", workshopurile sub
+> „Workshopuri", fiecare workshop ducând la cardul lui din catalog.
+>
+> **Rutele nu s-au schimbat: erau deja `/servicii/[slug]`**, exact formatul cerut.
+> Ce s-a schimbat este pagina de la capătul lor: din pagină de detaliu de pachet a
+> devenit pagină de vânzare, cu cuprins, bandă de investiție și trei puncte de
+> cumpărare. Detalii în §4 („Paginile de program"), §9.23–§9.25 și §6.
+>
+> **Un 404 tăcut a fost reparat pe drum.** `getPackageBySlug` ieșea din funcție cu
+> `null` când baza de date nu răspundea, deci toate cele trei pagini de program
+> dădeau 404 pe calea de rezervă — deși `generateStaticParams` le producea rutele
+> din textul aprobat. Vezi §10.
+
+> **Ce s-a schimbat pe 7 septembrie 2026.** Clienta a livrat materialele finale:
+> cele trei programe individuale (Strategic Performance Assessment, CLAR,
+> Executive Performance Program), catalogul de 14 workshopuri și trei
+> recomandări. Odată cu ele s-au ridicat două blocaje vechi — §7.1 (pachetele
+> fără nume și preț) și faza 4 (Stripe) — și au apărut trei lucruri noi în site:
+> pagina de workshopuri, pagina de recomandări și secțiunea de recomandări de pe
+> prima pagină. Detalii în §4 („Conținutul real"), §9.21–§9.24 și §6.
+>
+> **Moneda s-a schimbat din EUR în RON, peste tot.** Toate prețurile clientei
+> sunt în lei. Nu a mai rămas niciun `EUR` în cod.
 
 ---
 
@@ -94,7 +135,7 @@ pnpm dev · pnpm build · pnpm start · pnpm typecheck
 
 pnpm db:up / db:down       # baza de date locală (docker-compose.yml)
 pnpm seed                  # idempotent; rulează oricând
-pnpm migrate               # aplică migrațiile
+pnpm migrate               # aplică migrațiile — atârnă în dev, vezi §10
 pnpm migrate:create <nume> # generează o migrație nouă
 pnpm migrate:fix           # repară importurile din migrațiile generate (vezi §10)
 pnpm generate:types        # src/payload-types.ts, după orice schimbare de schemă
@@ -162,13 +203,38 @@ curba de easing `--ease-ac`. Toate reproduc exact un `clamp()` din design.
 | `Button` + `Arrow` | variante `primary \| outline \| soft \| onDark`, mărimi `sm–xl`, ca `<a>`/`<Link>`/`<button>` |
 | `Eyebrow` | eticheta versală; ornamente `line \| pulse \| none`; poate randa ca `h2` |
 | `Section`, `Shell`, `StickyColumn`, `Rule` | învelișul de secțiune, coloana de 1560px, coloana sticky, hairline |
-| `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei |
+| `ImageSlot` | **cheie** — raport fixat de tip de slot, placeholder crem când `src` lipsește. CLS 0 la înlocuirea fotografiei. Cinci sloturi: `hero-portrait` 3:4, `about-portrait` 4:5, `post-cover` 4:3, `page-portrait` 2:3, `page-wide` 3:2 |
 | `Reveal` | Server Component; pune atributele, animația e pur CSS |
 | `SectionAura` | Server Component; stratul de atenție al secțiunii, pornit din `Section` prin `aura="…"`. Vezi mai jos |
 | `PageLight` | Server Component; corpul de lumină care traversează pagina la derulare. Montat o singură dată, în layout |
 | `HeroField` | Server Component; fundalul viu al heroului — trei corpuri de lumină care derivă continuu, în timp. Doar pe hero. Vezi mai jos |
 | `RevealFallback` | script inline ~600 B, un singur observer, doar pe browsere fără `animation-timeline` |
 | `TextLink` | subliniere care crește din stânga |
+
+### Fotografiile clientei ✅
+
+Din ședința foto, câte una pe pagină. Toate în `public/images/`, servite prin
+`next/image`, deci convertite la cerere în WebP/AVIF.
+
+| Fișier | Unde apare | Slot | Decupaj |
+|---|---|---|---|
+| `adriana-hero.jpg` | homepage, hero | `hero-portrait` 3:4 | 2:3 → se taie 11% pe verticală; `50% 60%` păstrează și spațiul de deasupra capului, și pantofii |
+| `adriana-despre.jpg` | homepage secțiunea Despre **și** `/despre` | `about-portrait` 4:5 | `50% 16%` — cadru strâns, decupajul urcă |
+| `adriana-servicii.jpg` | antetul `/servicii` | `page-wide` 3:2 | niciunul — slotul are chiar raportul fișierului |
+| `adriana-blog.jpg` | antetul `/blog` | `page-portrait` 2:3 | niciunul |
+| `adriana-contact.jpg` | antetul `/contact` | `page-portrait` 2:3 | niciunul |
+| `adriana-workshopuri.jpg` | antetul `/workshopuri-performanta-umana` | `page-portrait` 2:3 | niciunul |
+
+Fotografiile din antete intră prin `image` pe `PageHeader`, care trece antetul pe
+două coloane doar când primește una. Paginile legale, `/multumim` și
+`/comanda-anulata` nu primesc niciuna și randează exact aceeași coloană unică de
+dinainte. `personSchema` din layout arată acum spre `adriana-despre.jpg`.
+
+Placeholderul din pachetul de design (`adriana-portret.jpg`) a fost șters: avea
+filigranul fotografului peste colțul din dreapta jos.
+
+Fotografia din antet este elementul LCP al paginii ei, deci primește `priority` —
+singura excepție de la regula „doar hero-ul", scrisă ca atare în componentă.
 
 ### Homepage — cele 12 secțiuni ✅
 
@@ -263,121 +329,193 @@ luminii se construiește din **miez**, nu din halou — miezul e alb cald, ridic
 luminanța hârtiei, deci textul închis câștigă contrast și poate urca la 96% fără cost.
 Aici haloul stă la 4.2 % efectiv, cu marjă păstrată pentru aura care se poate suprapune.
 
-### Câmpul heroului ✅ — refăcut pe 25 august 2026
+### Câmpul heroului ✅ — refăcut a doua oară pe 31 august 2026
 
-Al treilea strat din afara designului aprobat, și singurul care se mișcă **în timp**,
-nu la comanda cititorului. **Rețeta a fost schimbată din temelii la cererea clientei**
-(vezi §9.19): prima variantă era construită explicit ca să NU fie observată, iar
-clienta a cerut exact opusul — un prim ecran care atrage privirea.
+Al treilea strat din afara designului aprobat. **Rețeta a fost schimbată din temelii
+de două ori**, iar a doua schimbare a mers în sens invers față de prima: pe 25 august
+clienta ceruse un hero care atrage privirea (§9.19), iar pe 31 august a trimis o
+fotografie de referință și a cerut exact opusul — fundal ivory/crem, „foarte
+minimalist și elegant", **fără formele circulare**, cu o tranziție organică între zona
+de text și fotografie și cu accente de auriu „foarte discrete" (§9.20).
 
-Compoziția de acum are **trei straturi**, în ordinea în care se pictează:
+Ce a fost eliminat complet: trei corpuri de lumină care derivau, trei voaluri conice
+care se roteau, două inele de aur, opt animații și șapte seturi de keyframes. Ce a
+rămas e **o singură formă și o singură lumină**.
 
 | Strat | Selector | Ce face | Ce îl mișcă |
 |---|---|---|---|
-| Corpuri de lumină | `[data-hero-mass]` | temperatura — hârtia pare luminată dintr-o parte | derivă + respirație (71/89/101s, 37/43/47s) |
-| Voaluri de mătase | `[data-hero-veil]` | mișcarea — lumina alunecă pe suprafață | rotația gradientului conic (149/191/233s) |
-| Inele de aur | `[data-hero-ring]` | structura — ochiul are ce urmări | **elipse care se rotesc**, 163s și 211s, în sensuri opuse |
+| Fondul | `[data-hero-wash]` | spălarea caldă de fildeș, sub coloana de text | nimic — e static |
+| Lumina | `[data-hero-halo]` | ridică luminanța hârtiei în spatele portretului | derivă <2vw + respirație 6% (127s / 97s) |
+| Curba | `[data-hero-curve]` | tranziția text ↔ fotografie, cu fir de aur pe muchie | nimic — e statică |
 
-Plus un strat static de granulație (`[data-hero-field]::after`, ~5%), care rupe
-banding-ul și dă textură de hârtie.
+Plus stratul static de granulație (`[data-hero-field]::after`, ~5%), păstrat din
+varianta veche: rupe banding-ul și dă textură de hârtie.
 
 Cele trei straturi decorative ale site-ului, ca să nu fie confundate:
 
 | | `PageLight` | `SectionAura` | `HeroField` |
 |---|---|---|---|
-| Ce e | atmosferă | semnal de atenție | fundal viu |
+| Ce e | atmosferă | semnal de atenție | coala pe care stă fotografia |
 | Unde stă | **sub** fundaluri | sub conținut, în secțiune | sub conținut, doar în hero |
-| Ce îl mișcă | derularea | secțiunea care intră în ecran | **timpul**, continuu |
+| Ce îl mișcă | derularea | secțiunea care intră în ecran | aproape nimic |
 | Când se vede | pe toată pagina | pe cinci secțiuni | doar pe primul ecran |
 
-- `src/components/ui/HeroField.tsx` — Server Component, **zero JS**. Preseturile
-  (poziție, rază, intensitate, traseu, unghi de pornire, durate) sunt date, nu CSS.
-- Blocul „CÂMPUL HEROULUI" din `globals.css`. Gradiente radiale și conice,
-  **niciodată `filter: blur()`**. Animate sunt doar `translate`, `scale` și `rotate`,
-  pe proprietăți separate, deci totul se compune pe GPU: zero repictare per cadru.
-- **Doar pe hero, și motivul contează:** e singurul ecran pe care omul stă locului
-  câteva secunde înainte să deruleze. Pe restul paginii, mișcarea în timp n-ar fi
-  atmosferă, ci zgomot peste text citit.
-- Opt durate prime, toate diferite. Ansamblul practic nu se repetă, deci ochiul nu
-  poate prinde un puls — iar pulsul citește ca ceas.
+- `src/components/ui/HeroField.tsx` — Server Component, **zero JS**. Geometria curbei
+  (căi Bézier în coordonate de viewBox) și opacitățile gradienților sunt date, nu CSS.
+- Blocul „CÂMPUL HEROULUI" din `globals.css` — gradiente liniare și radiale,
+  **niciodată `filter: blur()`**. Culorile stau toate acolo, inclusiv `stop-color`-ul
+  gradienților din SVG; în componentă rămân doar geometria și opacitățile.
 - Se stinge dintr-un singur loc: `--ac-hero-field-gain: 0`.
-- `prefers-reduced-motion`: compoziția rămâne întreagă, dar nemișcată, la 55% din
-  intensitate — toate trei straturile.
 
-**De ce rotație la voaluri, și nu derivă.** Deriva mută lumina dintr-un loc în altul,
-iar ochiul o pierde: n-are muchie de urmărit. Rotația unui gradient conic mută
-**muchia dintre sectoare** de-a lungul unei curbe — se vede că suprafața e vie, fără
-ca ceva să plece efectiv de undeva. Măsurat la 1440px, sectorul luminos al voalului
-mare parcurge ~1.9°/s: de trei ori mai vizibil decât deriva corpurilor, și tot prea
-lent ca să poată fi urmărit ca obiect.
+**Curba e un SVG întins peste toată caseta, cu `preserveAspectRatio="none"`.**
+Întinderea e intenționată: coordonatele viewBox-ului de 1000×1000 se citesc atunci
+direct ca procente din hero, deci forma stă mereu în același raport față de grilă, la
+orice lățime. `vector-effect="non-scaling-stroke"` e obligatoriu, nu opțional — fără
+el, întinderea neuniformă ar îngroșa firul pe orizontală și l-ar subția pe verticală.
 
-**Inelele sunt ELIPSE care se rotesc, și distincția e tot ce contează.** Un cerc
-perfect care se rotește nu arată absolut nimic: e simetric față de propria axă, deci
-după rotație e identic cu el însuși. Prima variantă avea cercuri, iar rotația se
-vedea doar ca o zonă mai luminoasă care aluneca — prea puțin. Turtite cu 16–24%
-(`--rflat`), formele se văd că se **întorc**: același drum, la nesfârșit, fără început
-și fără capăt. Asta a cerut clienta — continuitate, nu efect.
+**De ce Bézier și nu `border-radius`.** O formă din `border-radius` e o elipsă:
+simetrică, previzibilă, se citește ca obiect geometric — adică fix ce a cerut clienta
+să dispară. O cale Bézier are curbură variabilă și se citește ca linie trasată de mână.
+Diferența dintre cele două e diferența dintre „decor" și „editorial".
 
-Inelul are de aceea două noduri, iar ordinea lor nu e negociabilă:
+**Poziția curbei e măsurată, nu aleasă.** Portretul e coloana din dreapta a grilei:
+marginea lui stângă cade între 53% (la 1000px lățime) și 59% (la 1440px și peste).
+Curba intră pe sus la 61.2%, adică din spatele fotografiei, se umflă spre stânga până
+la 47% și revine. Așa fotografia pare că stă *în interiorul* formei, nu lângă ea —
+care e chiar tranziția organică cerută. Dacă cineva mută grila, aici se măsoară din nou.
 
-| Nod | Ce ține |
-|---|---|
-| `[data-hero-ring]` | poziția, mărimea, **rotația formei** |
-| `[data-hero-ring-body]` | gradientul, masca, **turtirea**, respirația |
+**Plafonul de contrast — regula nu s-a schimbat, dar acum e împărțită pe straturi.**
+Singurul strat care **întunecă** hârtia e fondul, și doar el poartă masca
+(`--ac-hero-dim`, 50% → 92%), împreună cu granulația. Lumina și umplutura curbei sunt
+alb-cald: **ridică** luminanța, deci textul închis câștigă contrast și n-au nevoie de
+mască. Firul de aur nu e mascat, ci se stinge singur din gradientul lui, la 86% din
+înălțime — deasupra benzii de etichete de sub butoane și a legendei portretului,
+singurele texte din pagină fără marjă peste AA (`--ac-ink-50` la 11px, 4.64:1).
 
-Dacă turtirea ar sta deasupra rotației, elipsa ar rămâne fixă pe ecran și s-ar roti
-doar desenul dinăuntru — adică ar arăta exact ca un cerc nemișcat. Turtirea e scrisă
-și ca valoare statică pe corp, nu doar în keyframes, ca elipsa să rămână elipsă și
-când `prefers-reduced-motion` oprește animațiile.
+Măsura care fixează plafonul fondului: `--ac-cream-50` plin sub acele etichete dă
+**4.24:1**, adică sub AA. De aceea `--ac-hero-ivory` e `--ac-cream-50` la 62% peste
+hârtie, iar masca îl stinge oricum înainte să ajungă acolo. Aurul rămâne exclusiv fir:
+un hairline de 1.1px nu mută luminanța medie a hârtiei de sub un rând de text, o
+suprafață aurie de 900px la 10% o mută.
 
-O tură completă durează 163s într-un sens și 211s în celălalt. Două forme care se
-întorc identic se citesc ca un singur obiect; două care se întorc diferit se citesc ca
-mișcare.
+**Aurul aurei de hero a coborât de la 0.32/0.30 la 0.12/0.10.** Rețeta din
+`SectionAura` are un halou de accent între 50% și 82% din rază. Pe fundalul încărcat
+de dinainte trecea neobservat; pe coala de fildeș ar fi reapărut exact ca inelul pe
+care clienta a cerut să îl eliminăm. Restul variantelor de aură **nu s-au atins**:
+ele stau pe secțiuni cu fundal propriu.
 
-**Inelul e un fir cu halou, nu un cerc desenat.** Masca îl face din nimic: un fir de
-1.25px, cu un halou care se stinge la ~26px de o parte și de alta (18px pe telefon,
-unde raza e la jumătate). Un fir singur pe hârtie e o linie trasată — corectă, dar
-moartă. Firul cu halou e un filament aprins: se vede că lumina *vine* din el.
+**Mișcarea.** A rămas una singură, și e deliberat aproape invizibilă: haloul derivă
+sub 2vw și respiră 6%, pe două durate prime diferite (127s și 97s), deci ansamblul nu
+se repetă la vedere. Curba **nu se mișcă** — o muchie care se mișcă se citește ca
+tremur, nu ca respirație. `prefers-reduced-motion` nu mai are nevoie de nicio regulă
+proprie pentru hero: regula globală oprește singura animație, iar ce rămâne e exact
+compoziția de start, la intensitate plină.
 
-**Responsivitatea — regula, ca să nu fie stricată la loc.** Măsurat la 388px lățime:
-heroul are 1418px înălțime, iar caseta câmpului 373px. Prima variantă punea acolo un
-voal de 617px, adică de 1.7 ori lățimea ecranului, iar inelul mare ieșea cu 13px în
-afara casetei. Un voal mai lat decât ecranul nu mai e formă, e spălare de fundal:
-ochiul nu-i vede marginile, deci nu-i vede nici mișcarea. Un inel retezat exact de
-marginea ecranului citește ca greșeală, nu ca intenție.
+**Telefonul.** Sub 768px grila trece pe o coloană, portretul ajunge sub text, iar
+heroul devine mult mai înalt (măsurat la 390px lățime: **1486px**). Compoziția se
+rotește cu 90°: unda trece pe deasupra fotografiei, lumina coboară în dreptul ei.
 
 | | Telefon (≤767px) | Desktop |
 |---|---|---|
-| Voaluri | sub o lățime de ecran (280–287px pe 373px) | până la 1.45× raza de bază |
-| Inele | încap **întregi**, cu marjă de fiecare parte | au voie să fie tăiate de cadru sau să intre în spatele portretului |
-| Al treilea voal | ascuns — trei pânze suprapuse pe lățime de telefon dau noroi | vizibil |
-| Masca | stinsă între 46% și 86% din hero | între 50% și 92% |
+| Curba | undă orizontală, amplitudine ±17 unități (~25px) | linie verticală între text și portret |
+| Firul de aur | **nu există** — vezi mai jos | fir + ecou, stinse la ambele capete |
+| Lumina | 92vw, centrată la 56% / 72% | până la 1180px, la 70% / 36% |
+| Masca fondului | 46% → 86% | 50% → 92% |
 
-Pe desktop regula e inversă intenționat: un cerc întreg, complet vizibil, pe un ecran
-lat devine „logo pe fundal". Verificat prin măsurare în browser, la 388px: zero
-depășire orizontală (`scrollWidth` 373 pe un viewport de 388), ambele inele integral
-în casetă.
+**Pe telefon nu există fir de aur, și e o decizie, nu o scăpare.** Măsurat la 390px:
+banda de etichete stă între 53.8% și 60.6% din hero, iar fotografia începe la 63.3% —
+fereastra dintre ele are ~40px. Un fir trasat acolo ar sta la câțiva pixeli de niște
+etichete de 11px cu 0.14 marjă peste AA, iar prima modificare de conținut l-ar muta
+peste ele. Prima variantă chiar trecea prin ele; s-a văzut în browser. A rămas
+umplutura, care doar **luminează** hârtia, deci poate traversa orice text fără să-i
+strice contrastul. Unda trece prin fereastra 59.4% → 62.8%, adică intră în fotografie
+de sus — care e chiar rolul ei.
 
-**Unsprezece stopuri de gradient la corpuri, nu patru.** Un fundal atât de palid
-trăiește în doi-trei pași de cuantizare pe 8 biți: orice rupere de pantă în alfa se
-vede ca **inel desenat pe hârtie**. Prima variantă avea patru stopuri și inelul se
-vedea clar la 1440px, în stânga titlului. Stopurile actuale aproximează o cădere
-gaussiană (fiecare pas ~0.62 din precedentul) și ajung la zero abia la 100%. Dacă
-cineva le rărește „ca să fie mai curat CSS-ul", inelul se întoarce.
+**Unsprezece stopuri la lumină, nu patru.** Regulă păstrată din varianta veche, și
+motivul e neschimbat: un fundal atât de palid trăiește în doi-trei pași de cuantizare
+pe 8 biți, iar orice rupere de pantă în alfa se vede ca **inel desenat pe hârtie**.
+Stopurile aproximează o cădere gaussiană (fiecare pas ~0.62 din precedentul) și ajung
+la zero abia la 100%. Dacă le rărește cineva „ca să fie mai curat CSS-ul", inelul se
+întoarce — pe compoziția asta, minimalistă, s-ar vedea de două ori mai bine.
 
-**Plafonul de contrast — regula care nu s-a schimbat.** Suprafețele mari au plafon de
-aur, firele nu: un voal de 900px la 10% aur mută luminanța hârtiei, un fir de 1.25px
-la 60% nu o mută deloc. De aceea inelele au voie să fie clar vizibile, iar voalurile
-nu — vârful lor de cald e 19%, adică ~10% efectiv pe hârtie, unde `--ac-ink-50` la
-11px rămâne la **4.55:1**, peste AA. Garanția tare nu e însă asta, ci masca: câmpul e
-stins complet înainte de treimea de jos a heroului, unde stau singurele texte fără
-marjă — cele trei etichete de sub butoane și legenda portretului. Peste ele nu ajunge
-nici aur, nici fir, în niciun moment al mișcării. Verificat în browser, pe build de
-producție, la 1440px.
+**Umplutura se stinge pe verticală odată cu firul** (`acHeroFillMaskLg`). Fără asta,
+în ultima cincime a heroului rămânea o muchie tonală fără linie pe ea, adică o
+tăietură. Așa forma se termină ca lumină, nu ca margine. Pe telefon nu se aplică:
+acolo fotografia ocupă ultima treime, deci lumina trebuie să rămână exact unde
+umplutura s-ar stinge.
 
-> **Voalul (obiectul de abur din colțul stânga-jos) a fost eliminat complet** pe
-> 25 august 2026, la cererea clientei — vezi §9.18. Nu se reintroduce fără o cerere
-> explicită.
+### Placa cu portretul ✅ — 31 august 2026
+
+Runda a doua a refacerii: clienta a semnalat că fotografia „este încă un dreptunghi,
+are margini clare, în loc să fie integrată în background și linia curbă". Avea
+dreptate — curba trecea pe **lângă** casetă, nu prin ea. Acum fotografia e tăiată chiar
+de curbă, ca în fotografia de referință.
+
+| | Sub 1000px | Peste 1000px |
+|---|---|---|
+| Cum stă portretul | casetă 3:4, max 520px, sub text (neschimbat) | **placă** lipită de marginea dreaptă, de sus până jos |
+| Ce îl taie | muchia de **sus**, undă de 6.4% | latura **stângă**, aceeași curbă ca fundalul |
+| Fir de aur pe tăietură | nu | da, cu 0.8% înaintea muchiei |
+| Curba din fundal | ascunsă | vizibilă |
+
+**Cele două curbe sunt aceeași curbă, și asta e tot ce contează tehnic.** Geometria e
+scrisă o singură dată, ca DATE (`CURVE_LG` în `HeroField.tsx`: un punct de start și
+două segmente cubice), iar din ea se emit toate variantele — firul, ecoul, umplutura și
+masca plăcii — printr-o funcție. Masca plăcii se obține din aceleași puncte printr-o
+schimbare de scară, pentru că placa are marginea stângă **fixată** la 48%
+(`--ac-hero-plate-left`, `PLATE_LEFT`). Dacă ar fi două șiruri scrise de mână, s-ar
+alinia la lățimea la care au fost calibrate și s-ar rata la oricare alta.
+
+De aceea lățimea plăcii **nu are `clamp()`** și nu are voie să primească unul. Cele
+două valori se schimbă întotdeauna împreună.
+
+**Firul stă cu 8 unități (0.8%, ~11px la 1440px) înaintea muchiei fotografiei.** Nu
+zero: firul are 1.1px, iar dacă fotografia s-ar opri exact pe el i-ar acoperi
+jumătate, lăsând un fir de o jumătate de pixel — care sfârâie la scalare și dispare pe
+unele ecrane. Cu decalajul, firul rămâne întreg pe fildeș și între el și fotografie
+rămâne o dungă subțire de lumină, exact ca în fotografia de referință.
+
+**`Shell` nu mai e `relative z-[1]` în hero, și e o schimbare cu miză.** Un `Shell`
+poziționat devine blocul de referință al plăcii absolute — iar caseta lui e coloana de
+conținut: mai îngustă decât secțiunea peste 1560px și mai scurtă cu tot paddingul
+vertical al heroului. Prima încercare a avut exact acest bug: cele două curbe se
+rateau cu ~110px pe verticală, iar fotografia părea tăiată aiurea. Fără `relative`,
+blocul de referință redevine secțiunea, adică fix cutia în care desenează
+`HeroField`. Ce ținea `z-[1]` — conținutul deasupra câmpului — e acoperit de
+`z-index: -1` al câmpului plus `z-[2]` explicit pe coloana de text.
+
+**Masca stă pe cutia imaginii, nu pe figură.** `mask-image` se aplică întregului
+subarbore: pe figură ștergea și `figcaption`-ul, pentru că legenda stă tocmai în zona
+în care stingerea de jos e deja transparentă. S-a văzut în browser.
+
+**Stingerea de jos** (`--ac-hero-plate-fade`, 80% → 96%) nu e ornament. Fotografia de
+referință iese din ecran pe jos; heroul nostru are un capăt vizibil, deci fără stingere
+ar rămâne o muchie orizontală dreaptă exact acolo unde începe secțiunea următoare —
+adică fix dreptunghiul pe care îl scoatem. Sub ea rămâne fâșia pe care stă legenda, pe
+fildeș curat: sunt 11px în `--ac-ink-50`, textul fără marjă peste AA, care nu are voie
+să ajungă peste fotografie, unde luminanța nu e garantată.
+
+**Pragul e 1000px, nu 768px.** Grila heroului e `repeat(auto-fit, minmax(min(100%,
+420px), 1fr))` cu gap `clamp(40px, 6vw, 96px)`: măsurat, trece pe o coloană exact sub
+1000px. Prima variantă comuta decorul la 768px, deci între 768 și 999px desena curba
+verticală peste un layout care era deja pe o coloană. Pragul decorului urmează grila,
+nu breakpoint-ul generic de telefon.
+
+**Unda de sub 1000px e legată de fotografie, nu de înălțimea heroului**, și tot din
+lecția asta. Prima variantă o poziționa la 59.4%–62.8% din hero, valoare măsurată la
+390px lățime. Măsurătoarea e adevărată doar acolo: la 999px coloana de text are 899px,
+se rup mult mai puține rânduri, heroul se scurtează cu câteva sute de pixeli, iar unda
+ar fi căzut prin **mijlocul** fotografiei. Legată de caseta fotografiei, se așază
+singură pe muchia ei, la orice lățime și la orice conținut.
+
+Adâncimea undei e plafonată la 6.4% din înălțimea casetei (~29px la 390px): fotografia
+e 2:3 într-o cutie 3:4, decupată deja la 60% pe verticală, deci spațiul de deasupra
+capului e limitat. Peste ~8% s-ar atinge părul.
+
+> **Voalul (obiectul de abur din colțul stânga-jos) rămâne eliminat** — vezi §9.18.
+> **Corpurile de lumină, voalurile conice și inelele de aur au fost eliminate** pe
+> 31 august 2026, la cererea clientei — vezi §9.20. Niciunele nu se reintroduc fără o
+> cerere explicită.
 
 ### SEO / AEO pentru homepage ✅
 
@@ -490,8 +628,9 @@ suprascrie ce a început clienta să completeze.
 
 ### Faza 3b — Paginile interioare ✅
 
-Site-ul are acum **15 rute publice**. Navigația a trecut de la ancore la rute reale,
-dintr-un singur loc (`src/content/site.ts`).
+Faza 3b a adus **15 rute publice** (17 din 7 septembrie 2026, odată cu
+`/workshopuri-performanta-umana` și `/testimoniale`). Navigația a trecut de la ancore
+la rute reale, dintr-un singur loc (`src/content/site.ts`).
 
 | Rută | Ce e | Randare |
 |---|---|---|
@@ -552,29 +691,441 @@ aceeași listă.
 
 ---
 
+### Conținutul real al clientei ✅ — 7 septembrie 2026
+
+Materialele finale au intrat în site. Trei documente de servicii, un catalog de
+workshopuri și un fișier de recomandări, livrate de clientă, rescrise pentru web și
+puse în CMS prin `pnpm seed`.
+
+**Sursa textului, ca peste tot în proiect, este un fișier din `src/content/`, care e
+în același timp fallback-ul și materialul din care seed-ul populează CMS-ul.** Un
+singur text, deci cele două nu pot devia.
+
+| Fișier | Ce conține |
+|---|---|
+| `src/content/packages.ts` | Cele 3 programe individuale, cu preț, durată, secțiuni și FAQ |
+| `src/content/workshops.ts` | Cele 14 workshopuri, plus partea comună tuturor |
+| `src/content/testimonials.ts` | Cele 3 recomandări, integral |
+
+#### Cele trei programe individuale
+
+Blocajul §7.1 s-a ridicat: pachetele au nume, conținut, durată și preț.
+
+| # | Program | Durată | Preț |
+|---|---|---|---|
+| I | Strategic Performance Assessment™ | 3 ore, o sesiune | 1.500 lei |
+| II | CLAR™ Performance Transformation *(cardul evidențiat)* | 8 săptămâni, 6 sesiuni | 5.100 lei |
+| III | Executive Performance Program™ | 6 luni, evaluare + 12 sesiuni | 15.000 lei |
+
+Ordinea e cea a angajamentului crescător, iar cardul evidențiat rămâne **cel din
+mijloc**, ca în designul aprobat. EPP e „serviciul principal" în documentul clientei,
+dar evidențierea în design e o poziție, nu un premiu — vezi §9.24.
+
+`longDescription` (rich text) rămâne **necompletat intenționat**. Descrierea lungă are
+titluri, liste și blocuri numerotate (metoda CLAR, cele șase dimensiuni HPA); scrisă
+ca document Lexical în seed ar fi devenit ilizibilă și necorectabilă. Cât timp câmpul
+e gol, pagina randează secțiunile structurate din `packages.ts`, prin
+`ui/PackageBody`. Dacă Adriana scrie rich text în admin, acela are întâietate.
+
+> **De curățat din admin:** pe o bază veche există încă cele trei pachete
+> `pachet-i`, `pachet-ii`, `pachet-iii` cu text `[ DE COMPLETAT ]`. Au alte
+> slug-uri, deci seed-ul nu le-a atins și rămân ascunse (`active: false`). Se pot
+> șterge când e sigur că nu au comenzi legate.
+
+#### Workshopurile — rută nouă
+
+`/workshopuri-performanta-umana`, colecția `workshops`, componenta `ui/WorkshopCard`.
+Adresa e cea recomandată explicit în documentul clientei.
+
+**Regula de vânzare, și de ce e calculată, nu bifată.** Se pot cumpăra întotdeauna
+doar **următoarele trei ediții cu dată în viitor**. Nu există bifă „deschis la
+înscriere" în admin, și e o decizie: o bifă ar trebui întoarsă manual în fiecare lună,
+iar ziua în care cineva uită să o întoarcă e ziua în care site-ul vinde locuri la o
+ediție care a trecut. Regula stă în `src/lib/workshops.ts`, se calculează din
+`sessionDate` și se mută singură. **Ca să deschizi un workshop la înscriere, îi pui o
+dată. Atât.**
+
+Ordinea din pagină e ordinea desfășurării: întâi edițiile cu dată, cronologic, apoi
+restul catalogului în ordinea logică a seriei. Un workshop căruia i-a trecut data nu
+dispare — coboară în lista fără dată, pentru că workshopul există în continuare, doar
+ediția s-a consumat.
+
+Astăzi sunt programate trei: **Busola internă** (17 octombrie 2026), **Sub presiune**
+(14 noiembrie 2026), **Spațiul dintre stimul și răspuns** (12 decembrie 2026).
+Toate 14 costă 510 lei de participant.
+
+**Detaliul se deschide pe `<details>` nativ, nu pe stare de React.** Cerința clientei
+era descriere scurtă pe card plus un buton care deschide tot programul. `<details>`
+face exact asta cu zero JavaScript, iar textul rămâne în DOM și când acordeonul e
+închis — ceea ce contează pentru AEO, fiindcă crawlerele de AI în general nu execută
+JS. Verificat: **componentele de client sunt tot exact patru.**
+
+**Partea comună nu se repetă de paisprezece ori.** Durata, orarul, ce include prețul,
+„Cum se desfășoară" și „Pentru cine" sunt identice la toate; stau o dată, în
+`WORKSHOP_COMMON`, și se randează o dată, în capul paginii. Fiecare workshop păstrează
+doar ce îl deosebește, inclusiv fraza proprie despre ce se lucrează în ziua respectivă.
+
+#### Recomandările — rută nouă
+
+`/testimoniale`, colecția `testimonials`, plus extrase pe prima pagină, pe `/despre`
+(două) și pe `/servicii` (una).
+
+**Șase recomandări**, livrate în două loturi. Primul lot (3) e marcat pentru prima
+pagină; al doilea lot (3), primit pe 7 septembrie 2026, are `featured: false`.
+
+| # | Autor | Funcție | Pe prima pagină |
+|---|---|---|---|
+| 0 | Livia Wagner-Rus | Director general, AGRO MARUS SRL | da |
+| 1 | Dr. Gabriel Vasile Oltean | Economist · Conferențiar universitar · Trainer | da |
+| 2 | Paul Ștefănescu | Consultant, trainer, auditor, antreprenor | da |
+| 3 | Gabriela Tarna | Regional Head of Talent Acquisition… (DRÄXLMAIER) | nu |
+| 4 | Marian Rujoiu | Extreme Training | nu |
+| 5 | Bogdan Vasiliu | **lipsește din document** | nu |
+
+**De ce lotul al doilea nu e pe prima pagină.** Secțiunea arată maximum trei
+recomandări. Dacă le-aș fi marcat și pe acestea, două dintre cele deja aprobate ar fi
+dispărut de pe homepage în tăcere, ca efect secundar al unei simple adăugări. Toate
+șase se citesc integral pe `/testimoniale`; schimbarea trioului e o bifă în admin.
+
+**`role` a devenit opțional** (migrația `20260907_135248_rol_optional_la_recomandari`,
+o singură instrucțiune: `DROP NOT NULL`). Documentul lui Bogdan Vasiliu semnează doar
+cu numele. Textul vorbește despre „provocările de HR", dar de acolo până la o funcție
+anume e o presupunere — iar presupunerea ar fi atribuită unui om real, sub numele lui.
+Când funcția lipsește, rândul dispare de pe card și de pe pagină; nu se umple cu
+placeholder și nu se ghicește. Verificat: `jobTitle` se emite pentru cinci din șase.
+
+**Fără note, stele sau medii, deliberat.** Niciunul dintre cei trei oameni nu a fost
+rugat să dea un punctaj, deci orice cifră ar fi inventată de noi. Marcajul urmează
+aceeași regulă: `Review` fără `reviewRating` și fără `aggregateRating` — un
+`aggregateRating` fabricat este exact motivul pentru care Google dă penalizări manuale.
+
+Fraza scoasă în evidență pe carduri este **copiată** din textul integral, nu rezumată,
+iar fiecare card duce la recomandarea întreagă. Regulile sunt scrise în capul lui
+`src/content/testimonials.ts`.
+
+Intervențiile tipografice făcute (și de confirmat cu clienta): diacriticele au fost
+completate în recomandarea lui Paul Ștefănescu, scrisă fără ele — niciun cuvânt și
+nicio topică nu s-au schimbat.
+
+#### Faza 4 — plata prin Stripe ✅
+
+| Ce | Unde |
+|---|---|
+| Pornirea plății | `src/app/api/stripe/checkout/route.ts` |
+| Rezolvarea produsului și sesiunea | `src/lib/checkout.ts` |
+| Înregistrarea comenzii și emailurile | `src/app/api/stripe/webhook/route.ts` |
+| Butonul | `src/components/ui/CheckoutButton.tsx` |
+| Sincronizarea prețului, comună | `src/hooks/stripeSync.ts` |
+
+**Butonul de plată este un `<form method="post">`, nu un `onClick`.** Ruta răspunde cu
+303 către Stripe, browserul urmează redirectarea. Consecințe: zero JavaScript, nicio a
+cincea componentă de client, și butonul funcționează inclusiv înainte de hidratare.
+
+**Din formular pleacă doar `tip` și `slug`.** Prețul se citește pe server, din
+document (regula 7 din §2). Nu există niciun câmp cu sumă de rescris din DevTools.
+
+**Verificarea se repetă pe server.** Pagina nu arată butonul pe o ediție închisă, dar
+un `POST` scris de mână întâlnește aceeași regulă și e refuzat. Verificat:
+
+```
+tip=workshop&slug=busola-interna              → 303 spre Stripe (sau spre contact, fără cheie)
+tip=workshop&slug=dincolo-de-prima-concluzie  → 303 /contact?...&motiv=inchis
+tip=workshop&slug=nu-exista                   → 303 /workshopuri-performanta-umana
+```
+
+**Webhook-ul.** Semnătura se verifică pe corpul brut (`request.text()`).
+Idempotența stă pe indexul unic `stripeSessionId`: a doua livrare a aceluiași
+eveniment cade la inserare, o prindem și răspundem 200. Erorile noastre răspund 500,
+ca Stripe să reîncerce. Emailurile nu aruncă niciodată — un email ratat nu are voie să
+transforme o plată reușită într-un webhook eșuat.
+
+Colecția `orders` a primit `itemType`, relația `workshop`, `sessionDateSnapshot` și
+`quantity`. Data ediției se **copiază** în comandă: un workshop își schimbă
+`sessionDate` la ediția următoare, iar fără copie lista de participanți ar deveni
+greșită exact când e nevoie de ea.
+
+#### Calea de rezervare fără plată online
+
+Cerută explicit. Nu e un mesaj de eroare, e a doua cale de cumpărare, și duce peste tot
+la `/contact` cu produsul precompletat în mesaj:
+
+| Situația | Ce vede omul |
+|---|---|
+| Ediție deschisă, dar vrea factură pe firmă sau transfer | Link sub buton: „Rezervă fără plată online" |
+| Workshop fără dată | Buton: „Anunță-mă când se programează" |
+| Stripe n-a putut porni sesiunea | Redirect cu notă scrisă pentru om, nu cod de eroare |
+| Ediția s-a închis între încărcarea paginii și click | Redirect cu „Ediția aceasta nu mai este deschisă" |
+
+Fiecare situație are alt text precompletat (`contactPage.workshopPrefill`,
+`waitlistPrefill`, `checkoutFallbackNote`), ca Adriana să nu ghicească despre ce e
+vorba la fiecare mesaj.
+
+#### SEO / AEO / GEO pentru conținutul nou
+
+- **Metadate** din documentele clientei: title, meta description și URL recomandat.
+- **Date structurate:** `Event` + `Offer` pentru fiecare ediție cu dată (`InStock` pe
+  cele deschise, `PreOrder` pe restul), `Review` fără rating pentru recomandări,
+  `Service` + `Offer` în lei pe pachete, `FAQPage`, `ItemList`, `BreadcrumbList`.
+- **Referințele `@id` nu mai atârnă.** `Event.organizer`, `Service.provider` și
+  `Review.itemReviewed` trimit la `#serviciu`, nod care se emitea doar pe homepage.
+  Acum `professionalServiceSchema` se emite pe fiecare pagină care îl referă, deci
+  graful fiecărei pagini se rezolvă singur.
+- **`llms.txt`** enumeră programele cu preț, seria de workshopuri, edițiile deschise
+  cu dată și link, catalogul complet și recomandările. A trecut de la `force-static`
+  la `revalidate = 3600`: prerandat o dată, ar fi continuat să spună asistenților că
+  se pot cumpăra locuri la o ediție trecută.
+- **`sitemap.ts`** are cele două rute noi; catalogul e `weekly`, restul lunar.
+- **Fără keyword stuffing.** Expresiile-cheie livrate de clientă sunt stocate în
+  colecție ca notițe de redactare (`keywords`) și **nu se randează în pagină**.
+
+---
+
+### Paginile de program ✅ — 8 septembrie 2026
+
+`/servicii/[slug]`, trei rute, formatul cerut de clientă. Ruta exista din faza 3b;
+ce s-a schimbat este ce randează.
+
+| Bloc | De unde vine | De ce e acolo |
+|---|---|---|
+| Linia de deasupra titlului (`kicker`) | `packages.ts` | poartă expresia căutată în Google, ca `h1` să rămână numele programului — termenul de brand |
+| Faptele scanabile (`highlights`) | `packages.ts` | „3 ore · 20 de atribute · 6 dimensiuni", cifrele din document; spun ce cumperi înainte de preț |
+| Caseta de achiziție | `packages` (CMS) | preț, durată, format, buton — **prima în DOM**, vezi mai jos |
+| Cuprinsul | titlurile din `body` | programele au 8–10 secțiuni; fără el, pe telefon sunt un perete |
+| Corpul | `body` din `packages.ts` | textul aprobat, structurat |
+| Banda de investiție | `includes` + `investmentNotes` | lista integrală, tranșele, factura pe firmă, al doilea buton |
+| Întrebări frecvente | `packages.faq` | neschimbat |
+| Celelalte programe | `getPackages()` | neschimbat |
+| Blocul final | `cta` din `packages.ts` | al treilea buton, cu textul propriu al programului |
+
+**Ordinea din DOM e gândită pentru telefon, nu pentru desktop.** Peste 1000px pagina
+are două coloane și caseta de preț stă lipită de titlu, în dreapta. Sub 1000px grila
+cade pe o coloană — iar cu ordinea de desktop, prețul și butonul ar fi ajuns **după**
+cele nouă secțiuni de text, adică la câteva mii de pixeli de primul ecran. De aceea
+caseta e prima în DOM și trece în dreapta abia pe desktop, din `order`.
+
+**Trei puncte de cumpărare, nu unul, și fiecare are textul lui.** Documentele
+clientei își numesc singure butoanele — „Aplică pentru programul CLAR™",
+„Programează conversația de potrivire", „Rezervă-ți locul" — și cer explicit CTA în
+trei poziții: sus, la investiție și la final. Un buton care spune ce urmează
+convertește altfel decât unul generic, deci textele stau în conținut, lângă program
+(`PackageCta` în `src/content/types.ts`), nu în componentă.
+
+**Câmpurile noi NU sunt în schemă, și e o decizie.** `kicker`, `highlights`,
+`investmentNotes` și `cta` vin exclusiv din `src/content/packages.ts`, prin aceeași
+poartă ca `body`: `toPackageDetail` le citește din pachetul aprobat, potrivit pe
+slug. Sunt redactare de pagină de vânzare, nu date pe care cineva să le țină
+sincronizate în admin — iar patru câmpuri noi în colecție ar fi însemnat o migrație
+pentru text care oricum se schimbă odată cu documentul clientei. Un pachet creat
+direct în CMS rămâne fără ele și cade pe variantele generice din `CTA_FALLBACK`.
+
+**Ancorele cuprinsului se calculează cu `slugifyAnchor`**, aceeași funcție care le
+pune pe titlurile articolelor de blog, deci nu pot devia. Verificat: cele 11 ancore
+din cuprinsul paginii SPA au fiecare un `<section id>` corespunzător.
+
+**Textul nou din documente**, față de ce era deja în site: secțiunea „Ce urmărim, în
+funcție de rolul tău" (antreprenori / lideri și manageri / profesioniști), din
+documentul Strategic Performance Assessment. Restul documentelor era deja în
+`packages.ts` din 7 septembrie.
+
+### Submeniurile din navigație ✅ — 8 septembrie 2026
+
+„Servicii" și „Workshopuri" se deschid, în antet și în meniul mobil.
+
+| | Antet (≥1000px) | Meniu mobil |
+|---|---|---|
+| Componenta | `layout/NavDropdown.tsx` — **Server Component** | `<details>` nativ, în `MobileNav` |
+| Ce îl deschide | `:hover` și `:focus-within`, pur CSS | apăsarea pe `<summary>` |
+| JavaScript | zero | zero în plus — `MobileNav` era deja componentă de client |
+
+**Componentele de client sunt tot exact patru.** Un meniu care se deschide pare, din
+reflex, o chestiune de stare. Nu este: `:hover` rezolvă mouse-ul, `:focus-within`
+rezolvă tastatura, iar acordeonul nativ le rezolvă pe amândouă pe telefon.
+
+**Panoul se ascunde din `opacity`, niciodată din `display` sau `visibility`.** Ambele
+din urmă scot linkurile din ordinea de tabulare — iar atunci `:focus-within` nu se
+mai poate declanșa niciodată, pentru că nimic din interior nu mai poate primi focus.
+Rezultatul ar fi un meniu perfect cu mouse-ul și inaccesibil de la tastatură. Cu
+`opacity: 0` + `pointer-events: none`, prima tastă Tab intră în panou, `:focus-within`
+devine adevărat și panoul se aprinde; mouse-ul nu poate apăsa ce nu se vede.
+
+**Paddingul de sus stă pe învelișul poziționat, nu pe cartelă**, ca spațiul dintre
+intrarea din meniu și panou să facă parte din zona de hover. Fără puntea asta, meniul
+se închide când cobori mouse-ul spre el.
+
+**Panoul e ancorat la dreapta** (`right-0`): crește spre interiorul paginii, deci nu
+iese din ecran nici la 1000px, unde „Workshopuri" stă deja aproape de marginea din
+dreapta. Catalogul de paisprezece primește panoul pe două coloane; cele trei programe,
+o singură coloană.
+
+**Submeniurile se atașează pe server, într-un singur loc** — `src/lib/nav.ts`, chemat
+din layout — și merg **și** în `nav`, **și** în `mobileNav`, deci antetul și meniul
+mobil nu pot ajunge să arate lucruri diferite. Nu sunt scrise în `src/content/site.ts`:
+navigația statică e o listă de rute, iar submeniul e inventarul a ceea ce se vinde
+astăzi. Scris de mână, un program redenumit din admin ar fi apărut cu numele vechi în
+meniu și cu cel nou în pagină.
+
+**Workshopurile duc la ancore, nu la rute proprii.** Catalogul e o singură pagină —
+cerință de conținut, partea comună a celor paisprezece se scrie o dată, în capul ei.
+Fiecare card are deja `id={slug}` și `scroll-mt-[132px]` cât bara sticky. Verificat:
+toate cele 14 ancore din meniu au un card cu `id` pe `/workshopuri-performanta-umana`.
+
+**Ordinea din submeniu e ordinea din pagină**, calculată de `prepareWorkshops`: întâi
+edițiile cu dată, cronologic, apoi restul catalogului. Cine coboară prin meniu
+găsește cardurile în aceeași succesiune.
+
+### Cum se citesc paginile lungi ✅ — 8 septembrie 2026, runda a doua
+
+Problema semnalată de clientă: paginile de program și cea de workshopuri „par
+pagini din Word". Avea dreptate, și cauza era una singură — **toate secțiunile
+erau randate identic**. Titlu, paragrafe, listă, blocuri numerotate, la rând,
+într-o coloană, cu același spațiu între ele. Pe un program cu zece secțiuni asta
+se citește ca o sarcină, nu ca o ofertă.
+
+Nu s-a schimbat niciun cuvânt din textul clientei. S-a schimbat ce știe pagina
+despre el.
+
+#### 1. Fiecare secțiune își declară felul
+
+`PackageSection` a primit `kind`, iar `src/content/packages.ts` îl scrie pe
+fiecare secțiune. Nu e o preferință de stil: e o afirmație despre conținut, de
+aceea stă lângă text, nu în componentă.
+
+| Fel | Ce e | Cum arată | Semn |
+|---|---|---|---|
+| `prose` | narațiune | coloană îngustă, ritm de articol | — |
+| `checklist` | situații în care te recunoști | grilă de rânduri cu bifă, 2 coloane | bifă |
+| `cards` | lucruri care stau alături | carduri, 2–3 pe rând | grilă |
+| `steps` | etape parcurse în ordine | verticală numerotată, cu firul care le leagă | traseu |
+| `outcomes` | ce primești la final | rânduri numerotate | romb |
+| `split` | aceeași întrebare, două răspunsuri | două coloane opuse | cerc tăiat |
+| `statement` | promisiunea programului | citat pe bloc întunecat | ghilimele |
+
+**Benzile de citit se deosebesc de cele de scanat.** Cele narative primesc doar
+numărul; toate celelalte primesc și un semn. Cine derulează repede vede din
+periferie unde e text de citit și unde e o listă din care poate lua doar ce îl
+privește. Asta e toată diferența dintre „am de citit mult" și „văd unde e ce mă
+interesează".
+
+#### 2. Fundalul alternează, spațiul nu crește
+
+Fiecare secțiune e acum o `<Section>` proprie, hârtie / crem, alternat.
+Separarea o face culoarea, nu spațiul: tokenul nou `--spacing-section-body`
+(`clamp(3.5rem, 6vw, 6rem)`) e mult mai strâns decât `--spacing-section` de pe
+prima pagină. Zece benzi la ritmul de acolo ar fi însemnat trei ecrane de gol.
+
+**Un singur bloc `ink` pe pagină**, exact ca pe prima pagină, unde acela e
+citatul. Îl primește `statement` — promisiunea programului. Un al doilea l-ar
+face pe primul să nu mai însemne nimic. Secțiunea `statement` **nu consumă un
+pas** din alternanță, ca hârtia și cremul să continue corect de o parte și de
+alta a ei.
+
+#### 3. Pictogramele sunt desenate, nu importate
+
+`src/components/ui/Glyph.tsx`, douăsprezece semne, **zero dependențe**. Regula 4
+din §2 interzice bibliotecile de componente, dar motivul real e de design:
+seturile obișnuite sunt desenate la 1.5–2px, cu colțuri rotunjite și cu un
+vocabular de aplicație. Peste Cormorant Garamond și peste hairline-urile de 1px
+ale designului aprobat ar arăta ca un panou de administrare lipit peste o pagină
+editorială. Ale noastre sunt trasate în limbajul paginii: **linie de 1px, în
+accent, fără umplere**, pe o casetă de 24 de unități.
+
+**Un semn per tip de bloc, nu unul per rând.** Un semn repetat pe fiecare
+element dintr-o listă de nouă nu mai transmite nimic — devine marcator de listă,
+și pentru asta există `<ul>`. Excepția e bifa, care chiar marchează elemente.
+Toate sunt `aria-hidden`: informația stă în titlul de lângă ele.
+
+#### 4. Antetul fiecărui program are un desen care ESTE programul
+
+`src/components/ui/ProgramMotif.tsx`. Paginile n-au fotografie proprie și nu vor
+avea: ședința foto a produs șase cadre, toate repartizate, iar același portret pe
+toate trei ar spune că programele sunt același lucru.
+
+| Program | Desenul | Ce spune |
+|---|---|---|
+| Strategic Performance Assessment™ | hartă radială, 6 axe | cele șase dimensiuni, cu **exact** atâtea puncte pe fiecare axă câte atribute are: 3+4+4+4+3+2 = 20 |
+| CLAR™ | traseu ascendent, 4 opriri | C → L → A → R, în ordine, pentru că ordinea e chiar metoda |
+| Executive Performance Program™ | linie de timp | evaluarea inițială (nodul mare), 12 sesiuni, două evaluări intermediare, evaluarea finală |
+
+**Numerele nu sunt decorative.** Dacă cineva schimbă câte atribute are o
+dimensiune, se schimbă și desenul — sunt aceleași date. Regulile de trasare sunt
+cele de la `HeroField`: linie de 1px, aurul rămâne fir și nu devine suprafață,
+geometria se calculează din date, nu se scrie ca șiruri de coordonate.
+
+#### 5. Harta paginii
+
+Chipsuri numerotate, una pe bandă, imediat sub antet. Numerele sunt aceleași cu
+cele de pe benzi pentru că vin din aceeași funcție (`packageOutline`), deci nu
+pot ajunge să spună lucruri diferite. Apare de la patru secțiuni în sus.
+
+#### 6. Antetul răspunde înainte de orice derulare
+
+Linia cu expresia căutată, numele, promisiunea, faptele scanabile, **prețul și
+butonul** — plus desenul, în dreapta. **Coloana sticky de achiziție a dispărut**:
+avea sens cât timp corpul paginii era o coloană de text, dar lângă benzi late
+le-ar fi tăiat în două pe toată înălțimea. Rolul ei l-a luat antetul.
+
+Cele trei fapte din ea — durată, format, pentru cine — au coborât în banda de
+investiție, adică fix acolo unde omul le recitește: în clipa în care decide.
+Verificat prin diff că nu s-a pierdut nimic pe drum; vezi §6.
+
+#### 7. Pagina de workshopuri, aceeași operație
+
+Partea comună — ce diferențiază seria, programul zilei, pentru cine e — era o
+singură coloană de trei ecrane, deasupra a paisprezece carduri. Acum sunt patru
+benzi: carduri pentru diferențiatori, tabel pentru orar (rămâne `<table>`
+semantic, pentru AEO — s-a schimbat doar cum arată: modulele au marginea în
+accent, pauzele stau retrase), bloc întunecat pentru fraza despre public.
+
+Catalogul a primit o **bară de sărituri** cu cele paisprezece titluri, în care
+punctul auriu marchează edițiile deschise. Înlocuiește fraza „Deschise acum: …",
+care spunea strict mai puțin și tot text era.
+
+**Cardul deschis se vede acum de la doi metri**, prin trei semnale deodată:
+fundal crem, margine în accent și pastila „Înscrieri deschise". Culoarea singură
+n-ar fi suficientă — cine n-o distinge ar rămâne fără informație, iar pastila o
+scrie în cuvinte. Secțiunea catalogului a trecut de pe crem pe hârtie tocmai ca
+să existe contrastul: înainte, cardurile crem stăteau pe o secțiune tot crem și
+nu se deosebeau deloc.
+
+#### Singura atingere a textului, și de ce
+
+`trimItem` scoate **la randare** punctul și virgula de la capătul elementelor de
+listă. Erau corecte când lista era o frază lungă întreruptă; într-o grilă de
+carduri, fiecare element se citește singur, iar `;`-ul rămas atârnă. Se scoate la
+randare, nu din conținut: fișierul rămâne sursa din care `pnpm seed` populează
+CMS-ul, iar acolo textul trebuie să fie cel livrat de clientă.
+
+Cardurile din `cards` își iau titlul din prima jumătate a propoziției, până la
+primul „: ". Propoziția clientei rămâne exact cum a scris-o.
+
+Singurele două șiruri adăugate sunt etichete de navigație, nu conținut:
+`splitLabels` pe secțiunea „Cui i se potrivește și cui nu" — „Este pentru tine
+dacă" / „Nu este programul potrivit dacă", care doar numesc ce spunea deja prima
+frază a fiecărui paragraf — și „Ziua de workshop", eticheta benzii cu orarul.
+
+#### Contrastul, recalculat pe suprafețele noi
+
+`--ac-ink-50` pe `--ac-cream-50` dă **4.24:1**, sub AA — aceeași cifră măsurată
+la câmpul heroului. Benzile crem și cardurile de workshop deschise sunt tocmai
+crem, deci textul secundar de pe ele a urcat la `--ac-ink-70` (**8.11:1**). Nu e
+o preferință: e aceeași regulă ca la `ac-accent-deep` pe `cream-100` (§9.3) —
+varianta mai închisă se folosește strict unde cea normală pică.
+
+Pastila cu semn (`GlyphBadge`) e în `--ac-accent-ink`, nu în `--ac-accent`:
+5.44:1 pe hârtie și 4.98:1 pe crem, adică peste pragul de 3:1 pentru elemente
+negrafice. Semnele mici inline rămân în `--ac-accent`, ca toate hairline-urile și
+numeralele designului aprobat — sunt decorative și dublează un text de lângă.
+
+---
+
 ## 5. CE NU ESTE FĂCUT
 
-### Faza 4 — Stripe ⏳ **următorul pas recomandat**
+### Faza 4 — Stripe ✅ **completă din 7 septembrie 2026** (vezi §4)
 
-Lipsesc `/api/stripe/checkout`, `/api/stripe/webhook` și emailurile de comandă.
-Există deja: clientul Stripe (`src/lib/stripe.ts`), sincronizarea prețurilor, colecția
-`orders` cu `stripeSessionId` **unic la nivel de bază de date** — cheia de idempotență
-a webhook-ului, pentru că Stripe reîncearcă livrarea evenimentelor — și câmpurile
-`packageNameSnapshot` / `amount`, copii, nu relații live.
-
-Prețul se citește **doar pe server**, din `packages.price`, niciodată din client.
-
-Trei lucruri sunt deja pregătite pentru faza 4 și așteaptă doar cheia:
-
-- `src/lib/email.ts` — trimite prin API-ul HTTP al Resend, fără SDK. Fără
-  `RESEND_API_KEY` se întoarce `skipped`, nu aruncă.
-- `/multumim` verifică `session_id` la Stripe, pe server. Fără cheie, afișează
-  varianta neutră: nu pretinde niciodată o plată neconfirmată.
-- `/comanda-anulata` citește `?pachet=` și trimite înapoi exact la pachetul respectiv.
-
-**Un singur loc de înlocuit în UI:** butonul „Vreau acest pachet" din
-`src/app/(frontend)/servicii/[slug]/page.tsx` duce azi la `/contact?pachet=<slug>`.
-Acolo intră `CheckoutButton`. Comentariul e în fișier.
+Ce rămâne de făcut e **configurare, nu cod**: cheile din §7.8 și abonarea
+endpointului de webhook la evenimente, în dashboard-ul Stripe. Fără ele site-ul
+funcționează, dar nu încasează — butonul de plată trimite cumpărătorul pe calea de
+rezervare fără plată online. Este o degradare intenționată, verificată.
 
 ### Faza 5b — SEO pentru restul site-ului ⏳
 
@@ -622,12 +1173,27 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | Migrație aplicată pe bază de date curată, apoi seed | ✅ |
 | **Pagina randată din CMS vs. pagina din fallback** | ✅ HTML identic, vezi mai jos |
 | **Homepage, HEAD vs. faza 3b** | ✅ 11 diferențe, toate ancore→rute; text identic la caracter |
-| Cele 15 rute publice răspund 200 | ✅ |
+| Cele 15 rute publice răspund 200 | ✅ (17 după 7 septembrie 2026) |
+| **Ruta de plată, pe cele patru căi** | ✅ deschis → Stripe · închis → contact · inexistent → catalog · pachet → Stripe |
+| **Precompletarea din contact, pe cele trei situații** | ✅ rezervare cu dată · listă de așteptare · plată indisponibilă |
+| **Componente de client după faza 4** | ✅ tot patru — butonul de plată nu adaugă JS |
 | `/blog/inexistent`, `/servicii/inexistent`, `/blog/pagina/1` | ✅ 404 |
 | Formularul de contact, în browser, pe build de producție | ✅ trimite, salvează, confirmă |
 | Formular: date invalide, honeypot, limitare de rată | ✅ 400 / 400 / 429 |
 | Ordinea de tabulare pe o pagină interioară | ✅ 28 elemente, fără capcane |
 | `/sitemap.xml`, `/llms.txt` după faza 3b | ✅ toate rutele noi |
+| **Homepage, HEAD vs. paginile de program + submeniuri** | ✅ zero linii dispărute, 40 adăugate — toate în cele două submeniuri din antet |
+| **Pagina randată din CMS vs. din fallback, după schimbări** | ✅ text identic pe `/` și pe toate trei paginile de program |
+| **Cele trei pagini de program, fără bază de date** | ✅ 200 (înainte: 404 — vezi §10) |
+| **Ancorele cuprinsului vs. `id`-urile secțiunilor** | ✅ 11/11 pe SPA |
+| **Ancorele workshopurilor din meniu vs. cardurile din catalog** | ✅ 14/14 |
+| **Variantele CSS ale submeniului, în bundle-ul compilat** | ✅ `group-hover:` și `group-focus-within:` emise pentru opacitate, `translate` și `pointer-events` |
+| **Componente de client după submeniuri** | ✅ tot patru |
+| **Homepage, înainte vs. după refacerea vizuală** | ✅ text identic la caracter — 12.985 în ambele |
+| **Text pierdut la refacerea paginilor de program** | ✅ zero, după ce diff-ul a găsit două scăpări și au fost reparate |
+| **CMS vs. fallback după refacerea vizuală** | ✅ identic pe `/`, pe toate trei paginile de program și pe workshopuri |
+| **Componente de client după refacerea vizuală** | ✅ tot patru — pictogramele și desenele sunt SVG randat pe server |
+| **Contrast pe suprafețele crem noi** | ✅ text secundar urcat la `ink-70` (8.11:1); `ink-50` pe crem dădea 4.24:1 |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -795,6 +1361,215 @@ de 388, deci **zero depășire orizontală**; ambele inele încap integral în c
 (278px și 157px pe 373px), iar voalurile au coborât de la 617px la 280–287px. Banda de
 etichete de pe telefon stă tot pe hârtie curată, cu masca nouă (46% → 86%).
 
+### ✅ Coala de fildeș n-a mișcat niciun text — verificat prin diff
+
+Rulat pe 31 august 2026, pentru refacerea de la §9.20 (fundal ivory, curbă organică,
+zero forme circulare). Metoda, de data asta, e mai strictă decât comparația pe text
+vizibil: A/B pe HTML-ul randat, cu `git stash` între cele două capturi, deci **exact
+același server, aceeași bază de date, același build**.
+
+```bash
+curl -s http://localhost:3000/ > now.html
+git stash push -- src/components/ui/HeroField.tsx src/components/ui/SectionAura.tsx src/app/globals.css
+curl -s http://localhost:3000/ > head.html
+git stash pop
+# apoi: scoase <script>self.__next_f.push(...)</script> și /_next/static/*,
+# spart pe tag-uri (`sed 's#>#>\n#g'`) și diff token cu token
+```
+
+**Rezultat: în afara stratului decorativ, doar două atribute diferă** — cele două
+`--fa` ale aurei de hero, coborâte de la 0.32/0.30 la 0.12/0.10, adică schimbarea
+intenționată din §4. Zero noduri de text, zero clase, zero atribute de layout
+modificate. Tot restul diferențelor sunt înăuntrul lui `[data-hero-field]`, care e
+`position: absolute; z-index: -1`. Comparația la pixel cu designul aprobat **nu
+trebuie refăcută.**
+
+Verificat în plus, în browser la 1440px: `pnpm build` și `pnpm typecheck` curate,
+`pnpm verify:faza2` la 10/10, grep-ul de sedile la zero. Fundalul e fildeș cald sub
+coloana de text și lumină sub fotografie, firul de aur și ecoul lui se sting înainte
+de banda de etichete, iar în ultima cincime a heroului forma se dizolvă în hârtie.
+
+**Telefonul, măsurat într-un iframe de 390px** (media query-ul se aplică pe viewportul
+iframe-ului, deci compoziția de sub 1000px se poate vedea fără redimensionarea
+ferestrei): heroul are 1486px, banda de etichete stă între 53.8% și 60.6%, fotografia
+începe la 63.3%. **Prima variantă avea firul de aur exact peste etichete** — s-a văzut
+în browser și a fost scos; vezi §4 pentru de ce nu se reintroduce.
+
+### ✅ Conținutul real n-a rupt grila homepage-ului — verificat prin diff
+
+7 septembrie 2026. Aceeași metodă ca mai sus: build de producție pe `HEAD`, build de
+producție cu modificările, `curl` pe `/` în ambele, diff după normalizarea
+payload-ului RSC și a hash-urilor de chunk. **Atenție la citire: ambele build-uri au
+citit din ACEEAȘI bază de date, deja populată**, deci „înainte" înseamnă aici
+„cardurile cu listele complete din CMS", nu placeholderele din design.
+
+**Rezultat: 11 fragmente de text dispărute, 25 adăugate. Toate explicate:**
+
+| Dispărut | De ce |
+|---|---|
+| 8 rânduri din listele „Ce include" | `CARD_INCLUDES = 3` — vezi mai jos |
+| 3 × `EUR` | înlocuit cu `RON` |
+
+| Adăugat | De ce |
+|---|---|
+| „Workshopuri", „Recomandări" (×2 fiecare) | intrări noi în antet și subsol |
+| 21 de fragmente | secțiunea de recomandări, cerută de clientă (§9.21) |
+| 3 × `RON` | moneda reală |
+
+**Nimic altceva nu s-a mutat.**
+
+**Descoperirea importantă a acestei verificări.** Programele reale au între cinci și
+șase elemente în „Ce include". Randate integral, cardurile ar fi avut liste de
+lungimi diferite, iar cardul din mijloc ar fi crescut cu peste 60px — grila verificată
+la pixel s-ar fi rupt tăcut, la prima populare a CMS-ului. Numărat în cele trei surse:
+
+```
+build HEAD (liste complete din CMS)  →  [5, 6, 6]
+design/homepage-approved.html        →  [3, 3, 3]
+build acum (cu CARD_INCLUDES)        →  [3, 3, 3]
+```
+
+De aceea `mergePackages` taie lista la trei rânduri pe card. Elementele nu se pierd:
+apar integral pe pagina pachetului. Dacă cineva scoate plafonul „ca să se vadă tot",
+grila se rupe din nou — și nu se vede în niciun test.
+
+### ✅ Submeniurile n-au atins niciun cuvânt din homepage — verificat prin diff
+
+8 septembrie 2026. Antetul e pe toate paginile, deci un submeniu prost pus e o
+regresie pe toate. Metoda din §12.5: build de producție pe `HEAD` (`git stash -u`),
+build de producție cu schimbările, `curl` pe `/` în ambele, comparație pe textul
+vizibil după scoaterea tag-urilor și normalizarea spațiilor.
+
+**Rezultat: zero linii dispărute, 40 adăugate — toate în cele două submeniuri.**
+Nouă rânduri pentru cele trei programe (nume + durata și prețul) și 31 pentru
+catalogul de paisprezece (titlu + subtitlu), plus cele două rânduri „vezi tot". Nicio
+altă schimbare: aceleași 296 de linii de dinainte se regăsesc, în aceeași ordine.
+
+Cele două submeniuri sunt în HTML-ul livrat, nu injectate după hidratare — deci și
+crawlerele care nu execută JS văd legăturile către cele trei programe și către cele
+paisprezece workshopuri. Submeniurile din meniul mobil **nu** apar în HTML-ul inițial,
+pentru că panoul mobil se randează doar când e deschis; e comportamentul dinainte al
+lui `MobileNav`, neschimbat.
+
+### ✅ CMS-ul și fallback-ul dau aceleași pagini de program — verificat prin diff
+
+Aceeași zi, aceeași metodă ca la §6 „CMS-ul nu schimbă pagina aprobată", extinsă la
+cele trei pagini de program: build cu `DATABASE_URI` setat, build cu el gol, `curl` pe
+`/` și pe cele trei rute, comparație pe text vizibil.
+
+**Rezultat: identic pe toate patru** — `/` 12.985 caractere, SPA 15.592, CLAR 13.770,
+EPP 9.634, aceleași cifre în ambele build-uri.
+
+Verificarea a și găsit ce descrie §10: în build-ul fără bază de date, cele trei
+pagini de program răspundeau **404**. Nu se vedea altfel — rutele existau, sitemap-ul
+le lista, iar cu Postgres pornit totul era în regulă.
+
+### ✅ Refacerea vizuală n-a pierdut niciun cuvânt — verificat prin diff
+
+8 septembrie 2026, runda a doua. Riscul unei refaceri vizuale nu e ca ceva să
+arate prost — se vede —, ci ca o informație să dispară odată cu blocul care o
+purta. Metoda: `curl` pe pagina de dinainte și pe cea de după, textul vizibil
+extras din amândouă, apoi **fiecare linie dispărută căutată una câte una în
+pagina nouă**. Diff-ul simplu n-ar fi fost suficient: majoritatea liniilor se
+schimbă oricum, pentru că `;`-ul final se scoate și pentru că un element de listă
+se rupe în titlu de card plus corp.
+
+**Verificarea a găsit două scăpări reale**, amândouă venite din desființarea
+coloanei sticky de achiziție:
+
+1. `forWho` — „Antreprenori, lideri, manageri și profesioniști care vor să
+   înțeleagă ce susține și ce limitează rezultatele lor actuale." Dispăruse de
+   tot din pagină.
+2. „Plata se face securizat, prin Stripe." — singura mențiune de pe pagină
+   despre cine procesează plata.
+
+Amândouă au fost puse înapoi, în banda de investiție, împreună cu durata și
+formatul. **După reparație: zero linii pierdute** pe toate cele patru pagini.
+Restul diferențelor sunt exact cele intenționate — `;`-ul de la capătul
+elementelor de listă și împărțirea „titlu: explicație" în titlu de card plus
+corp, ambele verificate ca fiind prezente integral în pagina nouă.
+
+Pe workshopuri, singurul text scos e fraza „Deschise acum: …", înlocuită de bara
+de sărituri, care marchează aceleași trei ediții și le mai și numește pe toate
+paisprezece.
+
+**Homepage-ul nu s-a mișcat**, deși `globals.css` și `ui/Section` s-au atins:
+text vizibil identic la caracter, 12.985 în ambele, față de commit-ul anterior.
+
+Reproducere:
+
+```bash
+pnpm build && pnpm start -p 3000
+curl -s http://127.0.0.1:3000/servicii/strategic-performance-assessment -o acum.html
+# ... acelasi lucru pe commit-ul dinainte, apoi:
+# scoase <script>, <style> si tag-urile; spatiile normalizate; fiecare linie
+# disparuta cautata cu grep -F in pagina noua, nu doar diff
+```
+
+### ⚠️ Refacerea vizuală — NEverificată în browser
+
+Aceeași cauză ca mai jos, din aceeași sesiune. Ce se verifică la prima sesiune cu
+browser, la 1440px, ~1000px și 390px:
+
+1. ritmul benzilor — că alternanța hârtie / crem se citește ca separare și că
+   `--spacing-section-body` nu e nici prea strâns, nici prea larg;
+2. cele trei desene de antet la toate lățimile: caseta e comună (400×340), dar
+   textele din ele (`01`–`06`, `C L A R`, `L1`–`L6`) sunt trasate în coordonate
+   de viewBox și se scalează odată cu desenul;
+3. bara de chipsuri pe telefon, unde zece–paisprezece chipsuri se rup pe multe
+   rânduri;
+4. pastilele cu semn de lângă titluri — că semnul de 22px într-un cerc de 44px
+   nu pare nici pierdut, nici înghesuit;
+5. tabelul orarului sub 480px, unde are `min-w-[440px]` și derulează orizontal
+   în caseta lui.
+
+### ⚠️ Submeniurile și paginile de program — NEverificate în browser
+
+Extensia de browser nu s-a putut conecta la serverul local în sesiunea din 8
+septembrie 2026: serverul răspunde `200` din PowerShell, pe `127.0.0.1` și pe
+`localhost`, dar Chrome dă `ERR_CONNECTION_REFUSED` pe ambele. Nu e o problemă a
+site-ului — build-ul, HTML-ul livrat și CSS-ul compilat sunt verificate mai sus — dar
+înseamnă că **nimeni nu a văzut cu ochii** următoarele, și se verifică la prima
+sesiune cu browser, la 1440px, ~1000px și 390px:
+
+1. panoul de submeniu care se deschide la hover și la Tab, și **puntea de hover**
+   (mouse-ul coboară de pe „Servicii" în panou fără să se închidă);
+2. panoul lat al catalogului la exact 1000px — calculul spune că încape ancorat la
+   dreapta, dar marginea e strânsă;
+3. acordeoanele din meniul mobil, cu cele paisprezece intrări;
+4. ordinea de pe telefon a paginii de program: caseta de preț înainte de corp;
+5. săritura din cuprins, cu titlul dedesubtul barei sticky (`scroll-mt-[132px]`).
+
+### ⚠️ Placa cu portretul — verificată doar parțial în browser
+
+Runda a doua (fotografia tăiată de curbă, §4) a fost făcută pe 31 august 2026.
+`pnpm build` și `pnpm typecheck` curate, `pnpm verify:faza2` la 10/10, grep-ul de
+sedile la zero, iar CSS-ul compilat conține toate regulile (`mask-composite: intersect`
+prezent, ambele media query-uri emise, măștile prezente în markup cu geometria
+așteptată — calea plăcii iese exact `M323.08 0C223.08 175 115.38 335 76.92 505C38.46
+678 142.31 848 419.23 1000H1000V0Z`, adică ce dă calculul de mână).
+
+**Ce s-a văzut cu ochii, la 1545px:** placa full-bleed, tăietura curbă pe latura
+stângă, firul de aur care merge exact pe muchia ei, stingerea de jos. Tot atunci s-au
+prins și s-au reparat două defecte: cele două curbe ratate cu ~110px (blocul de
+referință greșit, vezi §4) și legenda ștearsă de mască.
+
+**Ce NU s-a mai putut vedea** — extensia de browser s-a deconectat înainte:
+1. legenda „ADRIANA CHIRA" la baza plăcii, după mutarea măștii pe cutia imaginii;
+2. stingerea de jos strânsă de la 74%→92% la 80%→96%;
+3. compoziția de sub 1000px, unde unda a fost mutată de pe fundal pe muchia de sus a
+   fotografiei.
+
+Primele două sunt schimbări de o valoare fiecare, a treia e geometrie nouă. **Se
+verifică la următoarea sesiune cu browser**, la 1440px, la ~900px (tabletă, cazul care
+a scos la iveală problema) și la 390px.
+
+> **Comparația la pixel cu designul aprobat NU mai e valabilă pe hero, peste 1000px** —
+> și e o schimbare cerută, nu un regres. Portretul iese din coloana grilei și devine
+> placă lipită de marginea dreaptă (§9.20). Coloana de text rămâne exact unde era:
+> grila are în continuare două coloane egale, doar că a doua e goală, iar `Shell` a
+> pierdut `relative z-[1]`, care nu deplasa nimic. Sub 1000px layout-ul e neschimbat.
+
 ---
 
 ## 7. Blocaje și decizii care așteaptă clienta
@@ -805,14 +1580,18 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 
 | # | Element | Cum se manifestă în cod acum | Blochează |
 |---|---|---|---|
-| 1 | **Pachetele de servicii** — nume, conținut, durată, preț | Există 3 pachete în CMS, ascunse (`active: false`), cu text `[ DE COMPLETAT ]`. Homepage-ul și `/servicii` randează placeholderele din design. **Cât timp sunt ascunse, `/servicii/[slug]` nu are nicio rută** — `generateStaticParams` întoarce listă goală și orice slug dă 404, corect. Prima bifă „Vizibil pe site" aduce pachetul și în listă, și pe pagina lui. | Faza 4 (Stripe), paginile de pachet |
-| 2 | **Portret profesional** | Se folosește `public/images/adriana-portret.jpg` din pachetul de design. `ImageSlot` fixează raportul → CLS 0 la înlocuire. | Calitatea hero-ului |
+| 1 | ~~**Pachetele de servicii**~~ ✅ **rezolvat pe 7 septembrie 2026** | Cele trei programe reale sunt în CMS, vizibile, cu preț în lei. Vezi §4, „Conținutul real". | — |
+| 2 | ~~**Portret profesional**~~ ✅ **rezolvat** | Fotografiile din ședința foto a clientei sunt în `public/images/`, câte una pe pagină. Placeholderul filigranat din pachetul de design a fost șters. | — |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
 | 4 | Email, telefon | Footerul, pagina de contact, `/multumim` și paginile legale afișează `[ email ]`, `[ telefon ]`. Formularul funcționează oricum: mesajele ajung în `submissions`, în admin | Contact, schema, notificarea pe email |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
-| 7 | Regim TVA, PFA sau SRL | — | Configurarea Stripe |
-| 8 | Cont Stripe | — | Faza 4 |
+| 7 | **Regim TVA, PFA sau SRL** | Prețurile se afișează ca sume simple, fără mențiune de TVA. Documentul CLAR cere explicit confirmarea: 5.100 lei este cu TVA inclus sau „+ TVA"? Se aplică la toate cele patru prețuri. | Afișarea prețurilor, configurarea Stripe |
+| 8 | **Cont Stripe + chei** | Codul e complet și verificat (§4, faza 4). Lipsesc `STRIPE_SECRET_KEY` și `STRIPE_WEBHOOK_SECRET`. Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
+| 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
+| 8d | **Funcția lui Bogdan Vasiliu** | Documentul primit semnează doar cu numele. Câmpul e gol, iar rândul nu se randează — nu inventăm o funcție pentru un om real. Se completează în admin, la recomandarea lui. | — (recomandarea e publicabilă și fără) |
+| 8e | **Scrierea numelui „Gabriela Tarna"** | Așa apare în document. Nu am completat diacritice ghicite pe numele unei persoane. De confirmat forma corectă. | Lansare |
+| 8c | **Datele edițiilor de workshop de după decembrie 2026** | Trei ediții sunt programate (octombrie, noiembrie, decembrie 2026). Celelalte 11 workshopuri apar în catalog fără dată și fără buton de plată. Adriana le deschide punându-le o dată în admin — se pot cumpăra automat următoarele trei. | Vânzarea workshopurilor din 2027 |
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
 | 10 | **Validare juridică a paginilor legale** | Cele patru pagini EXISTĂ, cu text scris pe situația reală a site-ului, dar marcat vizibil ca draft. Nota se scoate din `LEGAL_DRAFT`, în `src/content/pages.ts` | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
@@ -875,7 +1654,15 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Optsprezece, toate documentate în cod prin comentarii:
+Treizeci, toate documentate în cod prin comentarii. **Ultimele șase (25–30) sunt
+din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
+fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
+paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
+impusă de prima dintre ele.
+
+> Numerele 21–24 au fost renumerotate pe 8 septembrie 2026. Erau scrise ca
+> „19, 20, 21, 22" după un 19 și un 20 care existau deja; Markdown le renumerota
+> singur la afișare, deci nu se vedea, dar în fișier trimiteau în două locuri.
 
 1. **„Perspective" → „Blog" în navigație** (`src/content/site.ts`).
    Header-ul demo-ului scria „Perspective", dar footerul aceluiași demo și brief §4.3
@@ -1016,6 +1803,172 @@ Optsprezece, toate documentate în cod prin comentarii:
     `position: absolute; z-index: -1` — adică zero text mutat. Verificat prin diff,
     vezi §6.
 
+    **Punctul acesta a fost anulat pe 31 august 2026** — vezi punctul 20.
+
+20. **Heroul redevine minimalist, pe bază de fotografie de referință**
+    (31 august 2026). Clienta a trimis o imagine de referință pentru primul ecran și
+    a cerut: fundal ivory/crem, „foarte minimalist și elegant", **eliminarea formelor
+    circulare actuale**, o tranziție organică și subtilă între zona de text și
+    fotografie, accente „foarte discrete" de auriu cald, rezultat „premium, editorial
+    și rafinat". Explicit: fără modificări de structură, conținut, fonturi,
+    fotografie, layout sau culori de brand — doar fundalul și decorul care îl
+    integrează cu fotografia.
+
+    Premisa se inversează a doua oară, și acum se întoarce dincolo de punctul de
+    plecare. La punctul 18 decorul nu avea voie să fie observat. La 19 avea voie să
+    atragă privirea. Aici **atenția se mută pe fotografie**: fundalul nu mai
+    concurează cu ea, o încadrează. Regula nouă: singurul lucru la care se uită omul
+    pe primul ecran e portretul și titlul; tot restul e hârtie.
+
+    Ce s-a eliminat, complet — componente, blocuri CSS, keyframes: trei corpuri de
+    lumină care derivau, trei voaluri conice care se roteau, două inele de aur cu
+    halou, opt animații, șapte seturi de keyframes. **Nu se reintroduc fără o cerere
+    explicită.** Ce a rămas: un fond de fildeș, o singură lumină difuză în spatele
+    portretului și o curbă Bézier cu fir de aur între coloana de text și fotografie.
+    Descrise integral în §4.
+
+    O singură schimbare atinge un fișier din afara heroului: greutatea aurului din
+    varianta `hero` a aurei de secțiune, coborâtă de la 0.32/0.30 la 0.12/0.10.
+    Motivul e chiar cererea: haloul de accent al aurei stă între 50% și 82% din rază
+    și, pe fundalul minimalist de acum, ar fi reapărut ca inel. Celelalte patru
+    variante de aură nu s-au atins.
+
+    Ce NU s-a schimbat: aurul rămâne fir, niciodată suprafață; stratul care întunecă
+    hârtia poartă în continuare masca de contrast înainte de banda de etichete de
+    11px; zero JS, zero bibliotecă de animație; `position: absolute; z-index: -1`,
+    adică zero text mutat. Verificat prin diff pe HTML randat, vezi §6.
+
+    **Runda a doua, aceeași zi — fotografia intră în compoziție.** Prima variantă
+    lăsa curba să treacă pe LÂNGĂ fotografie, iar clienta a semnalat corect că
+    „poza cu persoana este încă un dreptunghi, are margini clare, în loc să fie
+    integrată în background și linia curbă". Peste 1000px portretul iese acum din
+    coloana grilei și devine placă lipită de marginea dreaptă a ecranului, de sus
+    până jos, cu latura stângă tăiată chiar de curbă — compoziția din fotografia de
+    referință. Sub 1000px caseta rămâne unde era, dar cu muchia de sus tăiată de
+    aceeași idee, rotită. Descris integral în §4.
+
+    **Aceasta e singura schimbare de layout din tot lucrul de pe 31 august**, și e
+    cerută explicit: fără ea fotografia rămâne un dreptunghi, oricât de bine ar
+    arăta fundalul din jurul lui. Coloana de text nu se mișcă. Comparația la pixel
+    cu designul aprobat nu mai e valabilă pe heroul de desktop — vezi nota din §6.
+
+21. **A treisprezecea secțiune pe homepage: recomandările** (7 septembrie 2026).
+    `src/components/sections/Testimoniale.tsx`, între blocul de citat și pachete.
+    Designul aprobat are douăsprezece secțiuni. **Adăugarea a fost cerută explicit
+    de clientă**, odată cu livrarea celor trei recomandări.
+
+    Ce s-a păstrat, ca să nu se simtă lipită: aceeași grilă de trei carduri,
+    aceleași margini, aceeași etichetă versală și același `h2` ca la secțiunea de
+    servicii. Nicio formă vizuală nouă. Poziția e aleasă: dovada socială cade fix
+    înaintea prețurilor. Ritmul de fundal rămâne citit corect — ink, crem, hârtie.
+
+    Textele lungi NU sunt aici: cardul poartă o singură frază, iar recomandarea
+    întreagă stă pe `/testimoniale`. Trei texte de câte opt paragrafe ar fi rupt
+    pagina în două.
+
+    Secțiunea dispare singură dacă nicio recomandare nu e marcată pentru prima
+    pagină, deci nu i-am mai dat comutator propriu în CMS: `featured` și „Vizibil pe
+    site" pe fiecare recomandare fac deja treaba, mai fin.
+
+22. **A cincea intrare în navigație: „Workshopuri"** (`src/content/site.ts`).
+    Designul aprobat are patru. Nu contrazice designul, îl extinde: la momentul
+    aprobării, workshopurile nu existau ca ofertă. Sunt al doilea lucru vandabil din
+    site, cu pagină și preț propriu, iar o linie de produs care nu apare în
+    navigație nu se vinde. Măsurat la 1000px, pragul la care apare navigația pe
+    desktop, cele cinci intrări plus butonul de programare încap fără să se rupă
+    rândul. În meniul mobil și în subsol intră și „Recomandări".
+
+    Eticheta e scurtă, deși adresa e lungă (`/workshopuri-performanta-umana`, cea
+    recomandată în documentul clientei): adresa poartă expresia căutată în Google,
+    meniul poartă cuvântul pe care îl caută omul cu ochiul.
+
+23. **Lista „Ce include" e tăiată la trei rânduri pe card**
+    (`CARD_INCLUDES` în `src/content/packages.ts`). Programele reale au între cinci
+    și șase elemente. Randate integral, ar fi înălțat cardul din mijloc cu peste
+    60px și ar fi rupt grila verificată la pixel — tăcut, la prima populare a
+    CMS-ului. Cardul din designul aprobat are exact trei rânduri, iar plafonul le
+    readuce la trei. Elementele nu se pierd: apar integral pe pagina pachetului.
+    Măsurătoarea e în §6.
+
+24. **Cardul evidențiat rămâne cel din mijloc, deși „serviciul principal" e al
+    treilea.** Documentul clientei numește Executive Performance Program™
+    „serviciul principal al ecosistemului CHIRA Model™". Ordinea din pagină este
+    însă a angajamentului crescător — 3 ore, 8 săptămâni, 6 luni — iar în designul
+    aprobat cardul evidențiat este **poziția din mijloc**, nu un premiu acordat unui
+    produs. Evidențiat rămâne deci CLAR™. Dacă clienta vrea altfel, se mută bifa
+    „Card evidențiat" în admin, fără cod — dar atunci designul are două carduri de
+    aceeași greutate lângă unul evidențiat, la marginea grilei.
+
+25. **Navigația are submeniuri, deși designul aprobat are o bară plată**
+    (8 septembrie 2026, `src/components/layout/NavDropdown.tsx`). Cerută explicit de
+    clientă: programele sub „Servicii", workshopurile sub „Workshopuri", fiecare
+    workshop ducând în dreptul cardului lui.
+
+    Nu contrazice designul, îl extinde — la momentul aprobării nu exista nici
+    catalogul de paisprezece workshopuri, nici cele trei programe cu nume. Bara
+    însăși nu se schimbă cu un pixel: submeniul e `position: absolute`, sub bară,
+    ascuns din `opacity`, deci intrările din meniu rămân exact unde erau. Verificat
+    prin diff — zero cuvinte mutate pe homepage, vezi §6.
+
+    Ce NU s-a schimbat, și nu se schimbă nici la o cerere de „mai mult": zero
+    JavaScript (`:hover` + `:focus-within` pe desktop, `<details>` nativ pe telefon),
+    componentele de client rămân patru, iar linkurile submeniului sunt în HTML-ul
+    livrat, nu injectate după hidratare.
+
+26. **Paginile de program au trei butoane de cumpărare, cu texte proprii**
+    (8 septembrie 2026). Documentele clientei cer explicit CTA în trei poziții —
+    hero, investiție, final — și își numesc singure butoanele: „Aplică pentru
+    programul CLAR™", „Programează conversația de potrivire", „Rezervă-ți locul".
+
+    Pe o pagină de 8–10 secțiuni, un singur buton sus se pierde; iar un buton generic
+    („Cumpără") pierde exact informația pentru care documentul l-a formulat: ce
+    urmează după apăsare. Textele stau deci în conținut, lângă program (`PackageCta`),
+    nu în componentă. Prețul rămâne același în toate trei și se citește pe server.
+
+27. **`revalidate = 3600` pe layout-ul site-ului**
+    (`src/app/(frontend)/layout.tsx`). E o consecință, nu o preferință: de când
+    antetul poartă submeniul de workshopuri, fiecare pagină conține o listă a cărei
+    ordine se calculează din ziua curentă. Paginile fără `revalidate` propriu — prima
+    pagină, `/despre`, cele patru pagini legale — se prerandau o singură dată, la
+    build, deci ar fi păstrat ordinea de atunci până la următorul deploy. Este exact
+    capcana din §10: o ieșire care depinde de `new Date()` nu are voie să fie statică
+    pentru totdeauna. Paginile care declară altceva își păstrează valoarea proprie,
+    inclusiv `force-static` de pe `opengraph-image.tsx`.
+
+28. **Un set propriu de pictograme, desenat de mână** (`src/components/ui/Glyph.tsx`,
+    8 septembrie 2026). Clienta a cerut pictograme. Regula 4 din §2 interzice
+    bibliotecile de componente, dar motivul real e de design și e mai important
+    decât regula: seturile obișnuite sunt trasate la 1.5–2px, cu colțuri
+    rotunjite și cu un vocabular de aplicație. Peste Cormorant Garamond și peste
+    hairline-urile de 1px ale designului aprobat ar arăta ca un panou de
+    administrare lipit peste o pagină editorială.
+
+    Cele douăsprezece semne de aici sunt desenate în limbajul paginii: linie de
+    1px, în accent, fără umplere, pe o casetă de 24 de unități. Un semn per tip
+    de bloc, nu unul per rând — un semn repetat pe fiecare element al unei liste
+    devine marcator de listă, și pentru asta există `<ul>`. Toate `aria-hidden`.
+
+29. **Un desen de antet pentru fiecare program** (`src/components/ui/ProgramMotif.tsx`,
+    8 septembrie 2026). Al patrulea strat vizual din afara designului aprobat,
+    după aură, lumina paginii și câmpul heroului — dar spre deosebire de ele,
+    acesta e **conținut**, nu atmosferă: fiecare desen este structura
+    programului, nu o metaforă lipită peste el. Cine se uită la el învață ceva
+    adevărat despre ce cumpără. Descris integral în §4.
+
+    Cerut de clientă („ceva sugestiv pentru fiecare serviciu"). Alternativa —
+    aceeași fotografie pe toate trei paginile — ar fi spus că programele sunt
+    același lucru.
+
+30. **Paginile lungi se citesc pe benzi, nu pe o coloană** (`ui/PackageBody`,
+    8 septembrie 2026). Cerut de clientă: „pare că sunt pagini din Word", cu
+    teama explicită că vizitatorul vede prea mult text. Descris integral în §4.
+
+    Ce NU s-a schimbat, și nu se schimbă nici la o cerere de „și mai vizual":
+    niciun cuvânt din textul clientei; zero componente de client noi (semnele și
+    desenele sunt SVG randat pe server); zero bibliotecă de iconuri sau de
+    componente; un singur bloc `ink` pe pagină; și `--ac-ink-50` nu se mai
+    folosește pe suprafețe crem, unde pică AA.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -1052,9 +2005,20 @@ pe homepage și nu au pagină proprie.
 | Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
 | Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
 | Un strat decorativ pus peste conținut înceață textul de dedesubt | `backdrop-filter` e singurul lucru care face un strat să pară corp fizic, dar tot el face ilizibil ce acoperă. Gutterul paginii (24–88px) e mai îngust decât orice obiect care merită văzut (84–132px), deci „îl pun în margine" nu e o soluție | Lasă-l să iasă din cadru și interzice-i deriva spre coloana de text (toate valorile de `translate` orizontal ≤ 0). Verifică, nu presupune: compară `getBoundingClientRect().right` al obiectului cu `x + paddingLeft` al lui `.ac-shell` |
+| `pnpm migrate` atârnă fără niciun mesaj, la fel ca `pnpm seed` | Aceeași cauză ca la seed: comanda inițializează Payload cu `push` activ (în dev), iar drizzle pune o întrebare interactivă. Peste ea, `payload migrate` mai are UN prompt propriu: „ai rulat în dev mode, se poate pierde date, continui?" | `NODE_ENV=production pnpm migrate` dezactivează `push`. Pentru al doilea prompt: `printf 'y\n' \| NODE_ENV=production pnpm exec payload migrate`. **Înainte, verifică `up()` migrației**: dacă are `DROP`/`DELETE`/`TRUNCATE`, nu răspunde „da" fără backup. `--force-accept-warning` NU funcționează pe versiunea din proiect |
+| Verificare care codifică starea de moment, nu regula | `verify-faza2.ts` cerea „publicul vede 0 pachete" — adevărat doar cât timp toate erau ascunse. Când pachetele au devenit vizibile, verificarea a picat pentru un motiv bun, ceea ce e chiar semnul că verifica altceva | Scrie regula: publicul vede EXACT documentele cu `active: true`, niciunul în plus. Se aplică identic la `packages`, `workshops` și `testimonials`, deci se verifică în buclă pe toate trei |
+| Referință `@id` care atârnă în datele structurate | `Event.organizer`, `Service.provider` și `Review.itemReviewed` trimit la `#serviciu`, dar nodul `ProfessionalService` se emitea doar pe homepage. Marcajul e valid sintactic, deci niciun validator nu se plânge — referința pur și simplu nu se rezolvă | `professionalServiceSchema(settings)` se emite pe fiecare pagină care îl referă. Regula: **graful unei pagini trebuie să se rezolve singur**, fără să depindă de ce a mai crawlat motorul |
+| Un fișier care depinde de data curentă, prerandat cu `force-static` | `llms.txt` enumeră edițiile deschise la înscriere, iar fereastra se mută lunar. Prerandat o dată la build, ar fi continuat să spună asistenților AI că se pot cumpăra locuri la o ediție trecută — exact răspunsul greșit pe care AEO-ul trebuie să îl prevină | `export const revalidate = 3600`. Regulă generală: orice ieșire care depinde de `new Date()` nu are voie să fie `force-static` |
 | Diacriticele devin mojibake după un `perl -i` (`și` → `Èi`, `î` → `Ã®`) | `perl -CSD` decodează intrarea ca UTF-8, dar șirul de înlocuire din linia de comandă vine deja ca octeți UTF-8 — rezultatul se codează a doua oară. Fișierul rămâne valid, deci nimic nu semnalează eroarea, iar textul stricat ajunge în commit | Editează fișierele cu diacritice prin unealta de editare, nu prin `perl -i`/`sed`. Dacă tot folosești un filtru, pune textul de înlocuire într-un fișier separat și splice-uiește-l cu `awk`. Verifică după: `grep -c "Ã\|È" <fișier>` trebuie să dea zero |
+| Un script de editare a tăiat jumătate din `STATUS.md`, fără nicio eroare | Fișierele `.md` din repo au terminatori **CRLF**. Un `s.indexOf('\n\n')` care caută o linie goală nu găsește nimic, întoarce `-1`, iar `s.slice(-1)` taie tot în afară de ultimul caracter. Scriptul rulează, tipărește „ok" și lasă fișierul trunchiat | Editează documentele cu unealta de editare, nu cu scripturi de tăiat șiruri. Dacă tot scrii un script, caută `\r?\n\r?\n` și **verifică rezultatul**: `wc -l` și `grep -n "^## "` înainte și după. Recuperare: `git checkout -- STATUS.md`, apoi refaci editările |
+| Text secundar ilizibil pe suprafețe crem | `--ac-ink-50` dă 4.64:1 pe hârtie, dar **4.24:1 pe `--ac-cream-50`** — sub AA. Se vede greu, deci nimeni nu-l semnalează; e chiar cifra măsurată la câmpul heroului | Pe crem, textul secundar e `--ac-ink-70` (8.11:1). Regula e scrisă și în `CLAUDE.md`. Când muți un bloc de pe hârtie pe crem, reverifică fiecare `ink-50` din el |
+| Un card colorat pus pe o secțiune de aceeași culoare | Cardurile de workshop deschise erau `bg-ac-cream-50` pe o secțiune `tone="cream"`, adică tot `cream-50`. Marcajul exista în cod și nu se vedea în pagină | Culoarea unui element se alege față de fundalul pe care ajunge, nu în abstract. Aici secțiunea a trecut pe hârtie. Și: un singur semnal nu ajunge — cardul deschis are fundal, margine în accent ȘI pastila scrisă în cuvinte |
 | Comentariu care rupe compilarea într-un tag JSX | În lista de atribute, `{/* … */}` nu e valid — acolo se scriu comentarii JS simple, `/* … */`. Forma cu acolade merge doar între copii | `/* … */` între atribute, sau comentariul deasupra elementului |
 | Măsurătorile din browser se blochează, `requestAnimationFrame` nu mai răspunde și tabul pare că nu mai pictează | Tabul nu mai e în prim-plan: Chrome nu mai produce cadre, deci orice `await requestAnimationFrame(...)` atârnă până la timeout, iar capturile ies goale. **Nu e o regresie a paginii** | Măsoară sincron (`getComputedStyle` forțează recalculul) sau reîncarcă tabul. Înainte să dai vina pe cod, verifică dacă un element din pagină chiar are dimensiuni: `document.querySelector('h1').getBoundingClientRect()` |
+| Rută prerandată care dă 404 imediat ce baza de date tace | `getPackageBySlug` începea cu `if (!payload) return null`, deși `getPackages` — pe care oricum îl chema imediat după — știe să cadă pe textul aprobat. `generateStaticParams` producea deci cele trei rute din `src/content/packages.ts`, iar pagina le refuza pe toate. Cu Postgres pornit nu se vedea nimic | Ieșirea scurtă a fost scoasă. **Regula: verificarea „avem CMS?" se face o singură dată, în funcția care chiar citește din CMS.** Un resolver care doar filtrează rezultatul altuia nu are ce decide. Se prinde cu `DATABASE_URI="" pnpm build && pnpm start`, apoi `curl` pe rutele prerandate — nu doar pe `/` |
+| Un submeniu CSS care merge cu mouse-ul și e inaccesibil de la tastatură | Panoul ascuns cu `display: none` sau `visibility: hidden`. Ambele scot linkurile din ordinea de tabulare, deci nimic din interior nu mai poate primi focus — și atunci `:focus-within`, care ar fi trebuit să îl deschidă, nu se declanșează niciodată | Ascunde-l din `opacity: 0` + `pointer-events: none`. Linkurile rămân focusabile, prima tastă Tab aprinde panoul, iar mouse-ul tot nu poate apăsa ce nu se vede. Vezi `NavDropdown.tsx` |
+| Un submeniu care se închide când cobori mouse-ul spre el | Spațiul dintre intrarea din meniu și cartelă nu aparținea niciunui element hoverabil | Paddingul de sus stă pe **învelișul poziționat**, nu pe cartelă: spațiul devine parte din zona de hover |
+| `transition-transform` nu animează nimic pe `translate-y-*` | În Tailwind v4 utilitarele `translate-*`, `scale-*` și `rotate-*` scriu proprietățile CSS independente (`translate`, `scale`, `rotate`), nu `transform`. Tranziția ascultă o proprietate care nu se schimbă | `transition-[translate]`, `transition-[scale]` etc. Aceeași cauză ca la capcana „două animații pe același element se anulează" |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---
@@ -1067,7 +2031,7 @@ adriana-chira-repo/
 │  ├─ homepage-approved.html      ← NU se șterge, NU se modifică
 │  └─ compare/                    ← harnessul de comparație vizuală (§6)
 ├─ docker-compose.yml             ← Postgres local
-├─ public/images/adriana-portret.jpg
+├─ public/images/                  ← fotografiile clientei, câte una pe pagină
 ├─ public/media/                  ← fișiere încărcate, gitignorat
 ├─ scripts/
 │  ├─ verify-faza2.ts             ← verificările de acceptanță (pnpm verify:faza2)
@@ -1082,6 +2046,8 @@ adriana-chira-repo/
 │  │  │  ├─ page.tsx               ← homepage
 │  │  │  ├─ despre/ · contact/ · multumim/ · comanda-anulata/
 │  │  │  ├─ servicii/{page,[slug]}
+│  │  │  ├─ workshopuri-performanta-umana/page.tsx   ← catalogul, o singură rută
+│  │  │  ├─ testimoniale/page.tsx                    ← recomandările, integral
 │  │  │  ├─ blog/{page,[slug],pagina/[numar],categorie/[slug]/…}
 │  │  │  ├─ politica-de-confidentialitate/ · politica-de-cookies/
 │  │  │  ├─ termeni-si-conditii/ · politica-de-retur/
@@ -1090,23 +2056,32 @@ adriana-chira-repo/
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
 │  │  │  └─ opengraph-image.tsx
-│  │  ├─ api/contact/route.ts      ← formularul; `/api/stripe/*` intră la faza 4
+│  │  ├─ api/contact/route.ts      ← formularul
+│  │  ├─ api/stripe/checkout/      ← pornirea plății (form POST → 303 spre Stripe)
+│  │  ├─ api/stripe/webhook/       ← singurul loc care scrie o comandă
 │  │  └─ (payload)/                ← generat de Payload, nu se editează manual
 │  │     ├─ layout.tsx             ← layout rădăcină al panoului
 │  │     ├─ admin/[[...segments]]/ + importMap.js · importMap.d.ts
 │  │     └─ api/{[...slug],graphql,graphql-playground}/
 │  ├─ access/                      ← regulile de acces, într-un singur loc
-│  ├─ collections/                 Posts · Categories · Packages · Faqs
-│  │                               Media · Orders · Submissions · Users
+│  ├─ collections/                 Posts · Categories · Packages · Workshops
+│  │                               Testimonials · Faqs · Media · Orders
+│  │                               Submissions · Users
 │  ├─ globals/                     SiteSettings · HomePage · AboutPage
 │  ├─ fields/                      slug.ts · seo.ts · section.ts
-│  ├─ hooks/                       revalidate.ts
+│  ├─ hooks/                       revalidate.ts · stripeSync.ts
 │  ├─ migrations/                  ← schema pentru producție
 │  ├─ seed/index.ts                ← pnpm seed
 │  ├─ components/{layout,sections,ui,consent,contact,seo}/
+│  │                               ui/Glyph.tsx        ← semnele, desenate
+│  │                               ui/ProgramMotif.tsx ← antetul fiecărui program
+│  │                               ui/PackageBody.tsx  ← benzile paginilor lungi
+│  │                               layout/NavDropdown.tsx ← submeniul din antet
 │  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
+│  │                               packages.ts · workshops.ts · testimonials.ts
 │  │                               ← fallback ȘI sursa seed-ului
 │  ├─ lib/                         content.ts · payload.ts · stripe.ts · lexical.ts
+│  │                               checkout.ts · workshops.ts · nav.ts
 │  │                               consent.ts · schema.ts · seo.ts · routes.ts
 │  │                               email.ts · rate-limit.ts · cn.ts
 │  │                               validation/contact.ts
