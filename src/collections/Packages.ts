@@ -116,6 +116,23 @@ export const Packages: CollectionConfig = {
       },
     },
     {
+      /*
+        Prețul rămâne în document (referință internă, Stripe), dar nu mai
+        ajunge în nicio pagină publică: `content.ts` îl golește înainte să
+        plece spre componente, iar ruta de plată refuză pachetul. Pe site,
+        locul prețului îl ia butonul „Solicită ofertă".
+      */
+      name: 'priceOnRequest',
+      type: 'checkbox',
+      label: 'Preț la cerere',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Bifat: prețul nu se afișează pe site și nu se poate plăti online. În locul lui apare butonul „Solicită ofertă", care duce la formularul de contact, cu mesajul precompletat.',
+      },
+    },
+    {
       name: 'order',
       type: 'number',
       label: 'Ordine',

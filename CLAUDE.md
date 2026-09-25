@@ -15,7 +15,8 @@ CMS, plata online funcțională. Urmează fazele 5b–7.
 
 Se vând **patru lucruri**: trei programe individuale (`/servicii/[slug]`, colecția
 `packages`) și locuri la workshopuri (`/workshopuri-performanta-umana`, colecția
-`workshops`). **Toate prețurile sunt în lei.** Se pot cumpăra întotdeauna doar
+`workshops`). **Toate prețurile sunt în lei.** CLAR™ și EPP sunt „la cerere":
+fără preț afișat, fără plată online, doar „Solicită ofertă". Se pot cumpăra întotdeauna doar
 următoarele trei ediții de workshop cu dată în viitor — regula se calculează din
 `sessionDate`, în `src/lib/workshops.ts`, și nu se bifează nicăieri.
 
@@ -32,7 +33,7 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 30.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 35.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
   Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
   `CopyLinkButton`. **Butonul de plată nu e printre ele**: e un `<form method="post">`
@@ -54,9 +55,15 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 - Diacritice cu virgulă: `ș` U+0219, `ț` U+021B. `grep -rn "ş\|ţ" src/` = zero.
 - Prețurile se citesc pe server, niciodată din client.
 - Admin Payload în română, fiecare etichetă.
-- Submeniurile din navigație sunt CSS pur (`:hover` + `:focus-within` pe desktop,
+- Submeniurile din navigație sunt CSS pur (`:hover` + `:has(:focus-visible)` pe desktop,
   `<details>` pe telefon) și se ascund din `opacity`, niciodată din `display` sau
-  `visibility` — altfel `:focus-within` nu se mai poate declanșa. Vezi `STATUS.md` §10.
+  `visibility` — altfel focusul de tastatură nu mai poate intra în panou. NU
+  `:focus-within`: ține panoul deschis după click. Închiderea după alegere o face
+  ascultătorul din `MobileNav` (`data-dismissed`). Vezi `STATUS.md` §10.
+- Prețul la cerere (`priceOnRequest` / `pricing: 'quote'`) se golește în stratul de
+  conținut, nu în componente. Nu citi `price` direct din document într-o pagină.
+- Laptopuri de 14": varianta `short:` și tokenii plafonați pe `vh` din `globals.css`.
+  Peste 860px înălțime nu se schimbă nimic.
 
 ## Comenzi
 

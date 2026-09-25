@@ -14,7 +14,7 @@ import { pageMetadata } from '@/lib/seo'
 import { formatSessionDate } from '@/lib/workshops'
 
 type Props = {
-  searchParams: Promise<{ pachet?: string; workshop?: string; motiv?: string }>
+  searchParams: Promise<{ pachet?: string; workshop?: string; motiv?: string; cerere?: string }>
 }
 
 const TRAIL: Crumb[] = [
@@ -51,7 +51,7 @@ export const metadata: Metadata = pageMetadata({
  * pentru dezvoltator lipită pe ușa clientului.
  */
 export default async function ContactPage({ searchParams }: Props) {
-  const [{ pachet, workshop: workshopSlug, motiv }, settings] = await Promise.all([
+  const [{ pachet, workshop: workshopSlug, motiv, cerere }, settings] = await Promise.all([
     searchParams,
     getSiteSettings(),
   ])
@@ -61,6 +61,10 @@ export default async function ContactPage({ searchParams }: Props) {
     workshopSlug ? getWorkshopBySlug(workshopSlug) : null,
   ])
 
+  // Cererea de ofertă vine de pe programele cu preț la cerere (`quoteHref`).
+  // Fără pachet recunoscut, `cerere` nu înseamnă nimic și e ignorat.
+  const wantsQuote = cerere === 'oferta' && Boolean(pkg?.name)
+
   const initialMessage = workshop
     ? workshop.purchasable
       ? contactPage.workshopPrefill(
@@ -69,7 +73,9 @@ export default async function ContactPage({ searchParams }: Props) {
         )
       : contactPage.waitlistPrefill(workshop.title)
     : pkg?.name
-      ? contactPage.packagePrefill(pkg.name)
+      ? wantsQuote
+        ? contactPage.quotePrefill(pkg.name)
+        : contactPage.packagePrefill(pkg.name)
       : ''
 
   // Doar motivele care chiar vin dinspre plată. Orice altă valoare din URL e
@@ -88,15 +94,45 @@ export default async function ContactPage({ searchParams }: Props) {
           lead={contactPage.lead}
           image={contactPage.image}
           tight
-        />
+        >
+          {/*
+            CTA-ul din antet coboară la formular. Pe un laptop de 14" și pe
+            telefon, fotografia din antet împinge formularul sub primul ecran;
+            fără butonul ăsta, omul care a venit să scrie trebuie să ghicească
+            că formularul e mai jos. `<a href="#formular">` simplu: derularea
+            lină vine din `scroll-behavior` pe `html`, fără JavaScript.
+          */}
+          <div className="mt-[clamp(28px,3.4vw,44px)] flex flex-wrap items-center gap-x-6 gap-y-4">
+            <Button href="#formular" variant="primary" size="lg">
+              {wantsQuote ? contactPage.quoteFormTitle : contactPage.heroCta}
+              <span aria-hidden="true">↓</span>
+            </Button>
+            <p className="max-w-[34ch] text-body-sm leading-[1.6] text-ac-ink-70">
+              {contactPage.heroCtaNote}
+            </p>
+          </div>
+        </PageHeader>
 
-        <Section padding="bottom-only">
-          <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-start gap-col-gap">
-            <section aria-labelledby="formular-titlu">
-              <h2 id="formular-titlu" className="font-display text-h3 font-normal">
-                Trimite-mi un mesaj
+        {/*
+          Formularul stă pe o bandă crem, într-o cartelă de hârtie cu margine
+          în accent: e singurul lucru din pagină care cere o acțiune, deci
+          trebuie să se vadă din prima privire, nu să fie încă un bloc de text.
+          Pe crem, textul secundar e `ink-70` — `ink-50` ar pica AA (4.24:1).
+        */}
+        <Section tone="cream" padding="none" className="py-[clamp(48px,7vw,104px)]">
+          <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] items-start gap-x-col-gap gap-y-[clamp(40px,5vw,64px)] min-[1000px]:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+            {/* Ținta CTA-ului din antet și a lui „Solicită ofertă": cartela,
+                nu banda, ca derularea să se oprească pe titlul formularului
+                (antetul sticky e scăzut de `scroll-padding-top` pe `html`). */}
+            <section
+              id="formular"
+              aria-labelledby="formular-titlu"
+              className="rounded-card border border-ac-accent bg-ac-paper p-[clamp(24px,3.6vw,52px)]"
+            >
+              <h2 id="formular-titlu" className="font-display text-h3-lg font-light">
+                {wantsQuote ? contactPage.quoteFormTitle : 'Trimite-mi un mesaj'}
               </h2>
-              <p className="mt-4 max-w-[46ch] text-body text-ac-ink-70">
+              <p className="mt-4 max-w-[52ch] text-body text-ac-ink-70">
                 {contactPage.formIntro}
               </p>
 
@@ -174,16 +210,16 @@ export default async function ContactPage({ searchParams }: Props) {
                   <Arrow />
                 </Button>
               ) : (
-                <p className="mt-6 text-body-sm text-ac-ink-50">
+                <p className="mt-6 text-body-sm text-ac-ink-70">
                   <span data-placeholder>[ link de programare ]</span>
                 </p>
               )}
 
               <Rule className="my-9" />
 
-              <p className="max-w-[40ch] text-body-sm leading-[1.7] text-ac-ink-50">
+              <p className="max-w-[40ch] text-body-sm leading-[1.7] text-ac-ink-70">
                 {contactPage.privacyNote}{' '}
-                <TextLink href={PRIVACY_HREF} className="text-body-sm text-ac-ink-50">
+                <TextLink href={PRIVACY_HREF} className="text-body-sm text-ac-ink-70">
                   Politica de confidențialitate
                 </TextLink>
                 .

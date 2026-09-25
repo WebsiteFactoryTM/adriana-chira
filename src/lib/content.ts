@@ -2,7 +2,7 @@ import { cache } from 'react'
 
 import { homeContent } from '@/content/home'
 import { aboutFallback } from '@/content/pages'
-import { CARD_INCLUDES, packagesFallback } from '@/content/packages'
+import { CARD_INCLUDES, packagesFallback, publicPackagesFallback } from '@/content/packages'
 import { siteSettings } from '@/content/site'
 import { testimonials } from '@/content/testimonials'
 import { workshopEntries, workshopsPage } from '@/content/workshops'
@@ -221,7 +221,9 @@ function mergePackages(docs: Package[], fallback: PackagePreview[]): PackagePrev
         ? doc.includes.slice(0, CARD_INCLUDES).map((entry) => nullableText(entry.item, null))
         : [null, null, null],
     duration: nullableText(doc.duration, null),
-    price: typeof doc.price === 'number' ? doc.price : null,
+    // Programele la cerere nu își trimit prețul spre pagini — vezi `publicPackage`.
+    price: doc.priceOnRequest !== true && typeof doc.price === 'number' ? doc.price : null,
+    pricing: doc.priceOnRequest === true ? 'quote' : 'fixed',
     currency: CURRENCY,
     href: `/servicii/${doc.slug}`,
     featured: doc.featured === true,
@@ -742,7 +744,8 @@ function toPackageDetail(doc: Package, index: number): PackageDetail {
         : (approved?.includes ?? [null, null, null]),
     duration: nullableText(doc.duration, null),
     format: doc.format ?? 'hibrid',
-    price: typeof doc.price === 'number' ? doc.price : null,
+    price: doc.priceOnRequest !== true && typeof doc.price === 'number' ? doc.price : null,
+    pricing: doc.priceOnRequest === true ? 'quote' : 'fixed',
     currency: CURRENCY,
     featured: doc.featured === true,
     longDescription: hasRichText(doc.longDescription) ? doc.longDescription : null,
@@ -769,7 +772,7 @@ function toPackageDetail(doc: Package, index: number): PackageDetail {
  */
 export async function getPackages(): Promise<PackageDetail[]> {
   const payload = await getPayloadClientSafe()
-  if (!payload) return packagesFallback
+  if (!payload) return publicPackagesFallback
 
   try {
     const result = await payload.find({
@@ -779,10 +782,10 @@ export async function getPackages(): Promise<PackageDetail[]> {
       limit: 12,
       depth: 1,
     })
-    if (result.docs.length === 0) return packagesFallback
+    if (result.docs.length === 0) return publicPackagesFallback
     return result.docs.map(toPackageDetail)
   } catch {
-    return packagesFallback
+    return publicPackagesFallback
   }
 }
 

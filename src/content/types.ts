@@ -151,11 +151,23 @@ export type PackagePreview = {
   forWho: string | null
   includes: (string | null)[]
   duration: string | null
+  /**
+   * Prețul afișat. `null` și când lipsește, și când programul e la cerere —
+   * atunci `pricing` spune care dintre cele două e adevărat.
+   */
   price: number | null
+  /** `quote`: prețul nu se afișează, iar butonul devine „Solicită ofertă". */
+  pricing: PackagePricing
   currency: string
   href: string
   featured: boolean
 }
+
+/**
+ * Cum se vinde un program: cu preț afișat și plată online (`fixed`) sau pe
+ * ofertă personalizată (`quote`). Se bifează în admin, la „Preț la cerere".
+ */
+export type PackagePricing = 'fixed' | 'quote'
 
 export type ServiciiContent = {
   eyebrow: Eyebrow
@@ -408,7 +420,9 @@ export type PackageDetail = {
   includes: (string | null)[]
   duration: string | null
   format: 'online' | 'fata-in-fata' | 'hibrid'
+  /** `null` pe paginile publice când `pricing` e `quote`. Vezi `PackagePreview`. */
   price: number | null
+  pricing: PackagePricing
   currency: string
   /** Ce acoperă prețul, tranșele, factura pe firmă. Banda de investiție. */
   investmentNotes?: string[]

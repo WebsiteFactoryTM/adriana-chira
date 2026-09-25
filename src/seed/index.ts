@@ -283,6 +283,7 @@ async function seedPackages(payload: Payload): Promise<void> {
         duration: pkg.duration,
         format: pkg.format,
         price: pkg.price,
+        priceOnRequest: pkg.pricing === 'quote',
         order: index,
         featured: pkg.featured,
         active: true,

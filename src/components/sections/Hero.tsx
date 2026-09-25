@@ -10,7 +10,7 @@ const LINE_DELAY = 110
 
 export function Hero({ content }: { content: HeroContent }) {
   return (
-    <Section id="hero" padding="none" aura="hero" className="pt-[clamp(4rem,11vh,9rem)] pb-[clamp(5rem,10vw,8rem)]">
+    <Section id="hero" padding="none" aura="hero" className="pt-[clamp(4rem,11vh,9rem)] pb-[clamp(5rem,10vw,8rem)] short:pt-[clamp(2rem,6vh,4rem)] short:pb-[clamp(3.5rem,8vh,5rem)]">
       {/* Fundalul care se mișcă în timp. Se poziționează față de secțiune, care
           e deja `relative isolate` din cauza aurei. Stă la `z-index: -1`, sub
           conținut; `Shell` are `z-[1]`, deci nu se poate suprapune peste text. */}
@@ -35,6 +35,10 @@ export function Hero({ content }: { content: HeroContent }) {
           Ce ținea `z-[1]`: conținutul deasupra câmpului. Câmpul e la
           `z-index: -1` într-o secțiune cu `isolate`, deci stă oricum sub tot
           ce e în flux; peste el, coloana de text are acum `z-[2]` explicit. */}
+      {/* `short:` — pe laptopurile de 14" (ecran de desktop, dar scund)
+          spațiile verticale se strâng, ca titlul, lead-ul și ambele butoane
+          să încapă în primul ecran. Peste 860px înălțime nu se aplică nimic:
+          heroul e exact cel verificat la pixel. Vezi `globals.css`. */}
       <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))] items-end gap-[clamp(40px,6vw,96px)] min-[1000px]:grid-cols-2">
         <div className="relative z-[2]">
           <p
@@ -46,7 +50,7 @@ export function Hero({ content }: { content: HeroContent }) {
           </p>
 
           {/* Un singur h1 pe pagină (brief §8.2). Rândurile se ridică pe rând. */}
-          <h1 className="mt-[clamp(28px,4vw,48px)] max-w-[19ch] font-display text-h1 font-light">
+          <h1 className="mt-[clamp(28px,4vw,48px)] max-w-[19ch] font-display text-h1 font-light short:mt-[clamp(18px,3vh,28px)]">
             {content.headlineLines.map((line, index) => (
               <span key={line} className="block overflow-hidden pb-[0.06em]">
                 <span
@@ -63,7 +67,7 @@ export function Hero({ content }: { content: HeroContent }) {
           <p
             data-enter="rise"
             style={{ '--enter-delay': '380ms' } as CSSProperties}
-            className="mt-[clamp(24px,3vw,36px)] max-w-[30ch] font-display text-lead font-normal text-ac-ink-70"
+            className="mt-[clamp(24px,3vw,36px)] max-w-[30ch] font-display text-lead font-normal text-ac-ink-70 short:mt-[clamp(14px,2.4vh,22px)]"
           >
             {content.lead}
           </p>
@@ -71,7 +75,7 @@ export function Hero({ content }: { content: HeroContent }) {
           <p
             data-enter="rise"
             style={{ '--enter-delay': '500ms' } as CSSProperties}
-            className="mt-[clamp(32px,4vw,48px)] max-w-[52ch] text-body-lg leading-[1.78] text-ac-ink-70"
+            className="mt-[clamp(32px,4vw,48px)] max-w-[52ch] text-body-lg leading-[1.78] text-ac-ink-70 short:mt-[clamp(16px,3vh,28px)] short:text-body short:leading-[1.7]"
           >
             {content.intro}
           </p>
@@ -79,7 +83,7 @@ export function Hero({ content }: { content: HeroContent }) {
           <div
             data-enter="rise"
             style={{ '--enter-delay': '620ms' } as CSSProperties}
-            className="mt-[clamp(36px,4vw,56px)] flex flex-wrap gap-[14px]"
+            className="mt-[clamp(36px,4vw,56px)] flex flex-wrap gap-[14px] short:mt-[clamp(20px,3.6vh,32px)]"
           >
             <Button href={content.primaryCta.href} variant="primary" size="lg">
               {content.primaryCta.label}
@@ -92,7 +96,7 @@ export function Hero({ content }: { content: HeroContent }) {
           <ul
             data-enter="fade"
             style={{ '--enter-delay': '740ms' } as CSSProperties}
-            className="mt-[clamp(48px,6vw,80px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-6 border-t border-ac-line pt-6"
+            className="mt-[clamp(48px,6vw,80px)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-6 border-t border-ac-line pt-6 short:mt-[clamp(28px,5vh,48px)]"
           >
             {content.badges.map((badge) => (
               <li key={badge} className="font-medium text-label uppercase text-ac-ink-50">

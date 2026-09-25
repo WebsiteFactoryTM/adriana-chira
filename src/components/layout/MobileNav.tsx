@@ -24,6 +24,49 @@ export function MobileNav({ items, cta, availability, children }: Props) {
   const panelId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
 
+  /*
+    Submeniurile de desktop se închid după alegere.
+
+    Panoul din `NavDropdown` e CSS pur — `:hover` și focus de tastatură — și
+    rămâne așa. Problema e momentul de după click: navigarea Next păstrează
+    antetul montat, deci mouse-ul rămâne peste panou și panoul rămâne deschis
+    peste pagina nouă, acoperind exact ce a cerut omul să vadă. Asta nu se
+    poate rezolva din CSS: nimic din CSS nu știe că „s-a ales ceva".
+
+    De aceea, un singur ascultător delegat, aici, în componenta de client care
+    trăiește deja în antet — nu o a cincea componentă de client pentru un
+    listener. La click pe un link din panou, grupul primește
+    `data-dismissed`, care stinge panoul peste `:hover`; atributul se scoate
+    când mouse-ul iese din grup, deci următorul hover îl redeschide normal.
+    `blur()` scoate focusul lăsat pe link, pentru cazul tastaturii (Enter).
+  */
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      // Și intrarea de sus („Servicii"), nu doar linkurile din panou: după
+      // click pe ea, mouse-ul e tot deasupra, iar panoul ar acoperi pagina.
+      const link = target.closest('[data-nav-dropdown] a')
+      const group = link?.closest<HTMLElement>('[data-nav-dropdown]')
+      if (!link || !group) return
+
+      group.setAttribute('data-dismissed', '')
+      if (link instanceof HTMLElement) link.blur()
+
+      const restore = () => {
+        group.removeAttribute('data-dismissed')
+        group.removeEventListener('pointerleave', restore)
+        document.removeEventListener('keydown', restore)
+      }
+      // Mouse-ul iese din grup, sau omul continuă de la tastatură.
+      group.addEventListener('pointerleave', restore)
+      document.addEventListener('keydown', restore)
+    }
+
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
+
   // Escape închide meniul și readuce focusul pe buton.
   useEffect(() => {
     if (!open) return

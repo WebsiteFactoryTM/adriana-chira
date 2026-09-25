@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import { PageCta } from '@/components/sections/PageCta'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { BackToTop } from '@/components/ui/BackToTop'
 import { Breadcrumb, type Crumb } from '@/components/ui/Breadcrumb'
 import { Arrow, Button } from '@/components/ui/Button'
 import { CheckoutButton } from '@/components/ui/CheckoutButton'
@@ -26,6 +27,7 @@ import {
   professionalServiceSchema,
   serviceSchema,
 } from '@/lib/schema'
+import { quoteHref } from '@/lib/routes'
 import { pageMetadata } from '@/lib/seo'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -133,6 +135,11 @@ export default async function PachetPage({ params }: Params) {
   const name = pkg.name ?? 'Pachet de consultanță'
   const cta = pkg.cta ?? CTA_FALLBACK
   const askHref = `/contact?pachet=${pkg.slug}`
+  // Programele la cerere (bifa „Preț la cerere" din admin) nu au preț pe
+  // pagină și nu au buton de plată: în toate cele trei puncte de decizie
+  // butonul devine „Solicită ofertă" și duce direct la formular.
+  const isQuote = pkg.pricing === 'quote'
+  const offerHref = quoteHref(pkg.href)
 
   // Rich text-ul din admin are întâietate. Cât timp nu a fost scris — azi,
   // cazul normal — se randează secțiunile aprobate, ca benzi.
@@ -153,24 +160,43 @@ export default async function PachetPage({ params }: Params) {
         {/* ---------------------------------------------------------------- */}
         {/* Antetul                                                          */}
 
+        <BackToTop />
+
+        {/*
+          Antetul are șapte straturi — fir, linia cu expresia căutată, nume,
+          promisiune, fapte, preț + buton, desen — și toate rămân: fiecare
+          răspunde la o întrebare pe care omul o are înainte să deruleze.
+          Ce se schimbă pe ecranele mici e DENSITATEA, nu conținutul:
+
+          - telefon: firul Ariadnei se reduce la „← Servicii" (`Breadcrumb`),
+            linia de deasupra pierde ornamentul și se strânge, numele are o
+            scală proprie (numele programelor au trei cuvinte lungi), faptele
+            stau pe o coloană strânsă, butonul ia toată lățimea, iar desenul
+            dispare: la 340px etichetele lui (`L1`–`L6`, `01`–`06`) ar avea
+            ~7px, deci ar rămâne un gol de 300px între buton și conținut,
+            iar ce spune el spun deja faptele de deasupra și benzile;
+          - laptop de 14" (`short:`): spațiile verticale se strâng și desenul
+            se plafonează la înălțimea ecranului, ca prețul și butonul să fie
+            în primul ecran.
+        */}
         <Section
           padding="none"
           aura="servicii"
-          className="pt-[clamp(24px,3vw,44px)] pb-[clamp(48px,6vw,84px)]"
+          className="pt-[clamp(20px,3vw,44px)] pb-[clamp(44px,6vw,84px)] short:pt-4 short:pb-[clamp(40px,7vh,64px)]"
         >
           <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-center gap-x-col-gap gap-y-[clamp(36px,4.5vw,60px)]">
             <div>
               <Eyebrow
                 content={{ text: pkg.kicker ?? `Program ${pkg.numeral}`, ornament: 'line' }}
-                className="max-w-[46ch]"
+                className="max-w-[46ch] leading-[1.55] max-sm:text-[11px] max-sm:tracking-[0.18em] max-sm:[&>span:first-child]:hidden"
               />
 
-              <h1 className="mt-[clamp(20px,2.6vw,34px)] max-w-[16ch] font-display text-h1 font-light">
+              <h1 className="mt-[clamp(16px,2.6vw,34px)] max-w-[16ch] font-display text-h1 font-light max-sm:text-[clamp(2.15rem,9.6vw,2.6rem)] short:mt-[clamp(14px,2.6vh,24px)]">
                 {name}
               </h1>
 
               {pkg.tagline && (
-                <p className="mt-[clamp(20px,2.4vw,30px)] max-w-[42ch] font-display text-lead font-light text-ac-ink-70">
+                <p className="mt-[clamp(16px,2.4vw,30px)] max-w-[42ch] font-display text-lead font-light text-ac-ink-70 short:mt-[clamp(12px,2.2vh,20px)]">
                   {pkg.tagline}
                 </p>
               )}
@@ -182,29 +208,35 @@ export default async function PachetPage({ params }: Params) {
                 vânzare: să spună ce cumperi, înainte de preț.
               */}
               {pkg.highlights && pkg.highlights.length > 0 && (
-                <ul className="mt-[clamp(24px,3vw,36px)] grid gap-x-8 gap-y-[10px] sm:grid-cols-2">
+                <ul className="mt-[clamp(20px,3vw,36px)] grid gap-x-[clamp(16px,3vw,32px)] gap-y-2 sm:grid-cols-2 sm:gap-y-[10px] short:mt-[clamp(16px,2.6vh,24px)] short:gap-y-2">
                   {pkg.highlights.map((item) => (
                     <li
                       key={item}
-                      className="flex items-start gap-3 text-body-sm leading-[1.6] text-ac-ink-70"
+                      className="flex items-start gap-[10px] text-body-sm leading-[1.5] text-ac-ink-70 max-sm:text-[14px]"
                     >
-                      <Glyph name="check" size="sm" className="mt-[3px] text-ac-accent" />
+                      <Glyph name="check" size="sm" className="mt-[2px] shrink-0 text-ac-accent" />
                       {item}
                     </li>
                   ))}
                 </ul>
               )}
 
-              <div className="mt-[clamp(28px,3.4vw,44px)] flex flex-wrap items-center gap-x-8 gap-y-5 border-t border-ac-line pt-8">
-                <p className="font-display text-price font-light text-ac-ink">
-                  {pkg.price === null ? (
-                    <span data-placeholder>[ 000 ] {pkg.currency}</span>
-                  ) : (
-                    <>
-                      {pkg.price} {pkg.currency}
-                    </>
-                  )}
-                </p>
+              <div className="mt-[clamp(24px,3.4vw,44px)] flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-ac-line pt-[clamp(20px,3vw,32px)] short:mt-[clamp(18px,3vh,28px)] short:pt-5">
+                {isQuote ? (
+                  <p className="font-medium text-label uppercase text-ac-accent-ink max-sm:w-full">
+                    Ofertă personalizată
+                  </p>
+                ) : (
+                  <p className="font-display text-price font-light text-ac-ink">
+                    {pkg.price === null ? (
+                      <span data-placeholder>[ 000 ] {pkg.currency}</span>
+                    ) : (
+                      <>
+                        {pkg.price} {pkg.currency}
+                      </>
+                    )}
+                  </p>
+                )}
 
                 {/*
                   `CheckoutButton` este un `<form>` obișnuit către
@@ -212,23 +244,43 @@ export default async function PachetPage({ params }: Params) {
                   și nu adaugă o a cincea componentă de client. Prețul NU pleacă
                   din pagină: ruta îl citește pe server (regula 7, STATUS §2).
                 */}
-                {pkg.price === null ? (
-                  <Button href={askHref} variant="primary" size="lg">
+                {isQuote ? (
+                  <Button href={offerHref} variant="primary" size="lg" className="max-sm:w-full">
+                    Solicită ofertă
+                    <Arrow />
+                  </Button>
+                ) : pkg.price === null ? (
+                  <Button href={askHref} variant="primary" size="lg" className="max-sm:w-full">
                     Întreabă despre acest program
                     <Arrow />
                   </Button>
                 ) : (
-                  <CheckoutButton kind="pachet" slug={pkg.slug} label={cta.buy} size="lg" />
+                  <CheckoutButton
+                    kind="pachet"
+                    slug={pkg.slug}
+                    label={cta.buy}
+                    size="lg"
+                    formClassName="max-sm:w-full"
+                  />
                 )}
               </div>
 
-              <p className="mt-5 max-w-[48ch] text-body-sm leading-[1.7] text-ac-ink-50">
-                {FORMAT_LABEL[pkg.format]}. Preferi factură pe firmă, contract sau plata în
-                tranșe?{' '}
-                <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
-                  {cta.ask}
-                </TextLink>
-                .
+              <p className="mt-4 max-w-[48ch] text-body-sm leading-[1.7] text-ac-ink-50">
+                {isQuote ? (
+                  <>
+                    {FORMAT_LABEL[pkg.format]}. Oferta ține cont de obiectivul tău, de format și de
+                    cine plătește — tu sau compania. {settings.responseTime}.
+                  </>
+                ) : (
+                  <>
+                    {FORMAT_LABEL[pkg.format]}. Preferi factură pe firmă, contract sau plata în
+                    tranșe?{' '}
+                    <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
+                      {cta.ask}
+                    </TextLink>
+                    .
+                  </>
+                )}
               </p>
             </div>
 
@@ -237,7 +289,7 @@ export default async function PachetPage({ params }: Params) {
               cele șase dimensiuni, cele patru etape, cele șase luni. Vezi
               `ProgramMotif` pentru ce reprezintă fiecare linie.
             */}
-            <Reveal className="w-full justify-self-center md:max-w-[540px]">
+            <Reveal className="w-full max-w-[380px] justify-self-center max-sm:hidden min-[1000px]:max-w-[540px] short:max-w-[min(540px,calc((100svh-190px)*1.18))]">
               <ProgramMotif slug={pkg.slug} className="w-full" />
             </Reveal>
           </Shell>
@@ -258,12 +310,19 @@ export default async function PachetPage({ params }: Params) {
                 Ce găsești pe pagină
               </h2>
 
-              <ol className="mt-5 flex flex-wrap gap-[10px]">
+              {/*
+                Pe telefon, zece chipsuri pe rânduri separate făceau un bloc
+                de peste 700px între antet și prima bandă — exact „peretele"
+                pe care harta trebuia să-l evite. Sub 640px devin un singur
+                rând derulat orizontal, lipit de marginile ecranului, ca să
+                se vadă că mai continuă.
+              */}
+              <ol className="mt-5 flex flex-wrap gap-[10px] max-sm:-mx-gutter max-sm:snap-x max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-gutter max-sm:pb-1 max-sm:[scrollbar-width:none]">
                 {outline.map((entry) => (
-                  <li key={entry.anchor}>
+                  <li key={entry.anchor} className="max-sm:shrink-0 max-sm:snap-start">
                     <a
                       href={`#${entry.anchor}`}
-                      className="flex min-h-11 items-center gap-3 rounded-pill border border-ac-line bg-ac-paper px-[18px] py-2 text-body-sm leading-[normal] text-ac-ink transition-colors duration-[220ms] hover:border-ac-ink"
+                      className="flex min-h-11 items-center gap-3 rounded-pill border border-ac-line bg-ac-paper px-[18px] py-2 text-body-sm leading-[normal] text-ac-ink transition-colors duration-[220ms] hover:border-ac-ink max-sm:whitespace-nowrap"
                     >
                       <span
                         aria-hidden="true"
@@ -304,7 +363,7 @@ export default async function PachetPage({ params }: Params) {
         {/* ---------------------------------------------------------------- */}
         {/* Investiția                                                       */}
 
-        {pkg.price !== null && (
+        {(pkg.price !== null || isQuote) && (
           <Section
             id="investitie"
             padding="none"
@@ -320,7 +379,7 @@ export default async function PachetPage({ params }: Params) {
                     id="investitie-titlu"
                     className="mt-7 font-display text-h2-col font-light text-ac-ink"
                   >
-                    {pkg.price} {pkg.currency}
+                    {isQuote ? 'Ofertă personalizată' : `${pkg.price} ${pkg.currency}`}
                   </h2>
 
                   {/*
@@ -346,21 +405,43 @@ export default async function PachetPage({ params }: Params) {
                     )}
                   </dl>
 
-                  <CheckoutButton
-                    kind="pachet"
-                    slug={pkg.slug}
-                    label={cta.buy}
-                    formClassName="mt-9 max-w-[420px]"
-                  />
+                  {isQuote ? (
+                    <>
+                      <Button
+                        href={offerHref}
+                        variant="primary"
+                        size="lg"
+                        className="mt-9 w-full max-w-[420px]"
+                      >
+                        Solicită ofertă
+                        <Arrow />
+                      </Button>
 
-                  <p className="mt-5 max-w-[44ch] text-body-sm leading-[1.7] text-ac-ink-70">
-                    Plata se face securizat, prin Stripe.{' '}
-                    <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
-                      {cta.ask}
-                    </TextLink>{' '}
-                    dacă vrei factură pe firmă, contract, plata în tranșe sau pur și simplu ai o
-                    întrebare înainte. {settings.responseTime}.
-                  </p>
+                      <p className="mt-5 max-w-[44ch] text-body-sm leading-[1.7] text-ac-ink-70">
+                        Îmi scrii câteva rânduri despre situația ta și îți trimit personal oferta,
+                        cu formatul, calendarul și modul de plată potrivite — inclusiv contract și
+                        factură pe firmă. {settings.responseTime}.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <CheckoutButton
+                        kind="pachet"
+                        slug={pkg.slug}
+                        label={cta.buy}
+                        formClassName="mt-9 max-w-[420px]"
+                      />
+
+                      <p className="mt-5 max-w-[44ch] text-body-sm leading-[1.7] text-ac-ink-70">
+                        Plata se face securizat, prin Stripe.{' '}
+                        <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
+                          {cta.ask}
+                        </TextLink>{' '}
+                        dacă vrei factură pe firmă, contract, plata în tranșe sau pur și simplu ai o
+                        întrebare înainte. {settings.responseTime}.
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <div>
@@ -458,7 +539,7 @@ export default async function PachetPage({ params }: Params) {
           eyebrow={{ text: cta.finalEyebrow, ornament: 'pulse' }}
           heading={cta.finalHeading}
           body={cta.finalBody}
-          primary={{ label: cta.finalLabel, href: askHref }}
+          primary={{ label: cta.finalLabel, href: isQuote ? offerHref : askHref }}
           secondary={{ label: 'Vezi toate programele', href: '/servicii' }}
           note={settings.responseTime}
         />

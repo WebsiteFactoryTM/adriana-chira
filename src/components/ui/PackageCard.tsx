@@ -4,6 +4,7 @@ import { Arrow, Button } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Rule } from '@/components/ui/Section'
 import type { PackagePreview } from '@/content/types'
+import { quoteHref } from '@/lib/routes'
 
 /**
  * Cardul unui pachet.
@@ -72,23 +73,44 @@ export function PackageCard({ pkg, index }: { pkg: PackagePreview; index: number
 
       <Rule />
 
-      <p className="font-display text-price font-light text-ac-ink-70">
-        {pkg.price === null ? (
-          <span data-placeholder>[ 000 ] {pkg.currency}</span>
-        ) : (
-          <>
-            {pkg.price} {pkg.currency}
-          </>
-        )}
-      </p>
+      {/*
+        Programele la cerere (bifa „Preț la cerere" din admin) nu au preț pe
+        card: în locul lui stă cererea de ofertă, care duce direct la
+        formular. Butonul de jos rămâne drumul spre pagina programului, dar
+        coboară la varianta secundară — acțiunea principală e oferta.
+
+        Rândul de preț are ~40px, butonul 52px: cardurile sunt `items-stretch`
+        în grilă, deci diferența nu decalează nimic între ele.
+      */}
+      {pkg.pricing === 'quote' ? (
+        <Button
+          href={quoteHref(pkg.href)}
+          variant={pkg.featured ? 'primary' : 'outline'}
+          size="md"
+          className="w-full"
+        >
+          Solicită ofertă
+          <Arrow />
+        </Button>
+      ) : (
+        <p className="font-display text-price font-light text-ac-ink-70">
+          {pkg.price === null ? (
+            <span data-placeholder>[ 000 ] {pkg.currency}</span>
+          ) : (
+            <>
+              {pkg.price} {pkg.currency}
+            </>
+          )}
+        </p>
+      )}
 
       <Button
         href={pkg.href}
-        variant={pkg.featured ? 'primary' : 'outline'}
+        variant={pkg.pricing === 'quote' ? 'soft' : pkg.featured ? 'primary' : 'outline'}
         size="md"
         className="mt-auto w-full"
       >
-        Detalii și achiziție
+        {pkg.pricing === 'quote' ? 'Detalii program' : 'Detalii și achiziție'}
         <Arrow />
       </Button>
     </Reveal>

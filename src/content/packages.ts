@@ -472,6 +472,7 @@ export const packagesFallback: PackageDetail[] = [
     duration: '3 ore · o singură sesiune',
     format: 'hibrid',
     price: 1500,
+    pricing: 'fixed',
     currency: CURRENCY,
     featured: false,
     longDescription: null,
@@ -527,7 +528,7 @@ export const packagesFallback: PackageDetail[] = [
       'Plan de implementare la final',
     ],
     investmentNotes: [
-      'Investiția acoperă întregul proces de opt săptămâni și toate componentele de mai sus. Se poate achita integral sau în două tranșe egale de 2.550 lei; dacă alegi tranșele, scrie-mi înainte de plată ca să stabilim calendarul.',
+      'Investiția acoperă întregul proces de opt săptămâni și toate componentele de mai sus. Se poate achita integral sau în două tranșe egale; calendarul plății îl stabilim împreună, odată cu oferta.',
       'Pentru colaborările achitate de companie se poate emite contract și factură, cu respectarea confidențialității procesului individual.',
       'Strategic Performance Assessment™ este un serviciu separat. Dacă ai parcurs deja evaluarea, programul pornește direct de la concluziile ei; dacă nu, stabilim în conversația de potrivire dacă evaluarea este necesară pentru obiectivul tău.',
     ],
@@ -553,6 +554,10 @@ export const packagesFallback: PackageDetail[] = [
     duration: '8 săptămâni · 6 sesiuni de 90 de minute',
     format: 'hibrid',
     price: 5100,
+    // Cerut de clientă pe 25 septembrie 2026: CLAR™ și EPP se vând pe ofertă,
+    // nu cu preț afișat. Prețul rămâne aici, ca referință internă pentru seed
+    // și pentru Stripe — pe site nu mai ajunge (vezi `publicPackage`).
+    pricing: 'quote',
     currency: CURRENCY,
     featured: true,
     longDescription: null,
@@ -576,7 +581,7 @@ export const packagesFallback: PackageDetail[] = [
       {
         question: 'Pot achita în două tranșe?',
         answer:
-          'Da. Investiția de 5.100 lei poate fi achitată integral sau în două tranșe egale de 2.550 lei. Dacă alegi plata în tranșe, scrie-mi înainte de plată ca să stabilim calendarul.',
+          'Da. Investiția poate fi achitată integral sau în două tranșe egale. Calendarul plății îl stabilim împreună, odată cu oferta.',
       },
       {
         question: 'Poate plăti compania pentru program?',
@@ -644,6 +649,7 @@ export const packagesFallback: PackageDetail[] = [
     duration: '6 luni · evaluare + 12 sesiuni',
     format: 'hibrid',
     price: 15000,
+    pricing: 'quote',
     currency: CURRENCY,
     featured: false,
     longDescription: null,
@@ -665,7 +671,7 @@ export const packagesFallback: PackageDetail[] = [
           'Da. Cele 12 sesiuni individuale pot avea loc atât la cabinetul din Timișoara, cât și online, video.',
       },
       {
-        question: 'Ce include investiția de 15.000 lei?',
+        question: 'Ce include investiția?',
         answer:
           'Prețul include evaluarea inițială Strategic Performance Assessment™, toate cele 12 sesiuni individuale, planul strategic personal, monitorizarea progresului, evaluările intermediare și evaluarea finală. Este programul cel mai complet din ecosistemul CHIRA Model™.',
       },
@@ -695,8 +701,25 @@ export const packagesFallback: PackageDetail[] = [
  */
 const CARD_INCLUDES = 3
 
+/**
+ * Forma publică a unui pachet: prețul dispare când programul e la cerere.
+ *
+ * `packagesFallback` păstrează prețul — seed-ul îl scrie în CMS, de unde
+ * pleacă spre Stripe. Paginile publice primesc însă `price: null`, deci niciun
+ * consumator (card, meniu, `llms.txt`, date structurate) nu îl poate afișa din
+ * greșeală: nu există o valoare de afișat, nu doar o regulă de respectat.
+ */
+export function publicPackage<T extends { price: number | null; pricing: PackageDetail['pricing'] }>(
+  pkg: T,
+): T {
+  return pkg.pricing === 'quote' ? { ...pkg, price: null } : pkg
+}
+
+/** Pachetele aprobate, așa cum le văd paginile publice. */
+export const publicPackagesFallback: PackageDetail[] = packagesFallback.map(publicPackage)
+
 /** Aceleași pachete, în forma scurtă de pe carduri. */
-export const packagePreviews: PackagePreview[] = packagesFallback.map((pkg) => ({
+export const packagePreviews: PackagePreview[] = publicPackagesFallback.map((pkg) => ({
   numeral: pkg.numeral,
   name: pkg.name,
   tagline: pkg.tagline,
@@ -704,6 +727,7 @@ export const packagePreviews: PackagePreview[] = packagesFallback.map((pkg) => (
   includes: pkg.includes.slice(0, CARD_INCLUDES),
   duration: pkg.duration,
   price: pkg.price,
+  pricing: pkg.pricing,
   currency: pkg.currency,
   href: pkg.href,
   featured: pkg.featured,

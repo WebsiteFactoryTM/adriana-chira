@@ -198,7 +198,10 @@ export const homeContent: HomeContent = {
     eyebrow: { text: 'Moduri de a lucra împreună', ornament: 'pulse' },
     heading: 'Trei feluri în care putem începe',
     intro:
-      'Fiecare pachet spune clar ce conține, cât durează și pentru cine este potrivit. Poți achiziționa direct din pagină, cu plata securizată prin card.',
+      // A doua frază s-a schimbat pe 25 septembrie 2026, odată cu trecerea
+      // CLAR™ și EPP pe ofertă: „Poți achiziționa direct din pagină" nu mai era
+      // adevărat pentru două dintre cele trei programe.
+      'Fiecare pachet spune clar ce conține, cât durează și pentru cine este potrivit. Evaluarea se achiziționează direct din pagină, cu plata securizată prin card; pentru programele de durată primești o ofertă personalizată.',
     /**
      * Cele trei programe individuale reale, din `src/content/packages.ts`.
      *

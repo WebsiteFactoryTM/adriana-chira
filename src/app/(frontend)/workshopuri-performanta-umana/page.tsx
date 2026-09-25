@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PageCta } from '@/components/sections/PageCta'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { BackToTop } from '@/components/ui/BackToTop'
 import { Breadcrumb, type Crumb } from '@/components/ui/Breadcrumb'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { FaqList } from '@/components/ui/FaqList'
@@ -95,6 +96,9 @@ export default async function WorkshopuriPage() {
       <Breadcrumb trail={TRAIL} />
 
       <main id="continut">
+        {/* Paisprezece carduri înseamnă patru–cinci ecrane de derulat. */}
+        <BackToTop />
+
         <PageHeader
           eyebrow={workshopsPage.eyebrow}
           title={workshopsPage.title}

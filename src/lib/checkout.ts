@@ -46,7 +46,7 @@ export type CheckoutItem = {
 
 export type CheckoutResolution =
   | { ok: true; item: CheckoutItem }
-  | { ok: false; reason: 'necunoscut' | 'inchis' | 'fara-pret' }
+  | { ok: false; reason: 'necunoscut' | 'inchis' | 'fara-pret' | 'la-cerere' }
 
 /**
  * Găsește ce se cumpără și verifică dacă chiar are voie să fie cumpărat.
@@ -102,6 +102,9 @@ async function resolvePackage(slug: string): Promise<CheckoutResolution> {
       })
       const doc = result.docs[0]
       if (doc) {
+        // Programele la cerere nu se cumpără online, oricât de corect ar fi
+        // scris POST-ul: pagina nu arată butonul, iar ruta repetă regula.
+        if (doc.priceOnRequest === true) return { ok: false, reason: 'la-cerere' }
         if (typeof doc.price !== 'number' || doc.price <= 0) {
           return { ok: false, reason: 'fara-pret' }
         }
@@ -126,6 +129,7 @@ async function resolvePackage(slug: string): Promise<CheckoutResolution> {
 
   const approved = packagesFallback.find((item) => item.slug === slug)
   if (!approved) return { ok: false, reason: 'necunoscut' }
+  if (approved.pricing === 'quote') return { ok: false, reason: 'la-cerere' }
   if (approved.price === null || approved.price <= 0) return { ok: false, reason: 'fara-pret' }
 
   return {

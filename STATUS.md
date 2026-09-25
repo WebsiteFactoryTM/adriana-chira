@@ -6,10 +6,29 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **8 septembrie 2026** |
-| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: cele 3 programe individuale cu preț, 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 8 septembrie 2026 |
-| Ultimul commit | `f72612c` — Paginile lungi se citesc pe benzi, nu pe o coloană |
+| Ultima actualizare | **25 septembrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 25 septembrie 2026 |
+| Ultimul commit | vezi `git log` — Preț la cerere, laptopuri de 14", meniuri care se închid |
+
+> **Ce s-a schimbat pe 25 septembrie 2026.** Șase cereri ale clientei, toate
+> livrate într-o singură rundă. Detalii în §4 („Runda din 25 septembrie"),
+> §9.31–§9.35, §10 și §6.
+>
+> 1. **`/despre`: portretul a urcat în antet**, lângă titlu; narațiunea și
+>    reperele (acum pe două coloane) stau dedesubt, pe aceeași lățime.
+> 2. **Submeniurile se închid după alegere.** Rămâneau deschise peste pagina
+>    nouă: `:focus-within` + mouse-ul încă deasupra. Vezi §10.
+> 3. **Antetul paginilor de program pe telefon**: fir redus la „← Servicii",
+>    fapte pe o coloană strânsă, buton pe toată lățimea, desenul ascuns sub
+>    640px, harta paginii pe un singur rând derulabil.
+> 4. **Butonul „Înapoi sus"** pe workshopuri și pe paginile de program — zero JS.
+> 5. **Preț la cerere**: CLAR™ și EPP nu mai afișează prețul; în locul lui,
+>    „Solicită ofertă" → formular precompletat. Bifă nouă în admin + migrație.
+>    Contactul a primit un CTA în antet care coboară la formular, iar
+>    formularul stă acum într-o cartelă evidențiată.
+> 6. **Laptopuri de 14"**: varianta `short:` și tokenii care se adaptează la
+>    înălțimea ecranului. Peste 860px înălțime nu se schimbă nimic.
 
 > **Ce s-a schimbat pe 8 septembrie 2026, runda a doua.** Clienta a semnalat că
 > paginile de program și cea de workshopuri „par pagini din Word" și a cerut ca
@@ -934,7 +953,7 @@ documentul Strategic Performance Assessment. Restul documentelor era deja în
 | | Antet (≥1000px) | Meniu mobil |
 |---|---|---|
 | Componenta | `layout/NavDropdown.tsx` — **Server Component** | `<details>` nativ, în `MobileNav` |
-| Ce îl deschide | `:hover` și `:focus-within`, pur CSS | apăsarea pe `<summary>` |
+| Ce îl deschide | `:hover` și `:has(:focus-visible)`, pur CSS (din 25 sept.; înainte `:focus-within`, vezi §10) | apăsarea pe `<summary>` |
 | JavaScript | zero | zero în plus — `MobileNav` era deja componentă de client |
 
 **Componentele de client sunt tot exact patru.** Un meniu care se deschide pare, din
@@ -1142,6 +1161,84 @@ juridic — vezi §7.10 și comutatorul `LEGAL_DRAFT` din `src/content/pages.ts`
 
 Rămân: validarea de către un jurist, completarea datelor de firmă și evenimentele
 GA4 (`view_package`, `begin_checkout`, `purchase`, …).
+### Runda din 25 septembrie 2026 ✅
+
+#### Preț la cerere — „Solicită ofertă"
+
+Bifă nouă în admin, pe pachet: **„Preț la cerere"** (`priceOnRequest`,
+migrația `20260925_075050_pret_la_cerere`). Bifată pe CLAR™ și EPP.
+
+| Unde | Program cu preț | Program la cerere |
+|---|---|---|
+| Card (homepage, `/servicii`, conexe) | preț + „Detalii și achiziție" | „Solicită ofertă" + „Detalii program" |
+| Antetul paginii de program | preț + buton de plată | „Ofertă personalizată" + „Solicită ofertă" |
+| Banda de investiție | preț + buton de plată | „Ofertă personalizată" + „Solicită ofertă" |
+| Submeniul din antet | durată · preț | doar durata |
+| `llms.txt` | `Preț: 1500 RON.` | `Preț: ofertă personalizată, la cerere…` |
+| JSON-LD `Service` | cu `Offer` | fără `Offer` (un `Offer` fără preț e mai rău decât niciunul) |
+| `POST /api/stripe/checkout` | Stripe | 303 → `/contact?pachet=…&cerere=oferta#formular` |
+
+**Prețul nu ajunge în pagină, nu doar nu se afișează.** `content.ts` (din CMS)
+și `publicPackage()` (din fallback) pun `price: null` înainte ca pachetul să
+plece spre componente; `pricing: 'quote'` spune de ce e `null`. Niciun
+consumator — card, meniu, `llms.txt`, schema — nu îl poate afișa din greșeală.
+Prețul rămâne în document și în `packagesFallback`, pentru seed și Stripe.
+Verificat: zero apariții ale sumelor în HTML **și** în payload-ul RSC.
+
+**Trei texte ale clientei pomeneau suma** și au fost atinse, minimal: nota de
+investiție CLAR (tranșele de 2.550 lei), FAQ-ul CLAR despre tranșe și întrebarea
+EPP „Ce include investiția de 15.000 lei?". Plus a doua frază din intro-ul
+secțiunii Servicii („Poți achiziționa direct din pagină"), care nu mai era
+adevărată. **Migrația le actualizează și în CMS**, dar numai dacă textul e exact
+cel scris de seed — ce a rescris Adriana în admin rămâne neatins.
+
+`quoteHref()` în `src/lib/routes.ts` e singurul loc care știe adresa cererii de
+ofertă. Contactul recunoaște `cerere=oferta` și precompletează un mesaj cu
+câmpurile de care are nevoie o ofertă (`contactPage.quotePrefill`).
+
+#### Pagina de contact
+
+CTA în antet — „Scrie-mi acum ↓" (sau „Cere o ofertă personalizată ↓") — către
+`#formular`. Formularul stă pe o bandă crem, într-o cartelă de hârtie cu margine
+în accent; ținta ancorei e cartela, nu banda. Pe crem, textul secundar al
+coloanei „Sau direct" a urcat la `ink-70`.
+
+#### `/despre`
+
+Portretul intră prin `image` pe `PageHeader`, ca pe celelalte pagini interioare.
+Sub antet: narațiunea în stânga, reperele pe două coloane în dreapta (opt
+repere într-o coloană erau de trei ori mai înalte decât cele două paragrafe).
+
+#### Laptopuri de 14" — varianta `short:`
+
+`@custom-variant short` = `(min-width: 1000px) and (max-height: 860px)`. Două
+mecanisme, amândouă în `globals.css`:
+
+1. **Tokenii se plafonează pe înălțime**: `--text-h1: clamp(2.5rem, min(4.9vw,
+   8.6vh), 4.5rem)` și la fel titlurile, lead-ul și ritmul secțiunilor. Pe un
+   ecran înalt câștigă termenul în `vw`, deci valoarea e cea din design.
+2. **`short:` pe marginile verticale** ale heroului, `PageHeader`, firului
+   Ariadnei și antetului de program.
+
+Fotografiile din `PageHeader` și desenul programului sunt plafonate și la
+`(100svh − 230px) × raport`, deci încap întregi în primul ecran.
+
+Măsurat la 1536 × 784: pe homepage, ambele butoane și banda de etichete sunt în
+primul ecran (înainte: nici butoanele); pe paginile de program, prețul/oferta și
+butonul (înainte: sub primul ecran); pe contact și workshopuri, antetul întreg.
+
+#### Butonul „Înapoi sus" — `ui/BackToTop`
+
+Server Component, `<a href="#top">`. Apare după 60vh derulați, dintr-o animație
+`scroll(root)`. **Starea de bază e vizibilă**: fără timeline de derulare sau cu
+`prefers-reduced-motion`, butonul e vizibil tot timpul, nu invizibil pentru
+totdeauna (capcana din §10). Pe workshopuri și pe cele trei pagini de program.
+
+#### Firul Ariadnei pe telefon
+
+Sub 640px, un fir de 3+ niveluri devine doar „← Servicii". Lista completă
+rămâne în HTML, `BreadcrumbList` nu se schimbă.
+
 
 ### Faza 7 — Performanță, accesibilitate, lansare ⏳
 
@@ -1227,6 +1324,13 @@ vizual.
 | 7 | `ac-accent-deep` folosit în 5 locuri unde designul are `ac-accent-ink` | Regula „pe crem folosim varianta închisă" aplicată prea larg | Restrânsă la `cream-100`, unde chiar pică AA (vezi §9.3) |
 
 **Placeholderele din footer** (`[ email ]`, `[ LinkedIn ]`) erau desenate cu 65%
+| **25 sept.: sumele CLAR/EPP în HTML și în payload-ul RSC** | ✅ zero pe `/`, `/servicii`, cele trei programe, `/despre`, `/contact`, workshopuri, `llms.txt` |
+| **25 sept.: `POST` de plată pe CLAR / EPP / SPA** | ✅ 303 → formular de ofertă · 303 → formular de ofertă · SPA neschimbat |
+| **25 sept.: migrația, rulată din starea de dinainte** | ✅ bifa pe 2 pachete, FAQ-urile și intro-ul actualizate, zero `lei` rămas în FAQ |
+| **25 sept.: CMS vs. fallback** | ✅ text identic pe 8 pagini, după migrație |
+| **25 sept.: homepage, HEAD vs. acum** | ✅ doar schimbările cerute: 2 prețuri din submeniu, 2 prețuri de pe carduri → „Solicită ofertă", intro-ul Servicii |
+| **25 sept.: `pnpm seed` de două ori** | ✅ pachetele neatinse, zero duplicate |
+| **25 sept.: în browser, 1536 × 784 și 390px** | ✅ submeniul se închide după click; „Înapoi sus" ascuns sus, vizibil după derulare; antetele încap pe 14" |
 opacitate; în design au culoarea normală a textului. Componenta `Placeholder` nu mai
 impune culoare — moștenește, deci arată corect și în bara de jos, unde fundalul e
 închis.
@@ -1654,7 +1758,8 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Treizeci, toate documentate în cod prin comentarii. **Ultimele șase (25–30) sunt
+Treizeci și cinci, toate documentate în cod prin comentarii. **Ultimele cinci
+(31–35) sunt din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
 din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
 fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
 paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
@@ -2002,6 +2107,27 @@ pe homepage și nu au pagină proprie.
 | Ghilimelele de închidere arată altfel decât în restul textului | Convenția proiectului este `„text"` — U+201E la deschidere, ASCII `"` la închidere. U+201D nu apare nicăieri în designul aprobat | `grep -rn $'”' src/` trebuie să dea zero. Într-un atribut JSX delimitat cu `"`, un `"` în text rupe oricum compilarea |
 | Aura se aprindea cu o jumătate de rază mai jos decât secțiunea | `animation-timeline: view()` își calculează progresul din **caseta de layout** și ignoră complet `transform`. Centrarea câmpului prin `translate(-50%,-50%)` era deci invizibilă pentru timeline | Centrarea se face din margini negative (`margin-left/top: -50%` din lățime), care intră în layout. `transform` rămâne liber pentru animație |
 | Un strat decorativ tăiat cu `overflow: hidden` pe `<section>` | Ar rupe `StickyColumn` — poziționarea `sticky` nu funcționează într-un strămoș cu `overflow` | `contain: paint` pe stratul decorativ: taie la marginile secțiunii **și** scutește pictarea cât e în afara ecranului |
+31. **Două programe fără preț afișat** (25 septembrie 2026, cerut de clientă).
+    Designul aprobat are un preț pe fiecare card. CLAR™ și EPP îl înlocuiesc cu
+    „Solicită ofertă"; se comută din admin, bifa „Preț la cerere". Descris în §4.
+
+32. **Portretul din `/despre` a urcat în antet** (cerut de clientă). Pagina nu
+    e în designul aprobat; forma urmează acum celelalte pagini interioare.
+
+33. **Heroul homepage-ului se strânge pe ecranele scunde** (`short:`, laptopuri
+    de 14"). Peste 860px înălțime clasele nu se aplică, deci comparația la
+    pixel de la 1440 × 900 rămâne valabilă. Sub prag, heroul e mai compact decât
+    designul — cerut explicit: pe 14" butoanele erau sub primul ecran.
+
+34. **`MobileNav` ascultă click-urile din submeniul de desktop**. Nu e o a
+    cincea componentă de client: e un ascultător delegat în componenta de
+    client care exista deja în antet. Motivul e în §10 — închiderea după
+    alegere nu se poate exprima în CSS.
+
+35. **Pe telefon, desenul programului dispare** (sub 640px). La 340px
+    etichetele lui ar avea ~7px; rămânea un gol de 300px între buton și
+    conținut. Ce spune el spun deja faptele din antet și benzile.
+
 | Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
 | Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
 | Un strat decorativ pus peste conținut înceață textul de dedesubt | `backdrop-filter` e singurul lucru care face un strat să pară corp fizic, dar tot el face ilizibil ce acoperă. Gutterul paginii (24–88px) e mai îngust decât orice obiect care merită văzut (84–132px), deci „îl pun în margine" nu e o soluție | Lasă-l să iasă din cadru și interzice-i deriva spre coloana de text (toate valorile de `translate` orizontal ≤ 0). Verifică, nu presupune: compară `getBoundingClientRect().right` al obiectului cu `x + paddingLeft` al lui `.ac-shell` |
@@ -2055,6 +2181,9 @@ adriana-chira-repo/
 │  │  │  ├─ [...notFound]/page.tsx
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
+| Submeniul rămâne deschis peste pagina nouă după click | Două cauze. (1) `:focus-within`: linkul apăsat rămâne focusat, iar antetul nu se remontează la navigare. (2) Mouse-ul e încă deasupra panoului, deci `:hover` e adevărat | (1) `group-has-[:focus-visible]` în loc de `group-focus-within` — se aprinde doar la tastatură. (2) Ascultătorul din `MobileNav` pune `data-dismissed` pe grup la click și îl scoate la `pointerleave` sau la prima tastă. **Nu reveni la `:focus-within`** |
+| Migrația cade cu „column already exists" pe baza locală | `pnpm dev` rulează Payload cu `push`, care adaugă singur coloana nouă de îndată ce schimbi colecția. Pe producție `push` e oprit, deci acolo migrația e singura cale | Local: `ALTER TABLE … DROP COLUMN …` și rulezi migrația din nou, ca să o verifici exact ca pe producție. Nu scrie `IF NOT EXISTS` în migrație ca să „treacă" |
+| O sumă care nu mai are voie să apară rămâne în pagină | Prețul nu stă doar în câmpul `price`: apare și în texte scrise de mână (FAQ, note de investiție, `llms.txt`) | `grep` pe sume în HTML **și** în payload-ul RSC (nu doar în textul vizibil), pe toate paginile care randează pachetul |
 │  │  │  └─ opengraph-image.tsx
 │  │  ├─ api/contact/route.ts      ← formularul
 │  │  ├─ api/stripe/checkout/      ← pornirea plății (form POST → 303 spre Stripe)
@@ -2112,5 +2241,6 @@ Directoare care **vor** apărea la fazele următoare: `src/app/api/stripe/`.
 7. Commit mic, cu mesaj descriptiv în română.
 
 ---
+│  │                               ui/BackToTop.tsx    ← „Înapoi sus", zero JS
 
 *Website Factory · Pixel Factory SRL · Timișoara*

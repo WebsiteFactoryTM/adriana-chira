@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+/*
+  `short:` — desktop cu ecran SCUND: laptopurile de 13–14" (fereastră utilă de
+  ~1280–1536 × 620–860px, după bara browserului și scalarea Windows de
+  125–150%). Lățimea e de desktop, deci layoutul are două coloane, dar
+  înălțimea e cât a unei tablete: tipografia și ritmul gândite pe `vw` umplu
+  primul ecran fără să lase loc pentru butoane. Pragul de 860px lasă neatins
+  orice monitor extern și orice fereastră de 1440 × 900 (verificarea la
+  pixel cu designul aprobat). Tokenii care se adaptează sunt la finalul
+  fișierului, în blocul „DESKTOP SCUND".
+*/
+@custom-variant short (@media (min-width: 1000px) and (max-height: 860px));
+
 /* ==========================================================================
    TOKENI — extrași unu-la-unu din /design/homepage-approved.html
    Numele urmează convenția din brief (§5.3). Valorile sunt cele din designul
@@ -1367,4 +1379,68 @@ details[open] summary [data-plus] {
      secțiune și de lumina paginii, aici nu e nimic de temperat: cine cere mai
      puțină mișcare primește o coală de fildeș nemișcată, adică fix ce a cerut
      clienta. Se stinge de tot, dacă e nevoie, din `--ac-hero-field-gain`. */
+}
+
+/* ==========================================================================
+   DESKTOP SCUND — laptopuri de 13–14"
+   Aceeași regulă ca varianta `short:` de sus. Tokenii de titlu și de ritm
+   primesc și un plafon pe ÎNĂLȚIMEA ecranului: `min(<vw>, <vh>)`. Pe un ecran
+   înalt câștigă mereu termenul în `vw`, deci valoarea e exact cea din designul
+   aprobat; pe un laptop scund câștigă `vh`, iar titlul, lead-ul și spațiul
+   dintre secțiuni se strâng proporțional cu fereastra, nu cu lățimea ei.
+   Măsurat la 1536 × 740: `h1` 75px → 64px, secțiunea 224px → 178px.
+   ========================================================================== */
+
+@media (min-width: 1000px) and (max-height: 860px) {
+  :root {
+    --text-h1: clamp(2.5rem, min(4.9vw, 8.6vh), 4.5rem);
+    --text-h2: clamp(2rem, min(4vw, 7vh), 3.5rem);
+    --text-h2-wide: clamp(2rem, min(3.6vw, 6.4vh), 3.25rem);
+    --text-h2-col: clamp(1.875rem, min(3.4vw, 6vh), 3rem);
+    --text-quote: clamp(1.875rem, min(4vw, 7vh), 3.5rem);
+    --text-lead: clamp(1.2rem, min(1.9vw, 3.3vh), 1.75rem);
+    --spacing-section: clamp(6rem, min(16vw, 24vh), 14rem);
+    --spacing-section-tight: clamp(5rem, min(14vw, 21vh), 12rem);
+    --spacing-section-wide: clamp(7rem, min(18vw, 27vh), 16rem);
+    --spacing-section-cta: clamp(7rem, min(18vw, 26vh), 15rem);
+    --spacing-section-body: clamp(3.5rem, min(6vw, 10vh), 6rem);
+    --spacing-block: clamp(40px, min(6vw, 9vh), 88px);
+  }
+
+  html {
+    /* Antetul sticky are aceeași înălțime; ancorele nu mai au nevoie de
+       96px de aer deasupra pe un ecran în care fiecare rând contează. */
+    scroll-padding-top: 88px;
+  }
+}
+
+/* ==========================================================================
+   ÎNAPOI SUS — `ui/BackToTop`
+   Starea de bază e VIZIBILĂ. Ascunderea în primul ecran e o îmbunătățire,
+   pusă doar unde există timeline de derulare. Fără ea (Firefox, Safari mai
+   vechi) sau cu `prefers-reduced-motion` (regula globală oprește animațiile),
+   butonul rămâne vizibil — nu invizibil pentru totdeauna (STATUS §10).
+   ========================================================================== */
+
+@supports (animation-timeline: scroll()) {
+  [data-back-to-top] {
+    /* Scurtătura întâi, apoi timeline-ul și intervalul: scurtătura le
+       resetează pe amândouă dacă vin după ele (STATUS §10). */
+    animation: acBackToTop linear both;
+    animation-timeline: scroll(root);
+    animation-range: 60vh 110vh;
+  }
+}
+
+@keyframes acBackToTop {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+  }
 }

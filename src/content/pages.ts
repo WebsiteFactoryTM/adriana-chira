@@ -141,6 +141,21 @@ export const contactPage = {
   packagePrefill: (name: string) => `Bună, Adriana. Mă interesează pachetul „${name}".\n\n`,
 
   /**
+   * Cererea de ofertă, pentru programele cu preț la cerere. Întrebările din
+   * listă sunt exact ce trebuie să știe Adriana ca să poată face o ofertă —
+   * omul le bifează în loc să ghicească ce să scrie.
+   */
+  quotePrefill: (name: string) =>
+    `Bună, Adriana. Aș vrea o ofertă pentru programul „${name}".\n\nPe scurt, situația mea:\n\n\nPrefer:\n- [ ] online\n- [ ] față în față, în Timișoara\n\nFactura pe:\n- [ ] persoană fizică\n- [ ] firmă\n\n`,
+
+  /** CTA-ul din antetul paginii de contact, care coboară la formular. */
+  heroCta: 'Scrie-mi acum',
+  heroCtaNote: 'Durează două minute. Fără listă de email, fără apeluri necerute.',
+
+  /** Titlul cardului cu formularul, când omul a venit să ceară o ofertă. */
+  quoteFormTitle: 'Cere o ofertă personalizată',
+
+  /**
    * Precompletarea pentru workshopuri.
    *
    * Trei texte, nu unul, pentru că cele trei situații cer răspunsuri diferite:

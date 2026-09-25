@@ -351,6 +351,10 @@ export interface Package {
    */
   price?: number | null;
   /**
+   * Bifat: prețul nu se afișează pe site și nu se poate plăti online. În locul lui apare butonul „Solicită ofertă", care duce la formularul de contact, cu mesajul precompletat.
+   */
+  priceOnRequest?: boolean | null;
+  /**
    * Numere mai mici apar primele.
    */
   order: number;
@@ -887,6 +891,7 @@ export interface PackagesSelect<T extends boolean = true> {
   duration?: T;
   format?: T;
   price?: T;
+  priceOnRequest?: T;
   order?: T;
   featured?: T;
   active?: T;

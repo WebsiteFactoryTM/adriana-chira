@@ -74,7 +74,7 @@ export async function GET(): Promise<Response> {
     '',
     '## Servicii și prețuri',
     '',
-    'Toate prețurile sunt în lei, per persoană. Plata se face online, cu cardul, prin Stripe, sau prin transfer bancar, cu factură.',
+    'Prețurile afișate sunt în lei, per persoană. Unde prețul este afișat, plata se face online, cu cardul, prin Stripe, sau prin transfer bancar, cu factură. Programele cu ofertă personalizată se contractează după o cerere de ofertă.',
     '',
     ...packages.flatMap((pkg) =>
       [
@@ -82,7 +82,11 @@ export async function GET(): Promise<Response> {
         '',
         pkg.tagline,
         pkg.duration ? `Durată: ${pkg.duration}.` : null,
-        pkg.price === null ? null : `Preț: ${pkg.price} ${pkg.currency}.`,
+        pkg.pricing === 'quote'
+          ? 'Preț: ofertă personalizată, la cerere, prin formularul de contact.'
+          : pkg.price === null
+            ? null
+            : `Preț: ${pkg.price} ${pkg.currency}.`,
         pkg.forWho ? `Pentru cine: ${pkg.forWho}` : null,
         `Pagină: ${base}${pkg.href}`,
         '',

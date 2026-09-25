@@ -30,6 +30,19 @@ import { cn } from '@/lib/cn'
  * Paddingul de sus stă pe învelișul poziționat, nu pe cartelă. Așa spațiul
  * dintre intrarea din meniu și panou face parte din zona de hover, iar meniul
  * nu se închide când cobori mouse-ul spre el.
+ *
+ * ## De ce `:focus-visible`, nu `:focus-within`
+ *
+ * `:focus-within` se aprindea și la click cu mouse-ul: linkul apăsat rămânea
+ * focusat după navigare (antetul nu se remontează), deci panoul rămânea
+ * deschis peste pagina nouă până la un click în altă parte. `:has(:focus-visible)`
+ * se aprinde doar la focus de tastatură — exact cazul pentru care exista.
+ *
+ * ## Închiderea după alegere
+ *
+ * Și cu mouse-ul, după click panoul trebuie să dispară, deși cursorul e încă
+ * deasupra. `data-dismissed` îl stinge peste `:hover`; atributul îl pune și îl
+ * scoate ascultătorul din `MobileNav` — vezi comentariul de acolo.
  */
 type Props = {
   item: NavItem & { children: NavItem[] }
@@ -41,7 +54,7 @@ type Props = {
 
 export function NavDropdown({ item, wide = false, allLabel }: Props) {
   return (
-    <div className="group relative">
+    <div data-nav-dropdown className="group relative">
       <Link
         href={item.href}
         className="ac-underline flex min-h-11 items-center gap-[7px] py-3 text-nav whitespace-nowrap"
@@ -53,13 +66,14 @@ export function NavDropdown({ item, wide = false, allLabel }: Props) {
              `translate-y-*` scrie proprietatea `translate`, independentă de
              `transform` (vezi capcana din STATUS §10). Pe `transform` nu s-ar
              anima nimic. */
-          className="block text-[9px] leading-none text-ac-accent-ink transition-[translate] duration-[320ms] ease-ac group-hover:translate-y-[2px] group-focus-within:translate-y-[2px]"
+          className="block text-[9px] leading-none text-ac-accent-ink transition-[translate] duration-[320ms] ease-ac group-hover:translate-y-[2px] group-has-[:focus-visible]:translate-y-[2px] group-data-[dismissed]:translate-y-0!"
         >
           ▾
         </span>
       </Link>
 
       <div
+        data-nav-panel
         className={cn(
           // Ancorat la dreapta: panoul crește spre interiorul paginii, deci nu
           // iese din ecran nici la 1000px, unde intrarea stă deja aproape de
@@ -68,7 +82,9 @@ export function NavDropdown({ item, wide = false, allLabel }: Props) {
           // `translate`, nu `transform` — vezi nota de la săgeată.
           'transition-[opacity,translate] duration-[320ms] ease-ac',
           'group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100',
-          'group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100',
+          'group-has-[:focus-visible]:pointer-events-auto group-has-[:focus-visible]:translate-y-0 group-has-[:focus-visible]:opacity-100',
+          // După o alegere: închis, chiar dacă mouse-ul e încă deasupra.
+          'group-data-[dismissed]:pointer-events-none! group-data-[dismissed]:translate-y-[6px]! group-data-[dismissed]:opacity-0!',
         )}
       >
         <div

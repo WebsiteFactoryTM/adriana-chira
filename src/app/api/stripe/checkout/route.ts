@@ -55,6 +55,14 @@ export async function POST(request: Request): Promise<Response> {
         303,
       )
     }
+    // Un program la cerere nu e o plată eșuată: e o cerere de ofertă, deci
+    // omul ajunge la formular cu mesajul de ofertă, nu cu o notă de eroare.
+    if (resolved.reason === 'la-cerere') {
+      return NextResponse.redirect(
+        `${origin}/contact?pachet=${encodeURIComponent(slug)}&cerere=oferta#formular`,
+        303,
+      )
+    }
     return NextResponse.redirect(fallbackUrl(resolved.reason), 303)
   }
 

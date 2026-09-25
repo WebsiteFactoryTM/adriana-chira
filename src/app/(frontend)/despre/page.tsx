@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { PageCta } from '@/components/sections/PageCta'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { Breadcrumb, type Crumb } from '@/components/ui/Breadcrumb'
-import { ImageSlot } from '@/components/ui/ImageSlot'
 import { Reveal } from '@/components/ui/Reveal'
 import { RichText } from '@/components/ui/RichText'
 import { Section, Shell } from '@/components/ui/Section'
@@ -63,28 +62,32 @@ export default async function DesprePage() {
       <Breadcrumb trail={TRAIL} />
 
       <main id="continut">
-        <PageHeader eyebrow={about.eyebrow} title={about.title} lead={about.lead} tight />
+        {/*
+          Portretul stă în antet, lângă titlu — ca pe celelalte pagini
+          interioare (contact, workshopuri, servicii). Aici contează dublu:
+          pagina e despre un om, iar fața lui e primul lucru pe care trebuie
+          să-l vadă cititorul, nu al treilea, după titlu și lead.
+
+          Mutarea eliberează banda de narațiune de o coloană de 520px, deci
+          textul nu mai stă înghesuit lângă o fotografie mai înaltă decât el:
+          povestea se citește în stânga, pe măsura unui articol, iar reperele
+          stau alături, pe două coloane: sunt opt, iar într-o singură coloană
+          ar fi fost de trei ori mai înalte decât cele două paragrafe de lângă.
+        */}
+        <PageHeader
+          eyebrow={about.eyebrow}
+          title={about.title}
+          lead={about.lead}
+          image={about.portrait}
+          tight
+        />
 
         <Section padding="bottom-only" aria-labelledby="narativ-titlu">
           <h2 id="narativ-titlu" className="ac-sr-only">
             Povestea profesională
           </h2>
 
-          <Shell className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-col-gap">
-            <figure className="ac-media w-full max-w-[520px]">
-              <ImageSlot
-                content={about.portrait}
-                priority
-                reveal="clip-on-load"
-                sizes="(max-width: 1000px) 100vw, 520px"
-              />
-              {about.portrait.caption && (
-                <figcaption className="mt-4 font-medium text-label uppercase text-ac-ink-50">
-                  {about.portrait.caption}
-                </figcaption>
-              )}
-            </figure>
-
+          <Shell className="grid items-start gap-x-col-gap gap-y-[clamp(48px,6vw,72px)] border-t border-ac-line pt-[clamp(40px,5vw,72px)] min-[1000px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <div>
               {about.narrative ? (
                 <RichText content={about.narrative} className="[--ac-prose-width:62ch]" />
@@ -97,37 +100,37 @@ export default async function DesprePage() {
                   ))}
                 </div>
               )}
-
-              {/*
-                Formările ca listă structurată, nu ca paragraf: promptul §5.3 o
-                cere explicit, iar o listă e fragmentul pe care un motor de
-                răspuns îl poate prelua ca atare (brief §9.1).
-              */}
-              <section aria-labelledby="repere-titlu" className="mt-[clamp(48px,6vw,72px)]">
-                <h2
-                  id="repere-titlu"
-                  className="font-medium text-label uppercase text-ac-accent-ink"
-                >
-                  Repere profesionale
-                </h2>
-
-                <ul className="mt-7 border-t border-ac-line">
-                  {about.credentials.map((credential) => (
-                    <li
-                      key={credential.text}
-                      className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 border-b border-ac-line py-4"
-                    >
-                      <span className="text-body text-ac-ink">{credential.text}</span>
-                      {credential.detail && (
-                        <span className="font-medium text-[11px] tracking-[0.18em] uppercase text-ac-ink-50">
-                          {credential.detail}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </section>
             </div>
+
+            {/*
+              Formările ca listă structurată, nu ca paragraf: promptul §5.3 o
+              cere explicit, iar o listă e fragmentul pe care un motor de
+              răspuns îl poate prelua ca atare (brief §9.1).
+            */}
+            <section aria-labelledby="repere-titlu">
+              <h2
+                id="repere-titlu"
+                className="font-medium text-label uppercase text-ac-accent-ink"
+              >
+                Repere profesionale
+              </h2>
+
+              <ul className="mt-7 grid gap-x-8 sm:grid-cols-2">
+                {about.credentials.map((credential) => (
+                  <li
+                    key={credential.text}
+                    className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 border-t border-ac-line py-4"
+                  >
+                    <span className="text-body text-ac-ink">{credential.text}</span>
+                    {credential.detail && (
+                      <span className="font-medium text-[11px] tracking-[0.18em] uppercase text-ac-ink-50">
+                        {credential.detail}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
           </Shell>
         </Section>
 
