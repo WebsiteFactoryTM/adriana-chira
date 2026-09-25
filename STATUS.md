@@ -2127,6 +2127,20 @@ impusă de prima dintre ele.
 35. **Pe telefon, desenul programului dispare** (sub 640px). La 340px
     etichetele lui ar avea ~7px; rămânea un gol de 300px între buton și
     conținut. Ce spune el spun deja faptele din antet și benzile.
+36. **Fără formulări negative și fără „factură pe firmă" ca alternativă**
+    (25 septembrie 2026, cerut). CTA-ul final de pe homepage, `/despre`,
+    `/testimoniale`, blog și paginile de program: „Dacă nu este potrivit să
+    lucrăm împreună, îți spun" → „La final știi clar care este pasul potrivit
+    pentru tine". Singura schimbare de text din homepage-ul aprobat, deliberată.
+    „Preferi factură pe firmă…?" a dispărut de pe carduri și din paginile de
+    program: facturarea pe firmă e normală și se face direct în pagina Stripe.
+    Pe CLAR™, coloana „Nu este programul potrivit dacă" → „Ce îți cere
+    programul", rescrisă ca angajamente. Rămân intenționat: FAQ-ul de workshop
+    „Pot plăti prin firmă, cu factură?" (informație utilă pentru HR), bifa
+    „Factura pe: persoană fizică / firmă" din cererea de ofertă (Adriana are
+    nevoie de ea) și clauza legală „Dacă serviciul nu ți se pare potrivit".
+    În CMS: migrația `20260925_120000_texte_pozitive`, doar pe textul exact al
+    seed-ului.
 
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc

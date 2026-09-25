@@ -336,7 +336,7 @@ export const homeContent: HomeContent = {
       {
         question: 'Cum decurge o colaborare?',
         answer:
-          'Începem cu o discuție inițială în care stabilim împreună dacă este potrivit să lucrăm. Urmează o etapă de evaluare și analiză, apoi sesiuni de lucru structurate în jurul situației și a deciziei tale. Durata și formatul depind de pachetul ales.',
+          'Începem cu o discuție inițială în care clarificăm împreună obiectivul și direcția de lucru. Urmează o etapă de evaluare și analiză, apoi sesiuni de lucru structurate în jurul situației și a deciziei tale. Durata și formatul depind de pachetul ales.',
       },
       {
         question: 'Sesiunile sunt online sau față în față?',
@@ -354,7 +354,7 @@ export const homeContent: HomeContent = {
   cta: {
     eyebrow: { text: 'Primul pas', ornament: 'pulse' },
     heading: 'Dacă ai ajuns până aici, probabil ai deja o decizie în minte.',
-    body: 'Prima discuție este despre situația ta, nu despre pachete. Dacă nu este potrivit să lucrăm împreună, îți spun.',
+    body: 'Prima discuție este despre situația ta, nu despre pachete. La final știi clar care este pasul potrivit pentru tine.',
     cta: { label: 'Programează o discuție', href: '/contact' },
     note: 'Răspund în maximum 24 de ore lucrătoare',
   },

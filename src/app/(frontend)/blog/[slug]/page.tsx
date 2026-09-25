@@ -274,7 +274,7 @@ export default async function ArticolPage({ params }: Params) {
         <PageCta
           eyebrow={{ text: 'Primul pas', ornament: 'pulse' }}
           heading="Dacă textul ăsta ți-a descris situația, hai să vorbim despre ea."
-          body="Prima discuție este despre situația ta, nu despre pachete. Dacă nu este potrivit să lucrăm împreună, îți spun."
+          body="Prima discuție este despre situația ta, nu despre pachete. La final știi clar care este pasul potrivit pentru tine."
           primary={{ label: 'Programează o discuție', href: '/contact' }}
           secondary={{ label: 'Vezi pachetele', href: '/servicii' }}
           note={settings.responseTime}

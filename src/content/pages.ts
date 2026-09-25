@@ -159,14 +159,14 @@ export const contactPage = {
    * Precompletarea pentru workshopuri.
    *
    * Trei texte, nu unul, pentru că cele trei situații cer răspunsuri diferite:
-   * o ediție deschisă la care omul preferă factura pe firmă, o ediție fără
+   * o ediție deschisă la care omul plătește prin transfer, o ediție fără
    * dată la care își anunță interesul, și cazul în care plata online tocmai a
    * refuzat să pornească. Un singur text generic ar fi obligat-o pe Adriana să
    * ghicească la fiecare mesaj despre ce e vorba.
    */
   workshopPrefill: (name: string, date: string | null) =>
     date
-      ? `Bună, Adriana. Vreau să rezerv un loc la workshopul „${name}", ediția din ${date}, fără plată online.\n\nAm nevoie de:\n- [ ] factură pe firmă\n- [ ] plată prin transfer bancar\n- [ ] altceva:\n\nNumăr de locuri: 1\n\n`
+      ? `Bună, Adriana. Vreau să rezerv un loc la workshopul „${name}", ediția din ${date}, fără plată online.\n\nAm nevoie de:\n- [ ] plată prin transfer bancar\n- [ ] altceva:\n\nNumăr de locuri: 1\n\n`
       : `Bună, Adriana. Mă interesează workshopul „${name}".\n\n`,
 
   waitlistPrefill: (name: string) =>

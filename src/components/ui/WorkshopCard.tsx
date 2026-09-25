@@ -38,8 +38,8 @@ import { formatSessionDate } from '@/lib/workshops'
  * ## Cele două căi de înscriere
  *
  * Edițiile deschise (următoarele trei programate) au butonul de plată. Sub el
- * stă mereu și calea fără plată online — pentru cine vrea factură pe firmă,
- * transfer bancar sau pur și simplu să întrebe ceva înainte. Restul
+ * stă mereu și calea fără plată online — pentru cine plătește prin
+ * transfer bancar sau vrea pur și simplu să întrebe ceva înainte. Restul
  * catalogului are doar calea a doua, formulată ca anunț de interes.
  */
 export function WorkshopCard({ workshop, index }: { workshop: Workshop; index: number }) {
@@ -173,7 +173,7 @@ export function WorkshopCard({ workshop, index }: { workshop: Workshop; index: n
               size="md"
             />
             <p className="text-body-sm leading-[1.7] text-ac-ink-70">
-              Preferi factură pe firmă sau plată prin transfer?{' '}
+              Plătești prin transfer bancar?{' '}
               <a
                 href={`/contact?workshop=${slug}`}
                 className="ac-underline leading-[normal] text-ac-ink-70"

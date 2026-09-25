@@ -202,7 +202,7 @@ export default async function DesprePage() {
         <PageCta
           eyebrow={{ text: 'Primul pas', ornament: 'pulse' }}
           heading="Dacă te-ai recunoscut undeva mai sus, hai să vorbim."
-          body="Prima discuție este despre situația ta, nu despre pachete. Dacă nu este potrivit să lucrăm împreună, îți spun."
+          body="Prima discuție este despre situația ta, nu despre pachete. La final știi clar care este pasul potrivit pentru tine."
           primary={{ label: 'Programează o discuție', href: '/contact' }}
           secondary={{ label: 'Vezi pachetele', href: '/servicii' }}
           note={settings.responseTime}

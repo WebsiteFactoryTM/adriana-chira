@@ -53,7 +53,7 @@ const CTA_FALLBACK: PackageCta = {
   finalEyebrow: 'Primul pas',
   finalHeading: 'Nu trebuie să fii sigur ca să începem.',
   finalBody:
-    'Prima discuție este despre situația ta, nu despre programe. Dacă nu este potrivit să lucrăm împreună, îți spun.',
+    'Prima discuție este despre situația ta, nu despre programe. La final știi clar care este pasul potrivit pentru tine.',
   finalLabel: 'Programează o discuție',
 }
 
@@ -273,8 +273,7 @@ export default async function PachetPage({ params }: Params) {
                   </>
                 ) : (
                   <>
-                    {FORMAT_LABEL[pkg.format]}. Preferi factură pe firmă, contract sau plata în
-                    tranșe?{' '}
+                    {FORMAT_LABEL[pkg.format]}. Ai nevoie de contract sau de plata în tranșe?{' '}
                     <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
                       {cta.ask}
                     </TextLink>
@@ -419,8 +418,7 @@ export default async function PachetPage({ params }: Params) {
 
                       <p className="mt-5 max-w-[44ch] text-body-sm leading-[1.7] text-ac-ink-70">
                         Îmi scrii câteva rânduri despre situația ta și îți trimit personal oferta,
-                        cu formatul, calendarul și modul de plată potrivite — inclusiv contract și
-                        factură pe firmă. {settings.responseTime}.
+                        cu formatul, calendarul și modul de plată potrivite. {settings.responseTime}.
                       </p>
                     </>
                   ) : (
@@ -437,7 +435,7 @@ export default async function PachetPage({ params }: Params) {
                         <TextLink href={askHref} className="text-body-sm text-ac-ink-70">
                           {cta.ask}
                         </TextLink>{' '}
-                        dacă vrei factură pe firmă, contract, plata în tranșe sau pur și simplu ai o
+                        dacă ai nevoie de contract, de plata în tranșe sau pur și simplu ai o
                         întrebare înainte. {settings.responseTime}.
                       </p>
                     </>

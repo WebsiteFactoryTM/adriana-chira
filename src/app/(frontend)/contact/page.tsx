@@ -41,8 +41,8 @@ export const metadata: Metadata = pageMetadata({
  * ## Calea de rezervare fără plată online
  *
  * Pagina asta este și a doua cale de cumpărare, nu doar un formular de
- * întrebări. Ajung aici trei feluri de oameni: cine vrea factură pe firmă sau
- * transfer bancar, cine își anunță interesul pentru un workshop neprogramat, și
+ * întrebări. Ajung aici trei feluri de oameni: cine plătește prin transfer
+ * bancar, cine își anunță interesul pentru un workshop neprogramat, și
  * cine a apăsat pe plată, dar Stripe n-a putut porni sesiunea. Fiecare
  * primește alt text precompletat, ca Adriana să nu ghicească despre ce e vorba.
  *

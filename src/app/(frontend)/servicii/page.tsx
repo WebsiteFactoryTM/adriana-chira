@@ -263,7 +263,7 @@ export default async function ServiciiPage() {
         <PageCta
           eyebrow={homeContent.cta.eyebrow}
           heading="Nu ești sigur care pachet ți se potrivește?"
-          body="Atunci începe cu o discuție. Îți spun ce cred că are sens pentru situația ta — inclusiv dacă am ajunge la concluzia că niciunul dintre ele nu ți se potrivește deocamdată."
+          body="Atunci începe cu o discuție. Îți spun sincer ce are sens pentru situația ta și de unde merită să începi."
           primary={{ label: 'Programează o discuție', href: '/contact' }}
           note={settings.responseTime}
         />

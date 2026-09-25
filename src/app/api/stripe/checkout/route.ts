@@ -23,8 +23,8 @@ import { WORKSHOPS_PATH } from '@/lib/workshops'
  *
  * Nu un 500. Cumpărătorul ajunge pe pagina de contact, cu produsul
  * precompletat în mesaj — adică pe calea de rezervare fără plată online, care
- * există oricum, ca alternativă, pentru cine preferă transferul bancar sau
- * factura pe firmă. Motivele posibile sunt toate din afara lui: cheia Stripe
+ * există oricum, ca alternativă, pentru cine preferă transferul bancar.
+ * Motivele posibile sunt toate din afara lui: cheia Stripe
  * lipsește, contul e în verificare, ediția s-a închis între momentul în care a
  * încărcat pagina și momentul în care a apăsat butonul.
  */

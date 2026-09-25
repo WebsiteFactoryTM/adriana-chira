@@ -323,12 +323,12 @@ const clarSections: PackageSection[] = [
     ],
   },
   {
-    heading: 'Cui i se potrivește și cui nu',
+    heading: 'Pentru cine este programul',
     kind: 'split',
-    splitLabels: ['Este pentru tine dacă', 'Nu este programul potrivit dacă'],
+    splitLabels: ['Este pentru tine dacă', 'Ce îți cere programul'],
     paragraphs: [
       'Programul este potrivit pentru tine dacă ești antreprenor sau soloprenor care trebuie să treacă de la reacție la conducere, manager sau lider care amână decizii ori evită conversații, profesionist într-o tranziție de rol sau de identitate profesională, ori o persoană competentă care știe mult, dar nu aplică suficient de consecvent. În toate cazurile, e nevoie să îți asumi partea ta de responsabilitate și să lucrezi între sesiuni.',
-      'Nu este programul potrivit dacă vrei doar motivație de moment sau o soluție rapidă fără aplicare, dacă vrei ca altcineva să ia deciziile în locul tău, dacă nu ai disponibilitate pentru exercițiile dintre sesiuni sau dacă ai nevoie în primul rând de intervenție medicală, psihiatrică sau psihoterapeutică. CLAR™ este un program de performanță și nu înlocuiește aceste servicii.',
+      'Programul dă rezultate când alegi un proces în locul unei soluții rapide: iei tu deciziile, cu mai multă claritate, și îți faci timp pentru exercițiile dintre sesiuni. CLAR™ este un program de performanță; dacă situația ta cere în primul rând sprijin medical, psihiatric sau psihoterapeutic, te îndrum către specialistul potrivit.',
     ],
   },
   {

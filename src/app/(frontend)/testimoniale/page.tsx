@@ -90,7 +90,7 @@ export default async function TestimonialePage() {
         <PageCta
           eyebrow={{ text: 'Primul pas', ornament: 'pulse' }}
           heading="Dacă te-ai regăsit în ce au scris, hai să vorbim."
-          body="Prima discuție este despre situația ta, nu despre pachete. Dacă nu este potrivit să lucrăm împreună, îți spun."
+          body="Prima discuție este despre situația ta, nu despre pachete. La final știi clar care este pasul potrivit pentru tine."
           primary={{ label: 'Programează o discuție', href: '/contact' }}
           note={settings.responseTime}
         />
