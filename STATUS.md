@@ -1252,11 +1252,10 @@ sandbox. Endpoint `we_1UJUxARPsRybKwAKnRAnTBqe` → `/api/stripe/webhook`, abona
 cele trei evenimente din §7.8. Verificat pe domeniu: plata → `checkout.stripe.com`;
 un eveniment semnat cu secretul endpointului → 200, cu alt secret → 400.
 
-Rămân: (1) **producția rulează încă `22f2876`**, fără corectura de idempotență din
-§10 — se rezolvă la primul push; (2) prețurile din baza Neon nu sunt sincronizate,
-deci checkout-ul folosește `price_data` (aceeași sumă); o salvare în admin sau
-`pnpm stripe:sync` cu `DATABASE_URI` de producție le leagă; (3) la lansare: cheile
-live și un endpoint nou în contul live.
+Baza Neon are aceleași `stripeProductId`/`stripePriceId` ca baza locală (copiate
+după slug, apoi confirmate de `pnpm stripe:sync`: 17 × „deja corect"), deci
+localul și producția folosesc aceleași 17 produse din sandbox, nu dubluri.
+La lansare rămân cheile live și un endpoint nou în contul live.
 
 ### Faza 5b — SEO pentru restul site-ului ⏳
 
@@ -1737,7 +1736,7 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
 | 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
 | 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile s-ar pierde la fiecare deploy** | Încărcarea de imagini în producție |
-| 15 | **Postgres pentru producție** (Neon / Vercel Postgres, string POOLED) | Local rulează în Docker. Producția are nevoie de o bază proprie și de `pnpm build:deploy` ca build command | Deploy |
+| 15 | ~~**Postgres pentru producție**~~ ✅ **rezolvat pe 25 septembrie 2026** | Neon (`ep-purple-surf-b1lnsbgm`, eu-central-1), string POOLED în `DATABASE_URI` pe Vercel. Migrat (4 migrații), seed rulat, prețurile legate de aceleași produse Stripe din sandbox ca baza locală. Admin: `admin@adrianachira.ro`, parola generată de seed — **se schimbă la prima autentificare** | — |
 
 > ### ⚠️ Decizie deschisă: crawlerele AI
 >
@@ -2159,6 +2158,7 @@ pe homepage și nu au pagină proprie.
 | Re-livrarea aceluiași eveniment Stripe dădea **500**, deci Stripe reîncerca 3 zile | Payload transformă încălcarea indexului unic într-un `ValidationError` cu mesaj **tradus** („Următorul câmp nu este valid: stripeSessionId"); regex-ul `unique\|duplicate` nu-l prindea | `isDuplicate` se uită la `data.errors[].path === 'stripeSessionId'`, nu la text |
 | `stripe listen` primește evenimentele altui cont | CLI-ul Stripe de pe mașina de dezvoltare e autentificat pe alt cont (alt client) | `pnpm stripe:listen` pasează `--api-key` din `.env.local`. Nu rula `stripe listen` gol |
 | Webhook-ul local răspunde 308 | Portul 3000 era ocupat de alt proiect, deci `next dev` a pornit pe 3001, iar listener-ul trimitea la celălalt | Citește portul din logul `next dev`; `PORT=3001 pnpm stripe:listen` |
+| **Producția n-a folosit niciodată baza de date** (până pe 25 septembrie 2026) | `DATABASE_URI` pe Vercel era `127.0.0.1:5432`, valoarea din Docker. Build-ul rula `next build` fără migrații, iar `getPayloadClientSafe()` cădea tăcut pe fallback — pagina arăta perfect | `DATABASE_URI` = stringul Neon POOLED; `vercel.json` fixează `pnpm build:deploy`, care pică zgomotos dacă baza nu răspunde. Comenzi pe Neon rulate local: **cu `NODE_ENV=production`**, altfel `push` modifică schema pe lângă migrații |
 | `pkill -f "next start"` nu oprește serverul, pe Windows | Procesul real e `node`, iar `pkill` din Git Bash nu vede arborele de procese Windows. Serverul rămâne pe port, iar comanda următoare pare că a pornit unul nou | `netstat -ano \| grep :PORT`, apoi `taskkill //F //PID <pid>`. **Verifică mereu portul**, nu presupune că `pkill` a reușit |
 | Măsurătoarea de buget dă cifre prea mici, fără nicio eroare | Server vechi + `.next` reconstruit: HTML-ul servit trimite la chunk-uri cu alt hash, care nu mai există pe disc, iar scriptul de măsurare le sare | Oprește serverul ÎNAINTE de rebuild (vezi capcana de mai sus) și numără fișierele lipsă, nu doar octeții. Scriptul din §8 o face |
 | Erori de sintaxă la scrierea fișierelor mari cu `cat > … <<'EOF'` | Heredoc-urile lungi, cu diacritice și ghilimele, se rup înainte de delimitator | Fișierele mari se scriu cu unealta de scriere a fișierelor sau cu un script `.mjs` pus în directorul temporar, nu prin heredoc |
