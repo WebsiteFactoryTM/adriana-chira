@@ -161,9 +161,12 @@ pnpm generate:types        # src/payload-types.ts, după orice schimbare de sche
 pnpm generate:importmap    # după adăugarea unei componente proprii în admin
 pnpm verify:faza2          # verificările de acceptanță ale fazei 2
 pnpm build:deploy          # migrate:fix + migrate + build — comanda de build pe Vercel
+pnpm stripe:sync           # sincronizează toate pachetele și workshopurile cu Stripe (idempotent)
+pnpm stripe:listen         # webhook local; `PORT=3001 pnpm stripe:listen` dacă dev e pe alt port
 ```
 
 > **Pe Vercel, comanda de build este `pnpm build:deploy`, nu `pnpm build`.**
+> E fixată în `vercel.json`, deci nu depinde de setarea din dashboard.
 > În producție `push` este dezactivat, deci schema vine exclusiv din migrații.
 
 **Notă de mediu (Windows):** `corepack enable` eșuează fără drepturi de administrator
@@ -863,6 +866,30 @@ Colecția `orders` a primit `itemType`, relația `workshop`, `sessionDateSnapsho
 `sessionDate` la ediția următoare, iar fără copie lista de participanți ar deveni
 greșită exact când e nevoie de ea.
 
+#### Sandboxul Stripe, conectat — 25 septembrie 2026
+
+Cont de test **„Adriana Chira Sandbox"** (`acct_1UHnFTRPsRybKwAK`, RO, RON,
+plăți active). Cheile sunt în `.env.local` (gitignorat); **nu** în repo.
+
+| Ce | Unde / cum |
+|---|---|
+| Sincronizarea în masă | `pnpm stripe:sync` → `scripts/stripe-sync.ts`. Rulat: 17 produse, 17 prețuri active în lei; a doua rulare: 17 × „era deja corect", zero prețuri noi |
+| Webhook local | `pnpm stripe:listen` → `scripts/stripe-listen.mjs`. Cheia vine din `.env.local`, **nu** din `stripe login` — vezi §10 |
+| Checkout cu id respins | `createCheckoutSession` reîncearcă cu `price_data` dacă `stripePriceId` e respins (id de test sub cheie live, preț arhivat din dashboard). Suma e aceeași, citită pe server |
+| Rambursare parțială | `charge.refunded` vine și la parțiale; comanda trece pe „Rambursată" doar când `charge.refunded === true` |
+
+Verificat cap-coadă pe sandbox: cele 5 căi ale rutei de plată (workshop deschis
+și pachet cu preț → `checkout.stripe.com`, CLAR → ofertă, ediție închisă →
+contact, slug inexistent → catalog); `checkout.session.completed` → comandă în
+`orders`, cu relația la workshop și data ediției copiată; aceeași livrare
+retrimisă de două ori → 200, tot o comandă; rambursare de 10 lei → rămâne
+„Plătită", rambursare totală → „Rambursată". **Neverificat:** plata completată
+în pagina Stripe cu cardul `4242 4242 4242 4242` (se face manual, în browser).
+
+**La trecerea pe live:** cheile live în Vercel (Production), `pnpm stripe:sync`
+cu cheia live (id-urile de test sunt respinse și se recreează), endpoint nou în
+dashboardul live, cu secretul lui.
+
 #### Calea de rezervare fără plată online
 
 Cerută explicit. Nu e un mesaj de eroare, e a doua cale de cumpărare, și duce peste tot
@@ -1135,32 +1162,6 @@ Pastila cu semn (`GlyphBadge`) e în `--ac-accent-ink`, nu în `--ac-accent`:
 negrafice. Semnele mici inline rămân în `--ac-accent`, ca toate hairline-urile și
 numeralele designului aprobat — sunt decorative și dublează un text de lângă.
 
----
-
-## 5. CE NU ESTE FĂCUT
-
-### Faza 4 — Stripe ✅ **completă din 7 septembrie 2026** (vezi §4)
-
-Ce rămâne de făcut e **configurare, nu cod**: cheile din §7.8 și abonarea
-endpointului de webhook la evenimente, în dashboard-ul Stripe. Fără ele site-ul
-funcționează, dar nu încasează — butonul de plată trimite cumpărătorul pe calea de
-rezervare fără plată online. Este o degradare intenționată, verificată.
-
-### Faza 5b — SEO pentru restul site-ului ⏳
-
-Făcute la faza 3b: `sitemap.ts` cu articole, categorii, pachete și paginile legale
-(`lastModified` real din `updatedAt`), plus `Article`, `Service`, `BreadcrumbList`,
-`ProfilePage`, `ContactPage`, `CollectionPage` în `src/lib/schema.ts`.
-
-**Rămâne `rss.xml`.**
-
-### Faza 6b — Conformitate ⏳
-
-Cele patru pagini legale **există și au conținut**, dar textul e un draft nevalidat
-juridic — vezi §7.10 și comutatorul `LEGAL_DRAFT` din `src/content/pages.ts`.
-
-Rămân: validarea de către un jurist, completarea datelor de firmă și evenimentele
-GA4 (`view_package`, `begin_checkout`, `purchase`, …).
 ### Runda din 25 septembrie 2026 ✅
 
 #### Preț la cerere — „Solicită ofertă"
@@ -1239,6 +1240,39 @@ totdeauna (capcana din §10). Pe workshopuri și pe cele trei pagini de program.
 Sub 640px, un fir de 3+ niveluri devine doar „← Servicii". Lista completă
 rămâne în HTML, `BreadcrumbList` nu se schimbă.
 
+---
+
+## 5. CE NU ESTE FĂCUT
+
+### Faza 4 — Stripe ✅ **completă din 7 septembrie 2026** (vezi §4)
+
+**Sandboxul e conectat local și pe `https://adriana-chira.vercel.app` (25 septembrie 2026).**
+Pe Vercel (Production + Preview): `STRIPE_SECRET_KEY` și `STRIPE_WEBHOOK_SECRET` de
+sandbox. Endpoint `we_1UJUxARPsRybKwAKnRAnTBqe` → `/api/stripe/webhook`, abonat la
+cele trei evenimente din §7.8. Verificat pe domeniu: plata → `checkout.stripe.com`;
+un eveniment semnat cu secretul endpointului → 200, cu alt secret → 400.
+
+Rămân: (1) **producția rulează încă `22f2876`**, fără corectura de idempotență din
+§10 — se rezolvă la primul push; (2) prețurile din baza Neon nu sunt sincronizate,
+deci checkout-ul folosește `price_data` (aceeași sumă); o salvare în admin sau
+`pnpm stripe:sync` cu `DATABASE_URI` de producție le leagă; (3) la lansare: cheile
+live și un endpoint nou în contul live.
+
+### Faza 5b — SEO pentru restul site-ului ⏳
+
+Făcute la faza 3b: `sitemap.ts` cu articole, categorii, pachete și paginile legale
+(`lastModified` real din `updatedAt`), plus `Article`, `Service`, `BreadcrumbList`,
+`ProfilePage`, `ContactPage`, `CollectionPage` în `src/lib/schema.ts`.
+
+**Rămâne `rss.xml`.**
+
+### Faza 6b — Conformitate ⏳
+
+Cele patru pagini legale **există și au conținut**, dar textul e un draft nevalidat
+juridic — vezi §7.10 și comutatorul `LEGAL_DRAFT` din `src/content/pages.ts`.
+
+Rămân: validarea de către un jurist, completarea datelor de firmă și evenimentele
+GA4 (`view_package`, `begin_checkout`, `purchase`, …).
 
 ### Faza 7 — Performanță, accesibilitate, lansare ⏳
 
@@ -1291,6 +1325,13 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **CMS vs. fallback după refacerea vizuală** | ✅ identic pe `/`, pe toate trei paginile de program și pe workshopuri |
 | **Componente de client după refacerea vizuală** | ✅ tot patru — pictogramele și desenele sunt SVG randat pe server |
 | **Contrast pe suprafețele crem noi** | ✅ text secundar urcat la `ink-70` (8.11:1); `ink-50` pe crem dădea 4.24:1 |
+| **25 sept.: sumele CLAR/EPP în HTML și în payload-ul RSC** | ✅ zero pe `/`, `/servicii`, cele trei programe, `/despre`, `/contact`, workshopuri, `llms.txt` |
+| **25 sept.: `POST` de plată pe CLAR / EPP / SPA** | ✅ 303 → formular de ofertă · 303 → formular de ofertă · SPA neschimbat |
+| **25 sept.: migrația, rulată din starea de dinainte** | ✅ bifa pe 2 pachete, FAQ-urile și intro-ul actualizate, zero `lei` rămas în FAQ |
+| **25 sept.: CMS vs. fallback** | ✅ text identic pe 8 pagini, după migrație |
+| **25 sept.: homepage, HEAD vs. acum** | ✅ doar schimbările cerute: 2 prețuri din submeniu, 2 prețuri de pe carduri → „Solicită ofertă", intro-ul Servicii |
+| **25 sept.: `pnpm seed` de două ori** | ✅ pachetele neatinse, zero duplicate |
+| **25 sept.: în browser, 1536 × 784 și 390px** | ✅ submeniul se închide după click; „Înapoi sus" ascuns sus, vizibil după derulare; antetele încap pe 14" |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -1324,13 +1365,6 @@ vizual.
 | 7 | `ac-accent-deep` folosit în 5 locuri unde designul are `ac-accent-ink` | Regula „pe crem folosim varianta închisă" aplicată prea larg | Restrânsă la `cream-100`, unde chiar pică AA (vezi §9.3) |
 
 **Placeholderele din footer** (`[ email ]`, `[ LinkedIn ]`) erau desenate cu 65%
-| **25 sept.: sumele CLAR/EPP în HTML și în payload-ul RSC** | ✅ zero pe `/`, `/servicii`, cele trei programe, `/despre`, `/contact`, workshopuri, `llms.txt` |
-| **25 sept.: `POST` de plată pe CLAR / EPP / SPA** | ✅ 303 → formular de ofertă · 303 → formular de ofertă · SPA neschimbat |
-| **25 sept.: migrația, rulată din starea de dinainte** | ✅ bifa pe 2 pachete, FAQ-urile și intro-ul actualizate, zero `lei` rămas în FAQ |
-| **25 sept.: CMS vs. fallback** | ✅ text identic pe 8 pagini, după migrație |
-| **25 sept.: homepage, HEAD vs. acum** | ✅ doar schimbările cerute: 2 prețuri din submeniu, 2 prețuri de pe carduri → „Solicită ofertă", intro-ul Servicii |
-| **25 sept.: `pnpm seed` de două ori** | ✅ pachetele neatinse, zero duplicate |
-| **25 sept.: în browser, 1536 × 784 și 390px** | ✅ submeniul se închide după click; „Înapoi sus" ascuns sus, vizibil după derulare; antetele încap pe 14" |
 opacitate; în design au culoarea normală a textului. Componenta `Placeholder` nu mai
 impune culoare — moștenește, deci arată corect și în bara de jos, unde fundalul e
 închis.
@@ -1691,7 +1725,7 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
 | 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
 | 7 | **Regim TVA, PFA sau SRL** | Prețurile se afișează ca sume simple, fără mențiune de TVA. Documentul CLAR cere explicit confirmarea: 5.100 lei este cu TVA inclus sau „+ TVA"? Se aplică la toate cele patru prețuri. | Afișarea prețurilor, configurarea Stripe |
-| 8 | **Cont Stripe + chei** | Codul e complet și verificat (§4, faza 4). Lipsesc `STRIPE_SECRET_KEY` și `STRIPE_WEBHOOK_SECRET`. Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
+| 8 | **Cont Stripe + chei** — 🟡 **sandbox conectat local pe 25 septembrie 2026**; lipsesc cheile LIVE ale clientei și endpointul de producție | Codul e complet și verificat (§4, faza 4). Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
 | 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
 | 8d | **Funcția lui Bogdan Vasiliu** | Documentul primit semnează doar cu numele. Câmpul e gol, iar rândul nu se randează — nu inventăm o funcție pentru un om real. Se completează în admin, la recomandarea lui. | — (recomandarea e publicabilă și fără) |
 | 8e | **Scrierea numelui „Gabriela Tarna"** | Așa apare în document. Nu am completat diacritice ghicite pe numele unei persoane. De confirmat forma corectă. | Lansare |
@@ -2074,6 +2108,27 @@ impusă de prima dintre ele.
     componente; un singur bloc `ink` pe pagină; și `--ac-ink-50` nu se mai
     folosește pe suprafețe crem, unde pică AA.
 
+31. **Două programe fără preț afișat** (25 septembrie 2026, cerut de clientă).
+    Designul aprobat are un preț pe fiecare card. CLAR™ și EPP îl înlocuiesc cu
+    „Solicită ofertă"; se comută din admin, bifa „Preț la cerere". Descris în §4.
+
+32. **Portretul din `/despre` a urcat în antet** (cerut de clientă). Pagina nu
+    e în designul aprobat; forma urmează acum celelalte pagini interioare.
+
+33. **Heroul homepage-ului se strânge pe ecranele scunde** (`short:`, laptopuri
+    de 14"). Peste 860px înălțime clasele nu se aplică, deci comparația la
+    pixel de la 1440 × 900 rămâne valabilă. Sub prag, heroul e mai compact decât
+    designul — cerut explicit: pe 14" butoanele erau sub primul ecran.
+
+34. **`MobileNav` ascultă click-urile din submeniul de desktop**. Nu e o a
+    cincea componentă de client: e un ascultător delegat în componenta de
+    client care exista deja în antet. Motivul e în §10 — închiderea după
+    alegere nu se poate exprima în CSS.
+
+35. **Pe telefon, desenul programului dispare** (sub 640px). La 340px
+    etichetele lui ar avea ~7px; rămânea un gol de 300px între buton și
+    conținut. Ce spune el spun deja faptele din antet și benzile.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -2101,33 +2156,15 @@ pe homepage și nu au pagină proprie.
 | `pnpm seed` pare blocat, fără niciun mesaj | După o schimbare de schemă, `push` din drizzle pune o întrebare interactivă (coloană creată sau redenumită?) și așteaptă la `stdin` | Rulează comanda fără pipe, ca să vezi întrebarea; sau resetează baza locală și aplică migrațiile: e oricum calea din producție |
 | Erori TS pe `importMap.js` | Fișierul e generat ca JavaScript, iar `allowJs` e `false` (regula 8) | `src/app/(payload)/admin/importMap.d.ts`, scris de mână. Generatorul atinge doar `.js`-ul de alături |
 | Panoul de admin nu autentifică pe alt host decât cel din `serverURL` | Nu e un bug al site-ului: cu un token pus manual pe cookie, Payload refuză. Autentificarea normală, prin formular, nu e afectată | Deschide adminul pe hostul din `NEXT_PUBLIC_SITE_URL`. Vezi și capcana cu `localhost` de mai sus |
+| Re-livrarea aceluiași eveniment Stripe dădea **500**, deci Stripe reîncerca 3 zile | Payload transformă încălcarea indexului unic într-un `ValidationError` cu mesaj **tradus** („Următorul câmp nu este valid: stripeSessionId"); regex-ul `unique\|duplicate` nu-l prindea | `isDuplicate` se uită la `data.errors[].path === 'stripeSessionId'`, nu la text |
+| `stripe listen` primește evenimentele altui cont | CLI-ul Stripe de pe mașina de dezvoltare e autentificat pe alt cont (alt client) | `pnpm stripe:listen` pasează `--api-key` din `.env.local`. Nu rula `stripe listen` gol |
+| Webhook-ul local răspunde 308 | Portul 3000 era ocupat de alt proiect, deci `next dev` a pornit pe 3001, iar listener-ul trimitea la celălalt | Citește portul din logul `next dev`; `PORT=3001 pnpm stripe:listen` |
 | `pkill -f "next start"` nu oprește serverul, pe Windows | Procesul real e `node`, iar `pkill` din Git Bash nu vede arborele de procese Windows. Serverul rămâne pe port, iar comanda următoare pare că a pornit unul nou | `netstat -ano \| grep :PORT`, apoi `taskkill //F //PID <pid>`. **Verifică mereu portul**, nu presupune că `pkill` a reușit |
 | Măsurătoarea de buget dă cifre prea mici, fără nicio eroare | Server vechi + `.next` reconstruit: HTML-ul servit trimite la chunk-uri cu alt hash, care nu mai există pe disc, iar scriptul de măsurare le sare | Oprește serverul ÎNAINTE de rebuild (vezi capcana de mai sus) și numără fișierele lipsă, nu doar octeții. Scriptul din §8 o face |
 | Erori de sintaxă la scrierea fișierelor mari cu `cat > … <<'EOF'` | Heredoc-urile lungi, cu diacritice și ghilimele, se rup înainte de delimitator | Fișierele mari se scriu cu unealta de scriere a fișierelor sau cu un script `.mjs` pus în directorul temporar, nu prin heredoc |
 | Ghilimelele de închidere arată altfel decât în restul textului | Convenția proiectului este `„text"` — U+201E la deschidere, ASCII `"` la închidere. U+201D nu apare nicăieri în designul aprobat | `grep -rn $'”' src/` trebuie să dea zero. Într-un atribut JSX delimitat cu `"`, un `"` în text rupe oricum compilarea |
 | Aura se aprindea cu o jumătate de rază mai jos decât secțiunea | `animation-timeline: view()` își calculează progresul din **caseta de layout** și ignoră complet `transform`. Centrarea câmpului prin `translate(-50%,-50%)` era deci invizibilă pentru timeline | Centrarea se face din margini negative (`margin-left/top: -50%` din lățime), care intră în layout. `transform` rămâne liber pentru animație |
 | Un strat decorativ tăiat cu `overflow: hidden` pe `<section>` | Ar rupe `StickyColumn` — poziționarea `sticky` nu funcționează într-un strămoș cu `overflow` | `contain: paint` pe stratul decorativ: taie la marginile secțiunii **și** scutește pictarea cât e în afara ecranului |
-31. **Două programe fără preț afișat** (25 septembrie 2026, cerut de clientă).
-    Designul aprobat are un preț pe fiecare card. CLAR™ și EPP îl înlocuiesc cu
-    „Solicită ofertă"; se comută din admin, bifa „Preț la cerere". Descris în §4.
-
-32. **Portretul din `/despre` a urcat în antet** (cerut de clientă). Pagina nu
-    e în designul aprobat; forma urmează acum celelalte pagini interioare.
-
-33. **Heroul homepage-ului se strânge pe ecranele scunde** (`short:`, laptopuri
-    de 14"). Peste 860px înălțime clasele nu se aplică, deci comparația la
-    pixel de la 1440 × 900 rămâne valabilă. Sub prag, heroul e mai compact decât
-    designul — cerut explicit: pe 14" butoanele erau sub primul ecran.
-
-34. **`MobileNav` ascultă click-urile din submeniul de desktop**. Nu e o a
-    cincea componentă de client: e un ascultător delegat în componenta de
-    client care exista deja în antet. Motivul e în §10 — închiderea după
-    alegere nu se poate exprima în CSS.
-
-35. **Pe telefon, desenul programului dispare** (sub 640px). La 340px
-    etichetele lui ar avea ~7px; rămânea un gol de 300px între buton și
-    conținut. Ce spune el spun deja faptele din antet și benzile.
-
 | Animația scroll-driven nu pornește deloc: timeline atașat, dar `currentTime` e `null`, iar elementul stă în starea de bază | Scurtătura `animation:` **resetează** `animation-timeline` și `animation-range` la valorile inițiale. Scrise înaintea ei, sunt șterse în tăcere | Declară `animation-timeline` și `animation-range` **după** scurtătură. Verifică cu `el.getAnimations()[0].currentTime`: `null` = timeline inactiv sau resetat, un procent = funcționează |
 | Două animații pe același element se anulează una pe alta | Amândouă scriu `transform`; ultima din listă câștigă | `translate`, `scale` și `rotate` sunt proprietăți independente. Pune traseul pe `translate` și respirația pe `scale` — se compun singure, fără `<div>`-uri de ambalaj (vezi `PageLight`) |
 | Un strat decorativ pus peste conținut înceață textul de dedesubt | `backdrop-filter` e singurul lucru care face un strat să pară corp fizic, dar tot el face ilizibil ce acoperă. Gutterul paginii (24–88px) e mai îngust decât orice obiect care merită văzut (84–132px), deci „îl pun în margine" nu e o soluție | Lasă-l să iasă din cadru și interzice-i deriva spre coloana de text (toate valorile de `translate` orizontal ≤ 0). Verifică, nu presupune: compară `getBoundingClientRect().right` al obiectului cu `x + paddingLeft` al lui `.ac-shell` |
@@ -2145,6 +2182,9 @@ pe homepage și nu au pagină proprie.
 | Un submeniu CSS care merge cu mouse-ul și e inaccesibil de la tastatură | Panoul ascuns cu `display: none` sau `visibility: hidden`. Ambele scot linkurile din ordinea de tabulare, deci nimic din interior nu mai poate primi focus — și atunci `:focus-within`, care ar fi trebuit să îl deschidă, nu se declanșează niciodată | Ascunde-l din `opacity: 0` + `pointer-events: none`. Linkurile rămân focusabile, prima tastă Tab aprinde panoul, iar mouse-ul tot nu poate apăsa ce nu se vede. Vezi `NavDropdown.tsx` |
 | Un submeniu care se închide când cobori mouse-ul spre el | Spațiul dintre intrarea din meniu și cartelă nu aparținea niciunui element hoverabil | Paddingul de sus stă pe **învelișul poziționat**, nu pe cartelă: spațiul devine parte din zona de hover |
 | `transition-transform` nu animează nimic pe `translate-y-*` | În Tailwind v4 utilitarele `translate-*`, `scale-*` și `rotate-*` scriu proprietățile CSS independente (`translate`, `scale`, `rotate`), nu `transform`. Tranziția ascultă o proprietate care nu se schimbă | `transition-[translate]`, `transition-[scale]` etc. Aceeași cauză ca la capcana „două animații pe același element se anulează" |
+| Submeniul rămâne deschis peste pagina nouă după click | Două cauze. (1) `:focus-within`: linkul apăsat rămâne focusat, iar antetul nu se remontează la navigare. (2) Mouse-ul e încă deasupra panoului, deci `:hover` e adevărat | (1) `group-has-[:focus-visible]` în loc de `group-focus-within` — se aprinde doar la tastatură. (2) Ascultătorul din `MobileNav` pune `data-dismissed` pe grup la click și îl scoate la `pointerleave` sau la prima tastă. **Nu reveni la `:focus-within`** |
+| Migrația cade cu „column already exists" pe baza locală | `pnpm dev` rulează Payload cu `push`, care adaugă singur coloana nouă de îndată ce schimbi colecția. Pe producție `push` e oprit, deci acolo migrația e singura cale | Local: `ALTER TABLE … DROP COLUMN …` și rulezi migrația din nou, ca să o verifici exact ca pe producție. Nu scrie `IF NOT EXISTS` în migrație ca să „treacă" |
+| O sumă care nu mai are voie să apară rămâne în pagină | Prețul nu stă doar în câmpul `price`: apare și în texte scrise de mână (FAQ, note de investiție, `llms.txt`) | `grep` pe sume în HTML **și** în payload-ul RSC (nu doar în textul vizibil), pe toate paginile care randează pachetul |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---
@@ -2181,9 +2221,6 @@ adriana-chira-repo/
 │  │  │  ├─ [...notFound]/page.tsx
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
-| Submeniul rămâne deschis peste pagina nouă după click | Două cauze. (1) `:focus-within`: linkul apăsat rămâne focusat, iar antetul nu se remontează la navigare. (2) Mouse-ul e încă deasupra panoului, deci `:hover` e adevărat | (1) `group-has-[:focus-visible]` în loc de `group-focus-within` — se aprinde doar la tastatură. (2) Ascultătorul din `MobileNav` pune `data-dismissed` pe grup la click și îl scoate la `pointerleave` sau la prima tastă. **Nu reveni la `:focus-within`** |
-| Migrația cade cu „column already exists" pe baza locală | `pnpm dev` rulează Payload cu `push`, care adaugă singur coloana nouă de îndată ce schimbi colecția. Pe producție `push` e oprit, deci acolo migrația e singura cale | Local: `ALTER TABLE … DROP COLUMN …` și rulezi migrația din nou, ca să o verifici exact ca pe producție. Nu scrie `IF NOT EXISTS` în migrație ca să „treacă" |
-| O sumă care nu mai are voie să apară rămâne în pagină | Prețul nu stă doar în câmpul `price`: apare și în texte scrise de mână (FAQ, note de investiție, `llms.txt`) | `grep` pe sume în HTML **și** în payload-ul RSC (nu doar în textul vizibil), pe toate paginile care randează pachetul |
 │  │  │  └─ opengraph-image.tsx
 │  │  ├─ api/contact/route.ts      ← formularul
 │  │  ├─ api/stripe/checkout/      ← pornirea plății (form POST → 303 spre Stripe)
@@ -2205,6 +2242,7 @@ adriana-chira-repo/
 │  │                               ui/Glyph.tsx        ← semnele, desenate
 │  │                               ui/ProgramMotif.tsx ← antetul fiecărui program
 │  │                               ui/PackageBody.tsx  ← benzile paginilor lungi
+│  │                               ui/BackToTop.tsx    ← „Înapoi sus", zero JS
 │  │                               layout/NavDropdown.tsx ← submeniul din antet
 │  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
 │  │                               packages.ts · workshops.ts · testimonials.ts
@@ -2241,6 +2279,5 @@ Directoare care **vor** apărea la fazele următoare: `src/app/api/stripe/`.
 7. Commit mic, cu mesaj descriptiv în română.
 
 ---
-│  │                               ui/BackToTop.tsx    ← „Înapoi sus", zero JS
 
 *Website Factory · Pixel Factory SRL · Timișoara*

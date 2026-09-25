@@ -186,27 +186,49 @@ export async function createCheckoutSession(
   const base = origin || siteSettings.url
   const cancelParam = item.kind === 'workshop' ? 'workshop' : 'pachet'
 
-  const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = item.stripePriceId
+  const inline: Stripe.Checkout.SessionCreateParams.LineItem = {
+    quantity: 1,
+    price_data: {
+      currency: STRIPE_CURRENCY,
+      unit_amount: Math.round(item.price * 100),
+      product_data: {
+        name: item.name,
+        ...(item.description ? { description: item.description } : {}),
+      },
+    },
+  }
+
+  const byId: Stripe.Checkout.SessionCreateParams.LineItem | null = item.stripePriceId
     ? { price: item.stripePriceId, quantity: 1 }
-    : {
-        quantity: 1,
-        price_data: {
-          currency: STRIPE_CURRENCY,
-          unit_amount: Math.round(item.price * 100),
-          product_data: {
-            name: item.name,
-            ...(item.description ? { description: item.description } : {}),
-          },
-        },
-      }
+    : null
 
   // Locurile la workshop se pot cumpăra mai multe deodată, direct în pagina de
   // plată. Un program individual este, prin definiție, pentru o singură
   // persoană — acolo cantitatea rămâne fixă.
   if (item.kind === 'workshop') {
-    lineItem.adjustable_quantity = { enabled: true, minimum: 1, maximum: 10 }
+    const adjustable = { enabled: true, minimum: 1, maximum: 10 }
+    inline.adjustable_quantity = adjustable
+    if (byId) byId.adjustable_quantity = adjustable
   }
 
+  // Id-ul salvat poate fi respins: aparține cheilor de test după trecerea pe
+  // cele live, sau Price-ul a fost arhivat din dashboard. Suma e oricum cea
+  // citită pe server, deci reîncercăm cu `price_data` în loc să pierdem vânzarea.
+  // `pnpm stripe:sync` repară id-urile, ca a doua încercare să nu mai fie nevoie.
+  if (byId) {
+    const url = await openSession(stripe, item, base, cancelParam, byId)
+    if (url) return url
+  }
+  return openSession(stripe, item, base, cancelParam, inline)
+}
+
+async function openSession(
+  stripe: Stripe,
+  item: CheckoutItem,
+  base: string,
+  cancelParam: string,
+  lineItem: Stripe.Checkout.SessionCreateParams.LineItem,
+): Promise<string | null> {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',

@@ -173,6 +173,11 @@ async function markRefunded(charge: Stripe.Charge): Promise<void> {
   const payload = await getPayloadClientSafe()
   if (!payload) throw new Error('Baza de date nu răspunde')
 
+  // `charge.refunded` vine și la o rambursare parțială. Comanda devine
+  // „Rambursată" doar când s-a returnat toată suma; o returnare parțială
+  // rămâne vizibilă în Stripe, iar locul la workshop rămâne al cumpărătorului.
+  if (!charge.refunded) return
+
   const intentId = typeof charge.payment_intent === 'string' ? charge.payment_intent : null
   if (!intentId) return
 
@@ -274,11 +279,17 @@ async function notify(args: {
 /**
  * Eroarea de unicitate, oricum ar formula-o stratul de bază de date.
  *
- * Payload nu expune un cod stabil pentru încălcarea unui index unic, iar
- * mesajul diferă între adaptoare. Ne uităm la ce e comun: `23505`, codul
- * Postgres pentru `unique_violation`, sau textul lui.
+ * Payload nu expune un cod stabil pentru încălcarea unui index unic. Adaptorul
+ * Postgres o transformă într-un `ValidationError` cu `data.errors[].path`
+ * egal cu câmpul unic, iar mesajul e TRADUS în limba panoului („Următorul câmp
+ * nu este valid: stripeSessionId") — deci textul nu e de încredere. Ne uităm
+ * la cale, apoi la `23505` (codul Postgres pentru `unique_violation`), dacă
+ * eroarea brută ajunge până aici.
  */
 function isDuplicate(error: unknown): boolean {
+  const data = (error as { data?: { errors?: { path?: unknown }[] } } | null)?.data
+  if (data?.errors?.some((item) => item.path === 'stripeSessionId')) return true
+
   const text = error instanceof Error ? `${error.message}` : String(error)
   const code = (error as { code?: unknown } | null)?.code
   return code === '23505' || /unique|duplicate|23505/i.test(text)

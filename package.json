@@ -23,7 +23,9 @@
     "build:deploy": "node scripts/fix-migration-imports.mjs && payload migrate && next build",
     "migrate:create": "payload migrate:create",
     "migrate": "payload migrate",
-    "migrate:fix": "node scripts/fix-migration-imports.mjs"
+    "migrate:fix": "node scripts/fix-migration-imports.mjs",
+    "stripe:sync": "payload run scripts/stripe-sync.ts",
+    "stripe:listen": "node scripts/stripe-listen.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.88.0",
