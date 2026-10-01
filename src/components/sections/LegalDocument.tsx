@@ -135,6 +135,62 @@ export function LegalDocument({ page, settings }: Props) {
                       ))}
                     </ul>
                   )}
+
+                  {section.table && (
+                    /*
+                      Tabel semantic, ca la FAQ: crawlerele și cititoarele de ecran
+                      îl citesc pe coloane. Sub 640px derulează orizontal în caseta
+                      lui, nu împinge pagina.
+                    */
+                    <div className="mt-7 overflow-x-auto border-y border-ac-line">
+                      <table className="w-full min-w-[560px] border-collapse text-left">
+                        <caption className="ac-sr-only">{section.table.caption}</caption>
+                        <thead>
+                          <tr>
+                            {section.table.columns.map((column) => (
+                              <th
+                                key={column}
+                                scope="col"
+                                className="py-3 pr-5 align-bottom font-medium text-[11px] tracking-[0.18em] uppercase text-ac-accent-ink"
+                              >
+                                {column}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {section.table.rows.map((row) => (
+                            <tr key={row.join('|')} className="border-t border-ac-line">
+                              {row.map((cell, cellIndex) =>
+                                cellIndex === 0 ? (
+                                  <th
+                                    key={cellIndex}
+                                    scope="row"
+                                    className="py-4 pr-5 align-top text-body-sm font-medium whitespace-nowrap text-ac-ink"
+                                  >
+                                    {cell}
+                                  </th>
+                                ) : (
+                                  <td key={cellIndex} className="py-4 pr-5 align-top text-body-sm leading-[1.65] text-ac-ink-70">
+                                    {cell}
+                                  </td>
+                                ),
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {section.after?.map((paragraph) => (
+                    <p
+                      key={paragraph.slice(0, 40)}
+                      className="mt-5 text-body-lg leading-[1.75] text-ac-ink-70"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
                 </section>
               ))}
 
@@ -149,6 +205,17 @@ export function LegalDocument({ page, settings }: Props) {
                     {company.map((line) => (
                       <li key={line}>{line}</li>
                     ))}
+                    {/* Firma e cunoscută, dar lipsesc identificatorii: rămân vizibili ca de completat. */}
+                    {!settings.company.cui && (
+                      <li>
+                        <span data-placeholder>[ CUI ]</span>
+                      </li>
+                    )}
+                    {!settings.company.regCom && (
+                      <li>
+                        <span data-placeholder>[ Nr. Reg. Com. ]</span>
+                      </li>
+                    )}
                   </ul>
                 ) : (
                   <p className="mt-5 text-body text-ac-ink-70">
@@ -157,11 +224,16 @@ export function LegalDocument({ page, settings }: Props) {
                 )}
 
                 <p className="mt-5 text-body text-ac-ink-70">
-                  {settings.city}, {settings.country} ·{' '}
                   {settings.email ? (
                     <TextLink href={`mailto:${settings.email}`}>{settings.email}</TextLink>
                   ) : (
                     <span data-placeholder>[ email ]</span>
+                  )}
+                  {settings.phone && (
+                    <>
+                      {' · '}
+                      <TextLink href={`tel:${settings.phone.replace(/\s/g, '')}`}>{settings.phone}</TextLink>
+                    </>
                   )}
                 </p>
 

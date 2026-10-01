@@ -14,6 +14,8 @@ import { Media } from '@/collections/Media'
 import { Orders } from '@/collections/Orders'
 import { Packages } from '@/collections/Packages'
 import { Posts } from '@/collections/Posts'
+import { ResourceRequests } from '@/collections/ResourceRequests'
+import { Resources } from '@/collections/Resources'
 import { Submissions } from '@/collections/Submissions'
 import { Testimonials } from '@/collections/Testimonials'
 import { Users } from '@/collections/Users'
@@ -21,6 +23,7 @@ import { Workshops } from '@/collections/Workshops'
 import { AboutPage } from '@/globals/AboutPage'
 import { HomePage } from '@/globals/HomePage'
 import { SiteSettings } from '@/globals/SiteSettings'
+import { RESOURCE_MAX_BYTES } from '@/lib/resources'
 import { siteUrlOr } from '@/lib/site-url'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -56,12 +59,40 @@ const roCorectat = {
  */
 const blobToken = process.env.BLOB_READ_WRITE_TOKEN
 
+/*
+  Două decizii, amândouă despre limitele Vercel:
+
+  - `clientUploads`: fișierul urcă din browser DIRECT în Blob. Altfel trece
+    prin funcția serverless, care primește cel mult 4,5 MB — un PDF de 8 MB ar
+    cădea cu o eroare de platformă, nu cu una de-a noastră. Plafonul real e
+    `RESOURCE_MAX_BYTES`, verificat în hook-ul colecției.
+  - `addRandomSuffix`: numele din Blob primește un sufix aleator. Adresele
+    Blob sunt publice; sufixul le face imposibil de ghicit, ceea ce contează
+    pentru documentele „doar cu formular". Ruta noastră nu le dă niciodată
+    înainte de formular, iar `resources` nu e citibilă public.
+
+  `disablePayloadAccessControl` pe resurse: ruta de descărcare redirecționează
+  direct către Blob, fără să treacă octeții prin funcție (fără cost de transfer
+  dublu și fără limita de răspuns).
+*/
 const storagePlugins = blobToken
   ? [
       vercelBlobStorage({
         enabled: true,
-        collections: { media: true },
+        collections: {
+          media: true,
+          // Fără `prefix`: pluginul ar adăuga coloana `prefix` în colecție DOAR
+          // când există token, deci schema de producție ar diverge de migrații.
+          resources: { disablePayloadAccessControl: true },
+        },
         token: blobToken,
+        addRandomSuffix: true,
+        clientUploads: {
+          access: ({ req }) => {
+            const role = (req.user as { role?: string } | null)?.role
+            return role === 'admin' || role === 'editor'
+          },
+        },
       }),
     ]
   : []
@@ -87,6 +118,8 @@ export default buildConfig({
     Testimonials,
     Faqs,
     Media,
+    Resources,
+    ResourceRequests,
     Orders,
     Submissions,
     Users,
@@ -94,6 +127,12 @@ export default buildConfig({
   globals: [SiteSettings, HomePage, AboutPage],
 
   editor: lexicalEditor(),
+
+  // Plafonul pentru încărcările care trec prin server (local, sau fără Blob).
+  // Cu Blob, documentele ocolesc serverul — vezi `clientUploads` mai sus.
+  upload: {
+    limits: { fileSize: RESOURCE_MAX_BYTES },
+  },
 
   db: postgresAdapter({
     pool: {

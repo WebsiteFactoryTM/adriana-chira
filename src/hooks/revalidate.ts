@@ -179,3 +179,19 @@ export const revalidateEverything: GlobalAfterChangeHook = ({ doc }) => {
   }
   return doc
 }
+
+/**
+ * O resursă descărcabilă apare pe pagina ei și pe articolele care o atașează.
+ * Articolele se invalidează toate, ca layout: titlul sau regula de acces a
+ * resursei se schimbă rar, iar a căuta articolele care o folosesc ar costa o
+ * interogare la fiecare salvare.
+ */
+export const revalidateResource: CollectionAfterChangeHook = ({ doc }) => {
+  revalidate([`/resurse/${doc.slug}`])
+  try {
+    revalidatePath('/blog/[slug]', 'page')
+  } catch {
+    // În afara contextului Next (seed, CLI) nu e nimic de invalidat.
+  }
+  return doc
+}

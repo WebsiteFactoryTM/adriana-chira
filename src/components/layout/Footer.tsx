@@ -127,7 +127,23 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           <div className="text-xs leading-[1.8] text-[rgba(250,245,236,.55)]">
             <p>© {year} Adriana Chira. Toate drepturile rezervate.</p>
             {legalLine.length > 0 ? (
-              <p>{legalLine.join(' · ')}</p>
+              <p>
+                {legalLine.join(' · ')}
+                {/* Firma e cunoscută, dar CUI-ul sau nr. Reg. Com. lipsesc: le
+                    arătăm ca placeholder, nu le lăsăm să dispară în tăcere. */}
+                {!settings.company.cui && (
+                  <>
+                    {' · '}
+                    <Placeholder>[ CUI ]</Placeholder>
+                  </>
+                )}
+                {!settings.company.regCom && (
+                  <>
+                    {' · '}
+                    <Placeholder>[ Reg. Com. ]</Placeholder>
+                  </>
+                )}
+              </p>
             ) : (
               <Placeholder>[ Denumire firmă · CUI · Reg. Com. ]</Placeholder>
             )}

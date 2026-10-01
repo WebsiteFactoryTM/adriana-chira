@@ -96,11 +96,21 @@ const HPA = [
   { label: '06', attributes: 2 },
 ] as const
 
+/**
+ * Cât stă eticheta în afara inelului exterior și cât loc îi rămâne până la
+ * marginea casetei. SVG-ul taie tot ce iese din `viewBox` (`overflow: hidden`
+ * implicit), deci raza se calculează DIN casetă, nu invers: prima variantă
+ * avea `outer = 142` fix, iar „01" și „04" cădeau la y = 2 și y = 338, cu
+ * jumătate de literă tăiată.
+ */
+const LABEL_GAP = 26
+const LABEL_ROOM = 14
+
 function assessmentMotif() {
   const cx = W / 2
   const cy = H / 2
   const inner = 46
-  const outer = 142
+  const outer = H / 2 - LABEL_GAP - LABEL_ROOM
   const step = 360 / HPA.length
 
   // Profilul: raze diferite pe fiecare axă. Nu e un profil real al nimănui —
@@ -132,7 +142,7 @@ function assessmentMotif() {
         const angle = index * step
         const start = polar(cx, cy, inner, angle)
         const end = polar(cx, cy, outer + 6, angle)
-        const label = polar(cx, cy, outer + 26, angle)
+        const label = polar(cx, cy, outer + LABEL_GAP, angle)
 
         return (
           <g key={dimension.label}>

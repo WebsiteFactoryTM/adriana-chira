@@ -188,7 +188,7 @@ export default async function PachetPage({ params }: Params) {
             <div>
               <Eyebrow
                 content={{ text: pkg.kicker ?? `Program ${pkg.numeral}`, ornament: 'line' }}
-                className="max-w-[46ch] leading-[1.55] max-sm:text-[11px] max-sm:tracking-[0.18em] max-sm:[&>span:first-child]:hidden"
+                className="max-w-[64ch] leading-[1.55] max-sm:text-[11px] max-sm:tracking-[0.18em] max-sm:[&>span:first-child]:hidden"
               />
 
               <h1 className="mt-[clamp(16px,2.6vw,34px)] max-w-[16ch] font-display text-h1 font-light max-sm:text-[clamp(2.15rem,9.6vw,2.6rem)] short:mt-[clamp(14px,2.6vh,24px)]">

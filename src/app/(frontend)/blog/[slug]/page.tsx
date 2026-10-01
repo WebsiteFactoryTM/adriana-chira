@@ -8,6 +8,7 @@ import { Eyebrow } from '@/components/ui/Eyebrow'
 import { FaqList } from '@/components/ui/FaqList'
 import { ImageSlot } from '@/components/ui/ImageSlot'
 import { PostCard } from '@/components/ui/PostCard'
+import { ResourceList } from '@/components/ui/ResourceList'
 import { RichText } from '@/components/ui/RichText'
 import { Section, Shell } from '@/components/ui/Section'
 import { ShareRow } from '@/components/ui/ShareRow'
@@ -183,6 +184,8 @@ export default async function ArticolPage({ params }: Params) {
                 )}
 
                 <RichText content={post.content} />
+
+                <ResourceList resources={post.resources} postId={post.id} />
 
                 <div className="mt-[clamp(48px,6vw,80px)]">
                   <ShareRow url={shareUrl} title={post.title} />

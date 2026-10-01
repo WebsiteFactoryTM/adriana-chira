@@ -6,10 +6,30 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **25 septembrie 2026** |
-| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **12/12**, rulat pe 25 septembrie 2026 |
-| Ultimul commit | vezi `git log` — Preț la cerere, laptopuri de 14", meniuri care se închid |
+| Ultima actualizare | **1 octombrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 1 octombrie 2026 |
+| Ultimul commit | vezi `git log` — Resurse descărcabile, pagini legale, elemente tăiate |
+
+> **Ce s-a schimbat pe 1 octombrie 2026.** Patru cereri. Detalii în §4 („Runda din
+> 1 octombrie"), §9.37–§9.38, §10 și §6.
+>
+> 1. **Elemente tăiate.** Audit automat pe 14 pagini × 5 lățimi (1536×720, 1440,
+>    1280×720, 1024, 768, 390, 340): singurul element tăiat real era desenul SPA —
+>    etichetele „01" și „04" ieșeau din `viewBox`. Reparat din geometrie. Eticheta
+>    de deasupra titlului pe paginile de program s-a lărgit (46ch → 64ch): se rupea
+>    pe patru rânduri.
+> 2. **Resurse descărcabile în articole.** Colecție nouă `resources` (PDF, Office,
+>    EPUB, MP3; max. 20 MB), atașată din articol. Pe fiecare fișier: „Gratuit,
+>    direct" sau „după formular" (prenume, nume, telefon, email + acordul pentru
+>    politică; noutățile pe email, bifă separată). Solicitările în
+>    `resource-requests`. Zero JavaScript nou: formular HTML → 303 → link semnat.
+> 3. **Paginile legale rescrise**, pornind de la modelul clientei și de la ce face
+>    chiar site-ul. Cookie-urile au tabel; textele se potrivesc cu bara
+>    („Accept toate / Refuz toate / Setări"). Nota „Document în lucru" e oprită.
+> 4. **Date de contact**: `contact@adrianachira.ro`, `+40 723 573 123`; operator
+>    Adrenalin Mirific Concept SRL, Vulcan. **CUI și Reg. Com. lipsesc** — apar ca
+>    placeholdere vizibile (§7.6).
 
 > **Ce s-a schimbat pe 25 septembrie 2026.** Șase cereri ale clientei, toate
 > livrate într-o singură rundă. Detalii în §4 („Runda din 25 septembrie"),
@@ -1240,6 +1260,105 @@ totdeauna (capcana din §10). Pe workshopuri și pe cele trei pagini de program.
 Sub 640px, un fir de 3+ niveluri devine doar „← Servicii". Lista completă
 rămâne în HTML, `BreadcrumbList` nu se schimbă.
 
+### Runda din 1 octombrie 2026 ✅
+
+#### Elemente tăiate — audit, nu inspecție cu ochiul
+
+Un script rulat în browser încarcă fiecare pagină într-un `iframe` de lățime
+fixă și caută: text SVG în afara `viewBox`-ului, text tăiat de un strămoș cu
+`overflow: hidden`, `text-overflow: ellipsis`, text ieșit din ecran pe
+orizontală, derulare orizontală a paginii. 14 rute × 1536×720, 1440, 1280×720,
+1024, 768, 390, 340.
+
+**Singura tăietură reală: desenul Strategic Performance Assessment™.** Raza era
+fixă (`outer = 142`), iar etichetele stăteau la `outer + 26` = 168 de centru,
+într-o casetă de 340 — „01" la y = 2, „04" la y = 338, cu jumătate de literă în
+afara SVG-ului (care taie implicit). Raza se calculează acum din casetă:
+`H/2 − LABEL_GAP − LABEL_ROOM`. Celelalte două desene și motivul neutru aveau deja
+marjă. Falsurile pozitive ale scriptului (link-ul „Sari la conținut" la
+−9999px, rândurile din titlul heroului surprinse în mijlocul animației de
+intrare) sunt explicate în §10.
+
+Pe drum: eticheta de deasupra titlului pe paginile de program avea `max-w-[46ch]`,
+care la `tracking 0.26em` înseamnă ~24 de litere pe rând — fraza SPA se rupea pe
+patru rânduri înghesuite. Acum `64ch`.
+
+#### Resurse descărcabile în articole
+
+| Ce | Unde |
+|---|---|
+| Fișierele, cu regula de acces | colecția `resources` — `src/collections/Resources.ts` |
+| Cine le-a cerut | colecția `resource-requests` — `src/collections/ResourceRequests.ts` |
+| Limite, formate, jetonul semnat, adresele | `src/lib/resources.ts` |
+| Formularul (POST → 303) | `src/app/api/resurse/route.ts` |
+| Fișierul (singura ușă publică) | `src/app/api/resurse/[slug]/fisier/route.ts` |
+| Pagina resursei (formular + erori) | `/resurse/[slug]` |
+| Mulțumirea + butonul de descărcare | `/resurse/[slug]/descarca?t=…` (`noindex`) |
+| Cardurile din articol | `ui/ResourceList` + `ui/ResourceForm` — Server Components |
+
+**Regula de acces stă pe fișier, nu pe articol.** Același ghid atașat la cinci
+articole nu poate fi liber într-unul și închis în altul. În admin: articol →
+„Resurse descărcabile" → se încarcă direct de acolo (max. 4 pe articol) → pe
+fișier, „Cum se descarcă": *Gratuit, direct* sau *Gratuit, după completarea
+formularului*.
+
+**Fluxul cu formular, fără JavaScript.** Cardul deschide formularul pe loc
+(`<details>` nativ). `POST /api/resurse` → limitare de rată → validare
+(`validation/resource.ts`, schema NU ajunge în browser) → salvare în
+`resource-requests` → email vizitatorului cu linkul + notificare la
+`EMAIL_TO_ADMIN` → 303 spre `/resurse/[slug]/descarca?t=<jeton>`. Jetonul e
+HMAC cu `PAYLOAD_SECRET`, legat de resursă și de solicitare, valabil 7 zile;
+nu are tabel. Erorile se întorc la `/resurse/[slug]?eroare=…#formular` **fără
+datele omului în adresă**. Validarea nativă (`required`, `type="email"`,
+`pattern`, `:user-invalid`) prinde greșelile obișnuite înainte de trimitere.
+
+**Componente de client: tot patru.**
+
+**Dovada consimțământului (GDPR art. 7).** Fiecare solicitare păstrează
+`consent`, `policyVersion` (= `LEGAL_UPDATED` în momentul acceptării) și
+`marketingConsent`, separat. Retenție 12 luni; cu noutăți bifate, până la
+dezabonare — debifarea din admin pornește din nou cele 12 luni.
+
+**De ce fișierul nu se poate lua altfel.** `resources` nu e citibilă public
+(verificat în `verify:faza2`), `ResourceSummary` nu conține adresa fișierului,
+iar API-ul public al articolelor întoarce doar id-urile resurselor. Local,
+fișierele stau în `storage/resurse` (gitignorat, în afara `public/`).
+
+**Limitele de încărcare, pe Vercel.** O funcție primește cel mult **4,5 MB**.
+Cu `BLOB_READ_WRITE_TOKEN`, pluginul Blob are acum `clientUploads`: fișierul
+urcă din browser direct în Blob, iar plafonul real devine `RESOURCE_MAX_BYTES`
+= 20 MB, verificat pe server în hook-ul colecției (validarea din browser se
+ocolește). `addRandomSuffix` face adresele Blob imposibil de ghicit;
+descărcarea **redirecționează** spre Blob (`?download=1`), nu trece octeții
+prin funcție. Compromis acceptat conștient: cine are linkul Blob îl poate da
+mai departe — formularul e un schimb, nu DRM. Se aplică și la `media`
+(fotografii peste 4,5 MB).
+
+> **Neverificat:** încărcarea directă în Blob (local nu există token). Se
+> testează pe Preview, cu un PDF de 6–10 MB, după ce se pune tokenul (§7.14).
+
+#### Paginile legale
+
+Rescrise pornind de la modelul clientei (`../politica de confidentialitate.docx`,
+șablonul WordPress de pe adrenalinconcept.ro) și de la ce face chiar site-ul. Din
+model a rămas ce era adevărat — operatorul, sediul, telefonul, partajarea cu
+firma care administrează site-ul, rețelele sociale; comentariile, Gravatar și
+conturile de utilizator nu există aici, deci nu au fost preluate.
+
+| Pagina | Ce acoperă |
+|---|---|
+| Confidențialitate | operator, fiecare formular cu datele lui, temeiuri art. 6 (+ art. 9 pentru sesiuni), caracter obligatoriu, retenție pe categorii, împuterniciți (Vercel, Neon, Stripe, Resend, Google, Pixel Factory), transferuri SUA (DPF/SCC), drepturi, ANSPDCP, minori |
+| Cookie-uri | tabel `ac_consent` / `_ga` / `_ga_<ID>` / `payload-token`, cu durate reale; butoanele exacte ale barei; GA4 nedescărcat înainte de acord; Stripe |
+| Termeni | vânzătorul, servicii ≠ psihoterapie, prețuri în **lei** (draftul vechi spunea „euro"), comanda, rezervarea fără plată, workshopuri, OUG 34/2014, IP, ANPC + SAL |
+
+`LegalSection` a primit `table` și `after`. Platforma europeană SOL/ODR a fost
+închisă pe 20 iulie 2025, deci termenii trimit la ANPC și SAL — **dar insigna
+„SOL" din subsol duce încă la `ec.europa.eu/consumers/odr`** (vezi §7.17).
+
+Fiecare afirmație din aceste texte trebuie să rămână adevărată despre cod: un
+script terț, un cookie sau un formular nou înseamnă text nou ȘI
+`LEGAL_UPDATED` nou.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
@@ -1267,11 +1386,13 @@ Făcute la faza 3b: `sitemap.ts` cu articole, categorii, pachete și paginile le
 
 ### Faza 6b — Conformitate ⏳
 
-Cele patru pagini legale **există și au conținut**, dar textul e un draft nevalidat
-juridic — vezi §7.10 și comutatorul `LEGAL_DRAFT` din `src/content/pages.ts`.
+Paginile legale sunt **complete din 1 octombrie 2026** (§4), iar nota de draft e
+oprită (`LEGAL_DRAFT = false`).
 
-Rămân: validarea de către un jurist, completarea datelor de firmă și evenimentele
-GA4 (`view_package`, `begin_checkout`, `purchase`, …).
+Rămân: CUI-ul și nr. Reg. Com. (§7.6), o lectură juridică recomandată înainte de
+lansare (§7.10), jobul care șterge efectiv `submissions` și `resource-requests`
+la `expiresAt`, linkul de dezabonare pentru noutăți (când va exista o listă) și
+evenimentele GA4 (`view_package`, `begin_checkout`, `purchase`, …).
 
 ### Faza 7 — Performanță, accesibilitate, lansare ⏳
 
@@ -1331,6 +1452,12 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **25 sept.: homepage, HEAD vs. acum** | ✅ doar schimbările cerute: 2 prețuri din submeniu, 2 prețuri de pe carduri → „Solicită ofertă", intro-ul Servicii |
 | **25 sept.: `pnpm seed` de două ori** | ✅ pachetele neatinse, zero duplicate |
 | **25 sept.: în browser, 1536 × 784 și 390px** | ✅ submeniul se închide după click; „Înapoi sus" ascuns sus, vizibil după derulare; antetele încap pe 14" |
+| **1 oct.: audit de elemente tăiate, 14 rute × 7 dimensiuni** | ✅ o singură tăietură reală (desenul SPA), reparată; re-rulat: zero |
+| **1 oct.: resurse — 11 căi, cu `curl` pe dev** | ✅ liberă → PDF · cu formular fără jeton → formular · jeton falsificat → formular · date invalide / honeypot → `?eroare=date` · valid → mulțumire „Mulțumesc, Ana" + PDF · POST pe resursă liberă → nu salvează nimic |
+| **1 oct.: `/api/resources`, `/api/resources/file/*`, `/api/posts?depth=2`** | ✅ 403 / 403 / doar id-urile resurselor, zero nume de fișier |
+| **1 oct.: migrația, pe schema resetată, cu `NODE_ENV=production`** | ✅ tabelele și coloanele `push`-ului șterse, migrația aplicată curat |
+| **1 oct.: `pnpm verify:faza2`** | ✅ 14/14 (două verificări noi: resursele și solicitările nu se citesc public) |
+| **1 oct.: homepage + SPA + CLAR, HEAD vs. acum, text vizibil** | ✅ doar subsolul: email, telefon, firma, `[ CUI ]`, `[ Reg. Com. ]` |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -1720,9 +1847,9 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 1 | ~~**Pachetele de servicii**~~ ✅ **rezolvat pe 7 septembrie 2026** | Cele trei programe reale sunt în CMS, vizibile, cu preț în lei. Vezi §4, „Conținutul real". | — |
 | 2 | ~~**Portret profesional**~~ ✅ **rezolvat** | Fotografiile din ședința foto a clientei sunt în `public/images/`, câte una pe pagină. Placeholderul filigranat din pachetul de design a fost șters. | — |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
-| 4 | Email, telefon | Footerul, pagina de contact, `/multumim` și paginile legale afișează `[ email ]`, `[ telefon ]`. Formularul funcționează oricum: mesajele ajung în `submissions`, în admin | Contact, schema, notificarea pe email |
+| 4 | ~~Email, telefon~~ ✅ **rezolvat pe 1 octombrie 2026** | `contact@adrianachira.ro`, `+40 723 573 123`, în `src/content/site.ts`; se pot suprascrie din `site-settings`. **`EMAIL_FROM` / `RESEND_API_KEY` / `EMAIL_TO_ADMIN` trebuie puse pe Vercel**, altfel emailurile (inclusiv linkul de descărcare) nu pleacă — linkul e oricum afișat pe pagina de mulțumire | — |
 | 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
-| 6 | CUI, reg. com., sediu | Footerul afișează `[ Denumire firmă · CUI · Reg. Com. ]` | ANPC, Termeni |
+| 6 | **CUI, reg. com.** — 🟡 denumirea și sediul sunt puse (1 oct. 2026) | Adrenalin Mirific Concept SRL, Str. Nicolae Titulescu nr. 62, Vulcan, jud. Hunedoara — din modelul de politică trimis de clientă (același telefon). **De confirmat că aceasta e firma prin care vinde Adriana.** CUI și Reg. Com. nu apar în model și nu se găsesc public; subsolul și paginile legale arată `[ CUI ]`, `[ Reg. Com. ]`. Se completează în `site-settings` | ANPC, Termeni |
 | 7 | **Regim TVA, PFA sau SRL** | Prețurile se afișează ca sume simple, fără mențiune de TVA. Documentul CLAR cere explicit confirmarea: 5.100 lei este cu TVA inclus sau „+ TVA"? Se aplică la toate cele patru prețuri. | Afișarea prețurilor, configurarea Stripe |
 | 8 | **Cont Stripe + chei** — 🟡 **sandbox conectat local pe 25 septembrie 2026**; lipsesc cheile LIVE ale clientei și endpointul de producție | Codul e complet și verificat (§4, faza 4). Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
 | 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
@@ -1730,12 +1857,13 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 8e | **Scrierea numelui „Gabriela Tarna"** | Așa apare în document. Nu am completat diacritice ghicite pe numele unei persoane. De confirmat forma corectă. | Lansare |
 | 8c | **Datele edițiilor de workshop de după decembrie 2026** | Trei ediții sunt programate (octombrie, noiembrie, decembrie 2026). Celelalte 11 workshopuri apar în catalog fără dată și fără buton de plată. Adriana le deschide punându-le o dată în admin — se pot cumpăra automat următoarele trei. | Vânzarea workshopurilor din 2027 |
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
-| 10 | **Validare juridică a paginilor legale** | Cele patru pagini EXISTĂ, cu text scris pe situația reală a site-ului, dar marcat vizibil ca draft. Nota se scoate din `LEGAL_DRAFT`, în `src/content/pages.ts` | Lansare |
+| 10 | **Lectură juridică a paginilor legale** — 🟡 textele sunt complete (1 oct. 2026) | Nota de draft e oprită. Două valori sunt alegeri rezonabile, nu cerințe primite, și trebuie confirmate de clientă: retenția notelor din colaborare (3 ani după încheiere) și răspunsul la reclamații (30 de zile). O lectură a unui jurist rămâne recomandată | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
 | 12 | **Textul celor 3 articole de lansare** | Titlurile, rezumatele și categoriile din design sunt în CMS, ca **ciorne**; corpul e `[ DE COMPLETAT ]`. `/blog` afișează starea goală („Primele articole sunt în lucru"), iar secțiunea Blog de pe homepage rămâne cea din design. Prima publicare le aduce automat în ambele | Conținutul blogului, RSS |
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
 | 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
-| 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile s-ar pierde la fiecare deploy** | Încărcarea de imagini în producție |
+| 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile ȘI resursele descărcabile s-ar pierde la fiecare deploy**, iar orice fișier peste 4,5 MB ar fi respins de platformă. Cu tokenul, încărcarea merge direct în Blob (`clientUploads`) | Încărcarea de imagini și documente în producție |
+| 17 | **Insigna „SOL" din subsol** | Platforma europeană ODR a fost închisă pe 20 iulie 2025; insigna duce încă la `ec.europa.eu/consumers/odr`. Subsolul e pe homepage, deci nu am atins-o fără decizie: propunerea e să rămână doar insigna ANPC · SAL | Conformitate ANPC |
 | 15 | ~~**Postgres pentru producție**~~ ✅ **rezolvat pe 25 septembrie 2026** | Neon (`ep-purple-surf-b1lnsbgm`, eu-central-1), string POOLED în `DATABASE_URI` pe Vercel. Migrat (4 migrații), seed rulat, prețurile legate de aceleași produse Stripe din sandbox ca baza locală. Admin: `admin@adrianachira.ro`, parola generată de seed — **se schimbă la prima autentificare** | — |
 
 > ### ⚠️ Decizie deschisă: crawlerele AI
@@ -1791,8 +1919,8 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Treizeci și cinci, toate documentate în cod prin comentarii. **Ultimele cinci
-(31–35) sunt din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
+Treizeci și opt, toate documentate în cod prin comentarii. **37–38 sunt din
+1 octombrie 2026; 31–36, din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
 din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
 fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
 paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
@@ -2141,6 +2269,15 @@ impusă de prima dintre ele.
     nevoie de ea) și clauza legală „Dacă serviciul nu ți se pare potrivit".
     În CMS: migrația `20260925_120000_texte_pozitive`, doar pe textul exact al
     seed-ului.
+37. **Resurse descărcabile la finalul articolelor** (1 octombrie 2026, cerut).
+    Designul aprobat nu are articole. Cardul folosește doar limbajul existent:
+    cartelă crem cu hairline, `GlyphBadge` (semn nou: `document`, desenat ca
+    celelalte), etichetă versală, buton-pilulă. Formularul e HTML pe server, nu a
+    cincea componentă de client — vezi §4.
+38. **Nota „Document în lucru" de pe paginile legale e oprită** (1 octombrie
+    2026). Textele sunt complete și scrise pe comportamentul real al site-ului;
+    CUI-ul lipsă rămâne vizibil ca placeholder, nu e ascuns de notă. Comutatorul
+    `LEGAL_DRAFT` a rămas, pentru o eventuală revizie.
 
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
@@ -2199,6 +2336,13 @@ pe homepage și nu au pagină proprie.
 | Submeniul rămâne deschis peste pagina nouă după click | Două cauze. (1) `:focus-within`: linkul apăsat rămâne focusat, iar antetul nu se remontează la navigare. (2) Mouse-ul e încă deasupra panoului, deci `:hover` e adevărat | (1) `group-has-[:focus-visible]` în loc de `group-focus-within` — se aprinde doar la tastatură. (2) Ascultătorul din `MobileNav` pune `data-dismissed` pe grup la click și îl scoate la `pointerleave` sau la prima tastă. **Nu reveni la `:focus-within`** |
 | Migrația cade cu „column already exists" pe baza locală | `pnpm dev` rulează Payload cu `push`, care adaugă singur coloana nouă de îndată ce schimbi colecția. Pe producție `push` e oprit, deci acolo migrația e singura cale | Local: `ALTER TABLE … DROP COLUMN …` și rulezi migrația din nou, ca să o verifici exact ca pe producție. Nu scrie `IF NOT EXISTS` în migrație ca să „treacă" |
 | O sumă care nu mai are voie să apară rămâne în pagină | Prețul nu stă doar în câmpul `price`: apare și în texte scrise de mână (FAQ, note de investiție, `llms.txt`) | `grep` pe sume în HTML **și** în payload-ul RSC (nu doar în textul vizibil), pe toate paginile care randează pachetul |
+| Etichete tăiate pe jumătate într-un desen SVG | SVG-ul are `overflow: hidden` implicit, iar raza era scrisă fix (`outer = 142`): etichetele de la ora 12 și 6 cădeau la 2px de marginea `viewBox`-ului, cu jumătate de literă afară. Nu se vede în cod, doar pe ecran | Geometria se calculează DIN casetă (`H/2 − LABEL_GAP − LABEL_ROOM` în `ProgramMotif`). Verificare: `getBBox()` al fiecărui `<text>` comparat cu `viewBox`-ul — scriptul de audit din §4 |
+| Auditul de elemente tăiate raportează titlul heroului ca „tăiat" | Rândurile titlului sunt `overflow-hidden` cu textul translatat 100% la start; într-un tab din fundal Chrome nu produce cadre, deci animația stă în starea inițială (vezi și capcana cu `requestAnimationFrame`) | Fals pozitiv. Măsoară în tabul activ, după 3s: `transform` ajunge la `none` |
+| `pattern` pe `<input>` ignorat în tăcere | Browserele compilează `pattern` cu indicatorul `v`, unde `(`, `)` și `-` nescăpate într-o clasă de caractere fac expresia invalidă; o expresie invalidă nu dă eroare, doar dezactivează validarea | Scapă-le: `[+0-9 \(\)\.\-]`. `PHONE_PATTERN` e unul singur, folosit și în atribut, și în schema de pe server |
+| Coloană care există doar în producție | `vercelBlobStorage` cu `prefix` pe o colecție adaugă câmpul `prefix` DOAR când există token. Migrațiile se generează local, fără token, deci producția ar cere o coloană care nu există | Fără `prefix` pe colecții (sau `alwaysInsertFields: true` și migrație nouă). Sufixul aleator face oricum numele unice |
+| Ștergerea unei resurse ar eșua | O relație `required` devine `NOT NULL`, dar cheia străină e `ON DELETE SET NULL` — Postgres refuză ștergerea documentului referit | Relația din `resource-requests` nu e `required`: solicitarea rămâne, cu resursa goală. Validarea „există resursa" se face în rută |
+| Build: „Dynamic filesystem access causes tracing of the whole project" | `path.resolve(process.cwd(), …)` într-o rută: Turbopack nu știe ce fișiere se citesc și le include pe toate în funcție — pe Vercel, funcția s-ar umfla cu tot repo-ul | `path.resolve(/* turbopackIgnore: true */ process.cwd(), …)`. Vezi ruta de descărcare a resurselor |
+| `pnpm build` pe HEAD cade cu `Cannot find module …/resurse/…/page.js` după `git stash -u` | `.next/dev/types/validator.ts` rămâne din build-ul precedent și trimite la rutele care tocmai au dispărut | `rm -rf .next` înainte de build-ul de comparație |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---
@@ -2236,7 +2380,9 @@ adriana-chira-repo/
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
 │  │  │  └─ opengraph-image.tsx
+│  │  │  ├─ resurse/[slug]/{page,descarca/page}.tsx ← resursa + mulțumirea
 │  │  ├─ api/contact/route.ts      ← formularul
+│  │  ├─ api/resurse/              ← formularul resurselor + /[slug]/fisier
 │  │  ├─ api/stripe/checkout/      ← pornirea plății (form POST → 303 spre Stripe)
 │  │  ├─ api/stripe/webhook/       ← singurul loc care scrie o comandă
 │  │  └─ (payload)/                ← generat de Payload, nu se editează manual
@@ -2247,6 +2393,7 @@ adriana-chira-repo/
 │  ├─ collections/                 Posts · Categories · Packages · Workshops
 │  │                               Testimonials · Faqs · Media · Orders
 │  │                               Submissions · Users
+│  │                               Resources · ResourceRequests
 │  ├─ globals/                     SiteSettings · HomePage · AboutPage
 │  ├─ fields/                      slug.ts · seo.ts · section.ts
 │  ├─ hooks/                       revalidate.ts · stripeSync.ts
@@ -2265,7 +2412,8 @@ adriana-chira-repo/
 │  │                               checkout.ts · workshops.ts · nav.ts
 │  │                               consent.ts · schema.ts · seo.ts · routes.ts
 │  │                               email.ts · rate-limit.ts · cn.ts
-│  │                               validation/contact.ts
+│  │                               resources.ts ← limite, formate, jetonul semnat
+│  │                               validation/{contact,resource}.ts
 │  ├─ payload.config.ts
 │  └─ payload-types.ts             ← generat, se comite
 ├─ README.md                       ← prezentare pentru echipă

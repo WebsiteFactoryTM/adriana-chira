@@ -74,6 +74,8 @@ export interface Config {
     testimonials: Testimonial;
     faqs: Faq;
     media: Media;
+    resources: Resource;
+    'resource-requests': ResourceRequest;
     orders: Order;
     submissions: Submission;
     users: User;
@@ -91,6 +93,8 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    resources: ResourcesSelect<false> | ResourcesSelect<true>;
+    'resource-requests': ResourceRequestsSelect<false> | ResourceRequestsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -186,6 +190,10 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * Opțional. Documente pe care cititorul le poate descărca la finalul articolului. La fiecare fișier alegi dacă se descarcă direct sau doar după ce vizitatorul își lasă numele, telefonul și emailul. Maximum 20 MB pe fișier.
+   */
+  resources?: (number | Resource)[] | null;
   /**
    * Opțional. Dacă completezi, articolul primește schema FAQPage — răspunsurile pot apărea direct în Google și în răspunsurile AI.
    */
@@ -313,6 +321,42 @@ export interface Category {
   description?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Documente pe care vizitatorii le pot descărca din articole: PDF, Word, Excel, PowerPoint, EPUB, MP3. Maximum 20 MB pe fișier.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  /**
+   * Ce primește omul, în cuvintele lui. Ex.: „Ghid: 7 întrebări înainte de o decizie mare".
+   */
+  title: string;
+  /**
+   * Adresa paginii resursei: /resurse/<slug>. Se completează singur din titlu.
+   */
+  slug: string;
+  /**
+   * Opțional, maximum 240 de caractere. Una-două fraze: ce conține și la ce folosește.
+   */
+  description?: string | null;
+  /**
+   * Cu formular: vizitatorul lasă prenumele, numele, telefonul și emailul și acceptă politica de confidențialitate. Solicitările apar în „Solicitări de resurse".
+   */
+  access: 'free' | 'gated';
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * Pachetele de consultanță, cu prețurile pe care le vede clientul.
@@ -619,6 +663,36 @@ export interface Faq {
   createdAt: string;
 }
 /**
+ * Persoanele care au completat formularul pentru un document. Se șterg după 12 luni, cu excepția celor care au cerut noutăți pe email.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resource-requests".
+ */
+export interface ResourceRequest {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  resource?: (number | null) | Resource;
+  /**
+   * Gol = formularul a fost completat pe pagina resursei.
+   */
+  post?: (number | null) | Post;
+  consent: boolean;
+  /**
+   * Data ultimei actualizări a politicii de confidențialitate, în momentul acceptării.
+   */
+  policyVersion?: string | null;
+  /**
+   * Doar cine a bifat poate primi emailuri de prezentare. Debifează dacă persoana cere dezabonarea.
+   */
+  marketingConsent?: boolean | null;
+  expiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Comenzile plătite prin Stripe — pachete de consultanță și locuri la workshopuri. Se creează automat; nu se pot edita de aici.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -776,6 +850,14 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'resources';
+        value: number | Resource;
+      } | null)
+    | ({
+        relationTo: 'resource-requests';
+        value: number | ResourceRequest;
+      } | null)
+    | ({
         relationTo: 'orders';
         value: number | Order;
       } | null)
@@ -842,6 +924,7 @@ export interface PostsSelect<T extends boolean = true> {
   publishedAt?: T;
   readingTime?: T;
   content?: T;
+  resources?: T;
   faq?:
     | T
     | {
@@ -1081,6 +1164,45 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources_select".
+ */
+export interface ResourcesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  access?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resource-requests_select".
+ */
+export interface ResourceRequestsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  phone?: T;
+  resource?: T;
+  post?: T;
+  consent?: T;
+  policyVersion?: T;
+  marketingConsent?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

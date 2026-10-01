@@ -311,10 +311,28 @@ export type QaItem = {
   answer: string
 }
 
+/**
+ * Un document descărcabil, așa cum îl vede pagina. Adresa fișierului NU e aici:
+ * se obține doar prin ruta de descărcare, care aplică regula de acces.
+ */
+export type ResourceSummary = {
+  slug: string
+  title: string
+  description: string | null
+  /** `free` = descărcare directă; `gated` = după formular. */
+  access: 'free' | 'gated'
+  /** „PDF · 2,4 MB". */
+  meta: string
+  href: string
+}
+
 export type PostDetail = PostSummary & {
   content: RichTextDocument
   updatedAt: string
   faq: QaItem[]
+  /** ID-ul din CMS: formularul de resurse îl trimite, ca solicitarea să știe de unde a venit. */
+  id: number
+  resources: ResourceSummary[]
   related: PostSummary[]
   seo: SeoOverrides
 }
@@ -536,5 +554,15 @@ export type StaticPage = {
   lead: string
   /** Data ultimei revizuiri, afișată pe paginile legale. */
   updatedAt: string | null
-  sections: { heading: string; paragraphs: string[]; list?: string[] }[]
+  sections: LegalSection[]
+}
+
+export type LegalSection = {
+  heading: string
+  paragraphs: string[]
+  list?: string[]
+  /** Un tabel semantic, de ex. lista cookie-urilor. Se citește mai ușor decât o listă de fraze. */
+  table?: { caption: string; columns: string[]; rows: string[][] }
+  /** Paragrafe după listă sau tabel. */
+  after?: string[]
 }

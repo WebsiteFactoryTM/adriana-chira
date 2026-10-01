@@ -2,7 +2,8 @@ import type { MetadataRoute } from 'next'
 
 import { blogPage, legalPages } from '@/content/pages'
 import { siteSettings } from '@/content/site'
-import { getCategories, getPackages, getPostSlugs } from '@/lib/content'
+import { getCategories, getPackages, getPostSlugs, getResourceSlugs } from '@/lib/content'
+import { resourceHref } from '@/lib/resources'
 import { blogHref, categoryHref } from '@/lib/routes'
 import { WORKSHOPS_PATH } from '@/lib/workshops'
 
@@ -21,10 +22,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteSettings.url
   const now = new Date()
 
-  const [posts, categories, packages] = await Promise.all([
+  const [posts, categories, packages, resources] = await Promise.all([
     getPostSlugs(),
     getCategories(),
     getPackages(),
+    getResourceSlugs(),
   ])
 
   const url = (path: string) => new URL(path, base).toString()
@@ -69,6 +71,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
+  const resourceRoutes: MetadataRoute.Sitemap = resources.map((resource) => ({
+    url: url(resourceHref(resource.slug)),
+    lastModified: new Date(resource.updatedAt),
+    changeFrequency: 'yearly',
+    priority: 0.5,
+  }))
+
   // Paginile 2+ ale blogului. Prima e deja în rutele statice, ca `/blog`.
   const totalBlogPages = Math.ceil(posts.length / blogPage.perPage)
   const blogPageRoutes: MetadataRoute.Sitemap = Array.from(
@@ -87,6 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...postRoutes,
     ...categoryRoutes,
     ...blogPageRoutes,
+    ...resourceRoutes,
     ...legalRoutes,
   ]
 }

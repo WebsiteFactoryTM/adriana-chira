@@ -26,6 +26,7 @@ import type {
   PostDetail,
   PostSummary,
   ProblemaContent,
+  ResourceSummary,
   RichTextDocument,
   SeoOverrides,
   ServiciiContent,
@@ -37,6 +38,7 @@ import type {
   WorkshopEntry,
 } from '@/content/types'
 import { getPayloadClientSafe } from '@/lib/payload'
+import { resourceHref, resourceMeta } from '@/lib/resources'
 import { prepareWorkshops } from '@/lib/workshops'
 import type {
   AboutPage,
@@ -46,6 +48,7 @@ import type {
   Media,
   Package,
   Post,
+  Resource,
   SiteSetting,
 } from '@/payload-types'
 
@@ -1034,6 +1037,10 @@ export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
       content: doc.content,
       updatedAt: doc.updatedAt,
       faq: list(doc.faq, (item) => ({ question: item.question, answer: item.answer }), []),
+      id: doc.id,
+      resources: (doc.resources ?? [])
+        .filter((item): item is Resource => typeof item === 'object' && item !== null)
+        .map(toResourceSummary),
       related: await relatedPosts(payload, doc),
       seo: seoOf(doc.seo),
     }
@@ -1171,5 +1178,72 @@ export async function getCategoryBySlug(slug: string): Promise<CategorySummary |
     }
   } catch {
     return null
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Resurse descărcabile                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Forma publică a unei resurse. Fără `url` și fără `filename`: adresa
+ * fișierului nu pleacă spre pagini, ca o resursă „cu formular" să nu poată fi
+ * luată din HTML. Fișierul îl dă doar ruta de descărcare (`/api/resurse`).
+ *
+ * Resursele n-au fallback în `src/content/`: sunt fișiere încărcate de
+ * Adriana, nu text aprobat. Fără CMS, articolele oricum nu există.
+ */
+function toResourceSummary(doc: Resource): ResourceSummary {
+  return {
+    slug: doc.slug,
+    title: doc.title,
+    description: nullableText(doc.description, null),
+    access: doc.access === 'free' ? 'free' : 'gated',
+    meta: resourceMeta(doc.mimeType, doc.filesize),
+    href: resourceHref(doc.slug),
+  }
+}
+
+/** Resursa și articolele publicate care o atașează — pentru pagina ei. */
+export async function getResourceBySlug(
+  slug: string,
+): Promise<{ id: number; resource: ResourceSummary; posts: PostSummary[] } | null> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return null
+
+  try {
+    const result = await payload.find({
+      collection: 'resources',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+    const doc = result.docs[0]
+    if (!doc) return null
+
+    const posts = await payload.find({
+      collection: 'posts',
+      where: { and: [PUBLISHED, { resources: { in: [doc.id] } }] },
+      sort: '-publishedAt',
+      limit: 6,
+      depth: 1,
+    })
+
+    return { id: doc.id, resource: toResourceSummary(doc), posts: posts.docs.map(toPostSummary) }
+  } catch {
+    return null
+  }
+}
+
+/** Slug-urile tuturor resurselor — pentru sitemap. Fiecare are pagina ei, cu formular sau descărcare. */
+export async function getResourceSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
+  const payload = await getPayloadClientSafe()
+  if (!payload) return []
+
+  try {
+    const result = await payload.find({ collection: 'resources', limit: 500, depth: 0 })
+    return result.docs.map((doc) => ({ slug: doc.slug, updatedAt: doc.updatedAt }))
+  } catch {
+    return []
   }
 }

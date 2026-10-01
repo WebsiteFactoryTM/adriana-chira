@@ -53,6 +53,8 @@ export type GlyphName =
   | 'screen'
   /** Ce include prețul. */
   | 'layers'
+  /** Un document de descărcat: ghid, fișă de lucru. */
+  | 'document'
 
 /**
  * Căile, în coordonate de casetă 24×24.
@@ -80,6 +82,9 @@ const PATHS: Record<GlyphName, string> = {
   calendar: 'M4 7h16v14H4zM4 11h16M8 3v6M16 3v6',
   screen: 'M3 5h18v12H3zM9 21h6M12 17v4',
   layers: 'M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5M3 18l9 3 9-3',
+  // Foaie cu colțul îndoit și două rânduri — documentul, fără săgeată de
+  // descărcare: acțiunea o spune butonul, semnul spune ce primești.
+  document: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16.5h6',
 }
 
 type Props = {

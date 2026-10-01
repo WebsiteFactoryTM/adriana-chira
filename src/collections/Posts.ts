@@ -123,6 +123,18 @@ export const Posts: CollectionConfig = {
       required: true,
     },
     {
+      name: 'resources',
+      type: 'upload',
+      relationTo: 'resources',
+      hasMany: true,
+      maxRows: 4,
+      label: 'Resurse descărcabile',
+      admin: {
+        description:
+          'Opțional. Documente pe care cititorul le poate descărca la finalul articolului. La fiecare fișier alegi dacă se descarcă direct sau doar după ce vizitatorul își lasă numele, telefonul și emailul. Maximum 20 MB pe fișier.',
+      },
+    },
+    {
       name: 'faq',
       type: 'array',
       label: 'Întrebări frecvente pe acest articol',

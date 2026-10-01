@@ -33,7 +33,7 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 36.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 38.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
   Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
   `CopyLinkButton`. **Butonul de plată nu e printre ele**: e un `<form method="post">`
@@ -62,6 +62,11 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
   ascultătorul din `MobileNav` (`data-dismissed`). Vezi `STATUS.md` §10.
 - Prețul la cerere (`priceOnRequest` / `pricing: 'quote'`) se golește în stratul de
   conținut, nu în componente. Nu citi `price` direct din document într-o pagină.
+- Resursele descărcabile (`resources`) NU sunt citibile public și adresa fișierului nu
+  pleacă spre pagini: singura ușă e `/api/resurse/[slug]/fisier`, care aplică regula
+  „direct / după formular". Formularul lor e `<form method="post">`, ca plata — zero JS.
+- Paginile legale descriu comportamentul real al codului. Script terț, cookie sau
+  formular nou → text nou + `LEGAL_UPDATED` nou în `src/content/pages.ts`.
 - Laptopuri de 14": varianta `short:` și tokenii plafonați pe `vh` din `globals.css`.
   Peste 860px înălțime nu se schimbă nimic.
 
@@ -107,7 +112,7 @@ homepage-ul e verificat la pixel și nu are voie să se schimbe pe tăcute.
 ## Înainte de commit
 
 `pnpm build && pnpm typecheck` curate, grep-ul de sedile la zero pe `src/` și
-`scripts/`, `pnpm verify:faza2` la 10/10, și **actualizează `STATUS.md`**.
+`scripts/`, `pnpm verify:faza2` la 14/14, și **actualizează `STATUS.md`**.
 Ai atins schema? `pnpm generate:types` + o migrație nouă + `pnpm migrate:fix`.
 
 <!-- BEGIN:nextjs-agent-rules -->

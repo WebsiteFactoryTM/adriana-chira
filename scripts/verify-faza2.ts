@@ -305,6 +305,16 @@ const publicSubmissions = await payload
   .catch(() => -1)
 check('Publicul nu poate citi mesajele din formular', publicSubmissions === -1)
 
+// Resursele „doar cu formular" sunt închise doar dacă fișierul lor nu se poate
+// lua din API. Singura ușă publică e `/api/resurse/[slug]/fisier`.
+for (const collection of ['resources', 'resource-requests'] as const) {
+  const visible = await payload
+    .find({ collection, overrideAccess: false })
+    .then((r) => r.totalDocs)
+    .catch(() => -1)
+  check(`Publicul nu poate citi „${collection}" prin API`, visible === -1)
+}
+
 /* -------------------------------------------------------------------------- */
 /* Curățenie                                                                   */
 /* -------------------------------------------------------------------------- */

@@ -15,8 +15,10 @@ export const siteSettings: SiteSettings = {
   url: SITE_URL,
   locale: 'ro-RO',
 
-  email: null, // [ DE CONFIRMAT ] brief §13.4
-  phone: null, // [ DE CONFIRMAT ] brief §13.4
+  // Confirmate de clientă pe 1 octombrie 2026. Din admin (`site-settings`) se
+  // pot suprascrie fără deploy; câmpurile goale acolo cad pe acestea.
+  email: 'contact@adrianachira.ro',
+  phone: '+40 723 573 123',
   city: 'Timișoara',
   region: 'Timiș',
   country: 'România',
@@ -84,11 +86,18 @@ export const siteSettings: SiteSettings = {
     { label: 'Facebook', href: '#', pending: true },
   ],
 
+  /**
+   * Operatorul de date și vânzătorul. Denumirea și sediul vin din modelul de
+   * politică de confidențialitate trimis de clientă pe 1 octombrie 2026 (același
+   * telefon ca al Adrianei). CUI-ul și nr. de înregistrare NU apar acolo și nu
+   * se ghicesc: rămân placeholdere vizibile până se completează în admin
+   * (blocaj §7.6 din STATUS.md).
+   */
   company: {
-    legalName: null, // [ DE CONFIRMAT ] brief §13.6
-    cui: null,
-    regCom: null,
-    registeredAddress: null,
+    legalName: 'Adrenalin Mirific Concept SRL',
+    cui: null, // [ DE CONFIRMAT ] brief §13.6
+    regCom: null, // [ DE CONFIRMAT ] brief §13.6
+    registeredAddress: 'Str. Nicolae Titulescu nr. 62, Vulcan, jud. Hunedoara',
   },
 
   bookingUrl: null, // Cal.com / Calendly — se încarcă doar la click (brief §10.2)
