@@ -15,7 +15,9 @@ import { siteSettings } from '@/content/site'
  */
 const AI_CRAWLERS = ['GPTBot', 'ClaudeBot', 'Claude-Web', 'PerplexityBot', 'Google-Extended', 'CCBot']
 
-const PRIVATE_PATHS = ['/admin', '/api', '/multumim', '/comanda-anulata']
+// `/resurse/*/descarca` are în adresă jetonul personal de descărcare: nu are ce
+// căuta într-un index, iar pagina e oricum `noindex`.
+const PRIVATE_PATHS = ['/admin', '/api', '/multumim', '/comanda-anulata', '/resurse/*/descarca']
 
 export default function robots(): MetadataRoute.Robots {
   const base = siteSettings.url
@@ -25,7 +27,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: '*', allow: '/', disallow: PRIVATE_PATHS },
       ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: '/', disallow: PRIVATE_PATHS })),
     ],
+    // Fără `host`: directiva e doar Yandex, e învechită și așteaptă un domeniu,
+    // nu un URL. Canonicalul fiecărei pagini spune deja care e adresa corectă.
     sitemap: `${base}/sitemap.xml`,
-    host: base,
   }
 }

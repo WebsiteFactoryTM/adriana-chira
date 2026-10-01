@@ -9,7 +9,17 @@ e următorul pas concret.
 | Ultima actualizare | **1 octombrie 2026** |
 | Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · fazele 5b–7 neîncepute |
 | Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 1 octombrie 2026 |
-| Ultimul commit | vezi `git log` — Resurse descărcabile, pagini legale, elemente tăiate |
+| Ultimul commit | vezi `git log` — Favicon, imagine de share pe toate paginile, SEO local Timișoara |
+
+> **Ce s-a schimbat pe 1 octombrie 2026, runda a doua — SEO și identitate.**
+> **Favicon nou**: monograma „AC" în Cormorant, crem pe cerneală, cu firul
+> auriu (`icon.svg`, `favicon.ico`, `apple-icon.png`, manifest). **Imaginea de
+> share** e acum la adresă fixă (`/og.png`), cu fonturile reale și portretul, și
+> apare pe **toate** paginile — înainte doar pe homepage. Titlurile și descrierile
+> principale poartă „Timișoara" și termenii din brief §8.1. `llms.txt` are contact
+> și poziționarea („nu e coaching clasic, nu e psihoterapie"); `robots.txt` fără
+> `Host`, cu paginile de descărcare excluse. Detalii în §4 („SEO local și
+> identitate").
 
 > **Ce s-a schimbat pe 1 octombrie 2026.** Patru cereri. Detalii în §4 („Runda din
 > 1 octombrie"), §9.37–§9.38, §10 și §6.
@@ -132,7 +142,7 @@ Sunt în **directorul părinte** al acestui repo (`../`), nu în repo:
 8. **TypeScript strict.** Zero `any`, zero `@ts-ignore`.
 9. **Admin Payload în română.** Fiecare etichetă, descriere, mesaj de eroare.
 10. **Diacritice cu virgulă:** `ș` (U+0219), `ț` (U+021B). Niciodată sedila `ş`/`ţ`.
-    Verifică înainte de commit: `grep -rn "ş\|ţ" src/ scripts/` trebuie să dea zero.
+    Verifică înainte de commit: `grep -rnI "ş\|ţ" src/ scripts/` trebuie să dea zero (`-I`: fără fișiere binare, ca pictogramele).
 11. **Fără date reale de client** în seed sau fixtures.
 12. La final de fază: **oprește-te, rulează verificările fazei, raportează.**
 
@@ -569,7 +579,7 @@ capului e limitat. Peste ~8% s-ar atinge părul.
   În grup nu era compilat deloc. `sitemap.ts` funcționează din grup.
 - `src/app/(frontend)/sitemap.ts` — deocamdată doar `/`
 - `src/app/(frontend)/llms.txt/route.ts` — generat din același conținut ca pagina
-- `src/app/(frontend)/opengraph-image.tsx` — 1200×630, `force-static`
+- `src/app/(frontend)/og.png/route.tsx` — 1200×630, `force-static` (până pe 1 oct. 2026: `opengraph-image.tsx`, vezi „SEO local și identitate")
 - FAQ pe `<details>` nativ; tabelul comparativ e `<table>` semantic cu `<caption>`
   ascuns vizual
 
@@ -1359,6 +1369,47 @@ Fiecare afirmație din aceste texte trebuie să rămână adevărată despre cod
 script terț, un cookie sau un formular nou înseamnă text nou ȘI
 `LEGAL_UPDATED` nou.
 
+#### SEO local și identitate
+
+**Favicon.** Monograma „AC" e desenată din conturul literelor Cormorant Garamond
+(greutate 600, ca să rămână lizibilă la 16px), crem pe `--ac-ink`, cu firul auriu
+`--ac-accent` dedesubt — aceleași trei culori și același fir ca restul site-ului.
+Literele sunt **căi**, nu text: un favicon SVG nu poate încărca fonturi web.
+
+| Fișier | Pentru |
+|---|---|
+| `src/app/(frontend)/icon.svg` | browserele moderne, orice mărime |
+| `src/app/favicon.ico` | 16 / 32 / 48 px — Google în rezultate, browsere vechi |
+| `src/app/(frontend)/apple-icon.png` | iOS, 180 px, fără colțuri (le rotunjește iOS) |
+| `public/icon-192.png`, `icon-512.png`, `icon-512-maskable.png` | `src/app/manifest.ts` (Android); varianta maskable are monograma la 78%, în zona sigură |
+
+**Imaginea de share — `/og.png`.** Convenția `opengraph-image.tsx` publica
+imaginea la o adresă cu sufix variabil și o atașa doar segmentului ei; orice
+pagină care își declara `openGraph` — adică toate, prin `pageMetadata` — o
+pierdea. Paginile de program, blogul și contactul se partajau **fără imagine**.
+Acum `DEFAULT_OG_IMAGE` (`src/lib/seo.ts`) se pune explicit pe fiecare pagină
+fără imagine proprie, inclusiv pe Twitter/X. Imaginea folosește fonturile reale,
+din `src/assets/fonts` (Cormorant Light + Inter Medium, instanțiate din fonturile
+variabile Google și reduse la latin + latin-ext, ~120 KB; licențele OFL alături) —
+fontul implicit al generatorului pierdea „ș" și „ț".
+
+**Titluri și descrieri.** Termenii din brief §8.1, cu „Timișoara" acolo unde
+contează căutarea locală, fiecare sub 60 / 155 de caractere:
+
+| Pagina | Titlu |
+|---|---|
+| `/` | Adriana Chira · Consultant în performanță umană, Timișoara |
+| `/servicii` | Consultanță pentru antreprenori în Timișoara · Adriana Chira |
+| `/despre` | Despre mine: psihologie și strategie · Adriana Chira |
+| `/contact` | Contact · consultanță în Timișoara și online · Adriana Chira |
+| `/blog` | Blog: decizii și dezvoltare personală · Adriana Chira |
+
+**„Coach" nu apare ca titlu, deliberat.** Brief §2: „Nu e coach. Nu e terapeut."
+Pagina de servicii prinde căutările de coaching cu „Dincolo de coaching: …" în
+descriere, iar tabelul consultanță / coaching / psihoterapie din FAQ e fragmentul
+făcut pentru ele. Titlurile programelor vin din CMS (`seo.metaTitle`, din
+documentele clientei) și nu au fost atinse.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
@@ -1409,7 +1460,7 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | `pnpm typecheck` (TS 7, strict) | ✅ zero erori |
 | Cereri terțe înainte de consimțământ | ✅ zero; niciun `preconnect`/`dns-prefetch` |
 | Request-uri către domenii Google | ✅ zero — fonturi auto-găzduite |
-| `grep -rn "ş\|ţ" src/` | ✅ zero sedile |
+| `grep -rnI "ş\|ţ" src/` | ✅ zero sedile |
 | Ordinea celor 12 secțiuni și `id`-urile | ✅ identice cu designul |
 | Un singur `h1`, ierarhie fără sărituri | ✅ |
 | JSON-LD | ✅ JSON valid, 4 tipuri |
@@ -1458,6 +1509,7 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **1 oct.: migrația, pe schema resetată, cu `NODE_ENV=production`** | ✅ tabelele și coloanele `push`-ului șterse, migrația aplicată curat |
 | **1 oct.: `pnpm verify:faza2`** | ✅ 14/14 (două verificări noi: resursele și solicitările nu se citesc public) |
 | **1 oct.: homepage + SPA + CLAR, HEAD vs. acum, text vizibil** | ✅ doar subsolul: email, telefon, firma, `[ CUI ]`, `[ Reg. Com. ]` |
+| **1 oct., runda 2: `/favicon.ico`, `/icon-*.svg`, `/apple-icon-*.png`, `/manifest.webmanifest`, `/og.png`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`** | ✅ toate 200, tipurile corecte; `og:image` 1200×630 pe `/` ȘI pe `/servicii` (înainte: lipsă) |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -2341,6 +2393,8 @@ pe homepage și nu au pagină proprie.
 | `pattern` pe `<input>` ignorat în tăcere | Browserele compilează `pattern` cu indicatorul `v`, unde `(`, `)` și `-` nescăpate într-o clasă de caractere fac expresia invalidă; o expresie invalidă nu dă eroare, doar dezactivează validarea | Scapă-le: `[+0-9 \(\)\.\-]`. `PHONE_PATTERN` e unul singur, folosit și în atribut, și în schema de pe server |
 | Coloană care există doar în producție | `vercelBlobStorage` cu `prefix` pe o colecție adaugă câmpul `prefix` DOAR când există token. Migrațiile se generează local, fără token, deci producția ar cere o coloană care nu există | Fără `prefix` pe colecții (sau `alwaysInsertFields: true` și migrație nouă). Sufixul aleator face oricum numele unice |
 | Ștergerea unei resurse ar eșua | O relație `required` devine `NOT NULL`, dar cheia străină e `ON DELETE SET NULL` — Postgres refuză ștergerea documentului referit | Relația din `resource-requests` nu e `required`: solicitarea rămâne, cu resursa goală. Validarea „există resursa" se face în rută |
+| Paginile interioare se partajau fără imagine | `opengraph-image.tsx` din grup se atașează doar segmentului lui; o pagină care își declară `openGraph` îl înlocuiește pe cel moștenit, cu tot cu imagine. Nu dă nicio eroare | Imagine la adresă fixă (`/og.png`) și `DEFAULT_OG_IMAGE` pus explicit de `pageMetadata`. Verificare: `curl` pe o pagină interioară, nu doar pe `/`, și `grep og:image` |
+| `grep` de sedile găsește ceva în `src/` | Un PNG din `src/app` (`apple-icon.png`) conține întâmplător octeții lui `ş` | `grep -rnI` — `-I` sare peste fișierele binare |
 | Build: „Dynamic filesystem access causes tracing of the whole project" | `path.resolve(process.cwd(), …)` într-o rută: Turbopack nu știe ce fișiere se citesc și le include pe toate în funcție — pe Vercel, funcția s-ar umfla cu tot repo-ul | `path.resolve(/* turbopackIgnore: true */ process.cwd(), …)`. Vezi ruta de descărcare a resurselor |
 | `pnpm build` pe HEAD cade cu `Cannot find module …/resurse/…/page.js` după `git stash -u` | `.next/dev/types/validator.ts` rămâne din build-ul precedent și trimite la rutele care tocmai au dispărut | `rm -rf .next` înainte de build-ul de comparație |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
@@ -2365,6 +2419,7 @@ adriana-chira-repo/
 │  │  ├─ globals.css               ← TOȚI tokenii, în @theme
 │  │  ├─ fonts.ts
 │  │  ├─ robots.ts                 ← la rădăcină, nu în grup
+│  │  ├─ manifest.ts · favicon.ico  ← tot la rădăcină
 │  │  ├─ (frontend)/
 │  │  │  ├─ layout.tsx             ← layout rădăcină al site-ului
 │  │  │  ├─ page.tsx               ← homepage
@@ -2379,7 +2434,8 @@ adriana-chira-repo/
 │  │  │  ├─ [...notFound]/page.tsx
 │  │  │  ├─ sitemap.ts
 │  │  │  ├─ llms.txt/route.ts
-│  │  │  └─ opengraph-image.tsx
+│  │  │  ├─ og.png/route.tsx       ← imaginea de share, adresă fixă
+│  │  │  └─ icon.svg · apple-icon.png ← monograma „AC"
 │  │  │  ├─ resurse/[slug]/{page,descarca/page}.tsx ← resursa + mulțumirea
 │  │  ├─ api/contact/route.ts      ← formularul
 │  │  ├─ api/resurse/              ← formularul resurselor + /[slug]/fisier
@@ -2414,6 +2470,7 @@ adriana-chira-repo/
 │  │                               email.ts · rate-limit.ts · cn.ts
 │  │                               resources.ts ← limite, formate, jetonul semnat
 │  │                               validation/{contact,resource}.ts
+│  ├─ assets/fonts/                ← fonturile imaginii de share, subset + OFL
 │  ├─ payload.config.ts
 │  └─ payload-types.ts             ← generat, se comite
 ├─ README.md                       ← prezentare pentru echipă
@@ -2428,7 +2485,7 @@ Directoare care **vor** apărea la fazele următoare: `src/app/api/stripe/`.
 
 1. Rulează verificările fazei din `../03-PROMPT-CLAUDE-CODE.md`.
 2. `pnpm build && pnpm typecheck` — ambele trebuie să treacă curat.
-3. `grep -rn "ş\|ţ" src/ scripts/` — zero rezultate.
+3. `grep -rnI "ş\|ţ" src/ scripts/` — zero rezultate.
 4. Dacă ai atins schema: `pnpm generate:types`, `pnpm migrate:create <nume>`,
    `pnpm migrate:fix`, apoi `pnpm seed` de două ori la rând.
 5. Dacă ai atins UI-ul sau stratul de conținut: refă diff-ul CMS ↔ fallback din §6.

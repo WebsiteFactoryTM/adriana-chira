@@ -14,6 +14,19 @@ import type { SeoOverrides } from '@/content/types'
  * scris de mână îl ocolește: dacă cineva a formulat titlul explicit pentru
  * Google, nu i-l mai completăm noi.
  */
+/**
+ * Imaginea de partajare implicită — `src/app/(frontend)/og.png/route.tsx`.
+ * Fiecare pagină fără imagine proprie o primește explicit: `openGraph` declarat
+ * de o pagină ÎNLOCUIEȘTE pe cel moștenit, deci o imagine pusă doar în layout
+ * s-ar pierde exact pe paginile care o declară.
+ */
+export const DEFAULT_OG_IMAGE = {
+  url: '/og.png',
+  width: 1200,
+  height: 630,
+  alt: 'Adriana Chira — consultant în performanță umană, Timișoara',
+} as const
+
 type Args = {
   title: string
   description: string
@@ -49,9 +62,16 @@ export function pageMetadata({
       description: finalDescription,
       url: path,
       type: type === 'profile' ? 'profile' : type,
-      ...(finalImage ? { images: [{ url: finalImage }] } : {}),
+      locale: 'ro_RO',
+      siteName: 'Adriana Chira',
+      images: [finalImage ? { url: finalImage } : DEFAULT_OG_IMAGE],
     },
-    ...(finalImage ? { twitter: { card: 'summary_large_image', images: [finalImage] } } : {}),
+    twitter: {
+      card: 'summary_large_image',
+      title: finalTitle,
+      description: finalDescription,
+      images: [finalImage ?? DEFAULT_OG_IMAGE.url],
+    },
     ...(hidden
       ? { robots: { index: false, follow: true, googleBot: { index: false, follow: true } } }
       : {}),

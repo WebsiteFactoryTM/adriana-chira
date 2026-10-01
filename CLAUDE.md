@@ -52,7 +52,7 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
   din `src/app/globals.css`.
 - Fără terți înainte de consimțământ. Verifici în Network, nu presupui.
 - TypeScript strict. Zero `any`, zero `@ts-ignore`.
-- Diacritice cu virgulă: `ș` U+0219, `ț` U+021B. `grep -rn "ş\|ţ" src/` = zero.
+- Diacritice cu virgulă: `ș` U+0219, `ț` U+021B. `grep -rnI "ş\|ţ" src/` = zero (`-I` sare peste imagini).
 - Prețurile se citesc pe server, niciodată din client.
 - Admin Payload în română, fiecare etichetă.
 - Submeniurile din navigație sunt CSS pur (`:hover` + `:has(:focus-visible)` pe desktop,

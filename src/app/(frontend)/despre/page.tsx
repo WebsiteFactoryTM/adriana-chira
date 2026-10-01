@@ -26,12 +26,12 @@ const TRAIL: Crumb[] = [
 ]
 
 const DESCRIPTION =
-  'Sociologie, management strategic și psihologie. Cum am ajuns să lucrez cu oamenii care decid și ce înseamnă, concret, consultanța în performanță umană.'
+  'Sociologie, management strategic și psihologie: drumul meu spre consultanța în performanță umană și dezvoltarea personală a celor care decid. Timișoara.'
 
 export async function generateMetadata(): Promise<Metadata> {
   const about = await getAboutContent()
   return pageMetadata({
-    title: 'Despre mine',
+    title: 'Despre mine: psihologie și strategie',
     description: DESCRIPTION,
     path: '/despre',
     seo: about.seo,

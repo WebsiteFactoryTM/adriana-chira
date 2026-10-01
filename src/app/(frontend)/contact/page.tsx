@@ -25,9 +25,9 @@ const TRAIL: Crumb[] = [
 const PRIVACY_HREF = '/politica-de-confidentialitate'
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Contact',
+  title: 'Contact · consultanță în Timișoara și online',
   description:
-    'Scrie-mi despre situația ta. Răspund personal, în maximum 24 de ore lucrătoare. Timișoara și online.',
+    'Scrie-mi despre situația ta: programează o discuție în Timișoara sau online. Răspund personal, în maximum 24 de ore lucrătoare.',
   path: '/contact',
 })
 

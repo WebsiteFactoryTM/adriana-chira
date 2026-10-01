@@ -11,17 +11,18 @@ import { getPackages, getSiteSettings, getWorkshops } from '@/lib/content'
 import { navWithSubmenus } from '@/lib/nav'
 import { SITE_URL } from '@/lib/site-url'
 import { graph, personSchema } from '@/lib/schema'
+import { DEFAULT_OG_IMAGE } from '@/lib/seo'
 import { display, sans } from '../fonts'
 import '../globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Adriana Chira · Consultant în Performanță Umană',
+    default: 'Adriana Chira · Consultant în performanță umană, Timișoara',
     template: '%s · Adriana Chira',
   },
   description:
-    'Consultant în performanță umană. Lucrez cu antreprenori, profesioniști independenți și afaceri de familie pentru claritate în deciziile dificile.',
+    'Consultant în performanță umană, Timișoara și online. Claritate în decizii pentru antreprenori, manageri și afaceri de familie. Programe 1:1, workshopuri.',
   applicationName: 'Adriana Chira',
   authors: [{ name: 'Adriana Chira', url: SITE_URL }],
   creator: 'Adriana Chira',
@@ -33,8 +34,9 @@ export const metadata: Metadata = {
     locale: 'ro_RO',
     siteName: 'Adriana Chira',
     url: SITE_URL,
+    images: [DEFAULT_OG_IMAGE],
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: { card: 'summary_large_image', images: [DEFAULT_OG_IMAGE.url] },
   robots: {
     index: true,
     follow: true,
@@ -59,7 +61,7 @@ export const viewport: Viewport = {
  * statică pentru totdeauna.
  *
  * Paginile care declară altceva își păstrează valoarea proprie; `force-static`
- * de pe `opengraph-image.tsx` rămâne valabil, pentru că imaginea nu depinde de
+ * de pe `og.png/route.tsx` rămâne valabil, pentru că imaginea nu depinde de
  * dată.
  */
 export const revalidate = 3600

@@ -96,7 +96,7 @@ export const serviciiPage = {
   reassurance: homeContent.servicii.reassurance,
   image: serviciiImage,
   metaDescription:
-    'Consultanță în performanță umană pentru antreprenori, manageri și profesioniști: evaluare strategică de 3 ore, program individual de 8 săptămâni, program executive de 6 luni și workshopuri de o zi. Timișoara și online.',
+    'Dincolo de coaching: evaluare strategică, programe individuale și workshopuri de performanță umană pentru antreprenori și manageri. Timișoara și online.',
 }
 
 export const blogPage = {
@@ -105,7 +105,7 @@ export const blogPage = {
   lead: 'Texte despre felul în care oamenii decid, se blochează și își recapătă claritatea.',
   image: blogImage,
   metaDescription:
-    'Articole despre performanță umană, procese de decizie și tiparele care ne blochează. Scrise de Adriana Chira, consultant în performanță umană.',
+    'Articole despre performanță umană, decizii dificile, blocaje și dezvoltare personală pentru antreprenori și lideri. Scrise de Adriana Chira, Timișoara.',
   /** Câte articole pe pagină. Promptul §5.3 cere 9. */
   perPage: 9,
   empty: 'Primele articole sunt în lucru. Revino în curând.',

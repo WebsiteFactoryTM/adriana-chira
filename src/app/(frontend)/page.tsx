@@ -26,18 +26,29 @@ import {
   reviewSchemas,
   websiteSchema,
 } from '@/lib/schema'
+import { DEFAULT_OG_IMAGE } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Adriana Chira · Consultant în Performanță Umană',
+  // Absolut: titlul primei pagini nu primește sufixul din șablon.
+  title: { absolute: 'Adriana Chira · Consultant în performanță umană, Timișoara' },
   description:
-    'Unele decizii nu sunt grele pentru că nu știi ce ai de făcut. Consultanță în performanță umană pentru antreprenori, profesioniști independenți și afaceri de familie.',
+    'Consultant în performanță umană, Timișoara și online. Claritate în decizii pentru antreprenori, manageri și afaceri de familie. Programe 1:1, workshopuri.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'Adriana Chira · Consultant în Performanță Umană',
+    title: 'Adriana Chira · Consultant în performanță umană, Timișoara',
     description:
-      'Claritate înainte de decizie. Consultanță în performanță umană — Timișoara și online.',
+      'Claritate înainte de decizie. Consultanță în performanță umană și dezvoltare personală pentru antreprenori și lideri — Timișoara și online.',
     url: '/',
     type: 'website',
+    locale: 'ro_RO',
+    siteName: 'Adriana Chira',
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Adriana Chira · Consultant în performanță umană, Timișoara',
+    description: 'Claritate înainte de decizie. Consultanță în performanță umană și dezvoltare personală pentru antreprenori și lideri — Timișoara și online.',
+    images: [DEFAULT_OG_IMAGE.url],
   },
 }
 

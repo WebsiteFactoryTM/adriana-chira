@@ -17,7 +17,7 @@ const TRAIL: Crumb[] = [
 ]
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Blog',
+  title: 'Blog: decizii și dezvoltare personală',
   description: blogPage.metaDescription,
   path: '/blog',
 })
