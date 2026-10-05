@@ -56,7 +56,7 @@ export function pageMetadata({
   return {
     title: seo?.metaTitle ? { absolute: seo.metaTitle } : finalTitle,
     description: finalDescription,
-    alternates: { canonical: path },
+    alternates: { canonical: path, types: { 'application/rss+xml': '/rss.xml' } },
     openGraph: {
       title: finalTitle,
       description: finalDescription,

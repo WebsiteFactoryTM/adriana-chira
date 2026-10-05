@@ -178,11 +178,13 @@ if (draft) {
       overrideAccess: false,
     })
     published = updated._status === 'published'
-    // Îl punem la loc pe ciornă: articolele nu au încă text.
+    // Îl punem la loc EXACT cum era. Până în octombrie 2026 aici scria
+    // `'draft'`, cât timp articolele erau ciorne fără text; cu articolele
+    // publicate, verificarea ar fi depublicat un text real la fiecare rulare.
     await payload.update({
       collection: 'posts',
       id: draft.id,
-      data: { _status: 'draft' },
+      data: { _status: draft._status ?? 'draft' },
       overrideAccess: true,
     })
   } catch (error) {
@@ -265,11 +267,28 @@ check('Încărcarea cu text alternativ trece', altAccepted, altAccepted ? '' : a
 /* 4. Conținutul public nu scapă                                               */
 /* -------------------------------------------------------------------------- */
 
-const publicPosts = await payload.find({ collection: 'posts', overrideAccess: false })
+/**
+ * Regula, nu starea de moment — aceeași corectură ca la pachete, mai jos.
+ * Prima variantă cerea `totalDocs === 0`, adevărat doar cât timp toate
+ * articolele erau ciorne. Din octombrie 2026 există articole publicate, deci
+ * verificăm că publicul vede EXACT articolele publicate: niciuna dintre ciorne.
+ */
+const publicPosts = await payload.find({
+  collection: 'posts',
+  overrideAccess: false,
+  limit: 500,
+  depth: 0,
+})
+const publishedPosts = await payload.count({
+  collection: 'posts',
+  where: { _status: { equals: 'published' } },
+  overrideAccess: true,
+})
+const leakedDrafts = publicPosts.docs.filter((doc) => doc._status !== 'published').length
 check(
   'Publicul nu vede articolele nepublicate',
-  publicPosts.totalDocs === 0,
-  `vizibile public: ${publicPosts.totalDocs}`,
+  leakedDrafts === 0 && publicPosts.totalDocs === publishedPosts.totalDocs,
+  `vizibile public: ${publicPosts.totalDocs}, publicate: ${publishedPosts.totalDocs}, ciorne scăpate: ${leakedDrafts}`,
 )
 
 /**

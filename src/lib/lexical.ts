@@ -1,3 +1,5 @@
+import type { Post } from '@/payload-types'
+
 /**
  * Extragerea textului simplu dintr-un document Lexical.
  *
@@ -192,4 +194,93 @@ export function collectLinkTargets(doc: LexicalDocument): string[] {
 
   visit(doc.root)
   return targets
+}
+
+/* -------------------------------------------------------------------------- */
+/* Construcția unui document Lexical din text scris în cod                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Un fragment de rând: text simplu, text îngroșat sau legătură internă.
+ *
+ * Forma e minimă intenționat. Articolele scrise în `src/content/posts.ts` intră
+ * o singură dată în CMS; de acolo încolo se editează în admin, cu editorul
+ * complet. Aici ne trebuie doar ce folosesc ele.
+ */
+export type Inline = string | { b: string } | { link: string; href: string }
+
+/** Un bloc de articol. `lines` = un paragraf cu rupturi de rând, ca în original. */
+export type TextBlock =
+  | { p: Inline | Inline[] }
+  | { lines: Inline[] }
+  | { h2: string }
+  | { quote: Inline[] }
+  | { ul: Inline[] }
+
+/** Bitul de format pentru îngroșat, la fel ca în `RichText`. */
+const FORMAT_BOLD = 1
+
+const BLOCK_BASE = { format: '' as const, indent: 0, version: 1, direction: 'ltr' as const }
+
+function textNode(text: string, format = 0): LexicalNode {
+  return { type: 'text', detail: 0, format, mode: 'normal', style: '', text, version: 1 }
+}
+
+function inlineNode(part: Inline): LexicalNode {
+  if (typeof part === 'string') return textNode(part)
+  if ('b' in part) return textNode(part.b, FORMAT_BOLD)
+  return {
+    type: 'link',
+    ...BLOCK_BASE,
+    version: 3,
+    fields: { linkType: 'custom', url: part.href, newTab: false },
+    children: [textNode(part.link)],
+  }
+}
+
+function inlines(parts: Inline | Inline[]): LexicalNode[] {
+  return (Array.isArray(parts) ? parts : [parts]).map(inlineNode)
+}
+
+/** Rânduri separate prin `linebreak`, în același bloc. */
+function withBreaks(parts: Inline[]): LexicalNode[] {
+  return parts.flatMap((part, index) =>
+    index === 0 ? [inlineNode(part)] : [{ type: 'linebreak', version: 1 }, inlineNode(part)],
+  )
+}
+
+function blockNode(block: TextBlock): LexicalNode {
+  if ('h2' in block) {
+    return { type: 'heading', tag: 'h2', ...BLOCK_BASE, children: [textNode(block.h2)] }
+  }
+  if ('quote' in block) {
+    return { type: 'quote', ...BLOCK_BASE, children: withBreaks(block.quote) }
+  }
+  if ('ul' in block) {
+    return {
+      type: 'list',
+      listType: 'bullet',
+      tag: 'ul',
+      start: 1,
+      ...BLOCK_BASE,
+      children: block.ul.map((item, index) => ({
+        type: 'listitem',
+        value: index + 1,
+        ...BLOCK_BASE,
+        children: inlines(item),
+      })),
+    }
+  }
+  const children = 'lines' in block ? withBreaks(block.lines) : inlines(block.p)
+  return { type: 'paragraph', textFormat: 0, ...BLOCK_BASE, children }
+}
+
+/** Forma pe care o așteaptă câmpul `content` al colecției `posts`. */
+type RichTextValue = Post['content']
+
+export function blocksToLexical(blocks: TextBlock[]): RichTextValue {
+  // Conversia e sigură: fiecare nod construit mai sus are `type` și `version`,
+  // singurele câmpuri pe care tipul generat de Payload le cere copiilor.
+  const children = blocks.map(blockNode) as RichTextValue['root']['children']
+  return { root: { type: 'root', ...BLOCK_BASE, children } }
 }

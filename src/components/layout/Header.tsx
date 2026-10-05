@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { MobileNav } from './MobileNav'
 import { NavDropdown } from './NavDropdown'
 import type { NavItem, SiteSettings } from '@/content/types'
+import { BLOG_HREF } from '@/lib/nav'
 import { WORKSHOPS_PATH } from '@/lib/workshops'
 
 /**
@@ -22,6 +23,7 @@ import { WORKSHOPS_PATH } from '@/lib/workshops'
 const ALL_LABEL: Record<string, string> = {
   '/servicii': 'Vezi toate programele',
   [WORKSHOPS_PATH]: 'Vezi tot catalogul',
+  [BLOG_HREF]: 'Toate articolele',
 }
 
 /** Numai catalogul de paisprezece are nevoie de panoul pe două coloane. */

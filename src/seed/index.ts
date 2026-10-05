@@ -8,6 +8,7 @@ import { siteSettings } from '@/content/site'
 import { testimonials } from '@/content/testimonials'
 import { WORKSHOP_PRICE, workshopEntries, workshopsPage } from '@/content/workshops'
 import { slugify } from '@/fields/slug'
+import { seedLaunchPosts } from './posts'
 
 /**
  * Popularea inițială a bazei de date.
@@ -23,10 +24,6 @@ import { slugify } from '@/fields/slug'
  *
  * Ce NU populează, și de ce:
  *
- * - **Corpul articolelor.** Designul aprobat conține titlurile, rezumatele și
- *   categoriile a trei articole; textul lor nu a fost livrat. Le creăm ca
- *   CIORNE, ca Adriana să le găsească începute în admin. Ciornele nu sunt
- *   publice, deci homepage-ul continuă să arate exact ca în design.
  * - **Descrierea lungă a pachetelor** (`longDescription`, rich text). Rămâne
  *   goală intenționat, ca pagina să randeze secțiunile structurate din
  *   `src/content/packages.ts`. Motivul complet e la `seedPackages`.
@@ -36,6 +33,8 @@ import { slugify } from '@/fields/slug'
  * Ce populează, din septembrie 2026: cele trei programe individuale VIZIBILE, cu
  * preț real în lei; cele 14 workshopuri, dintre care trei cu dată; cele trei
  * recomandări. Blocajul §7.1 s-a ridicat — pachetele nu mai sunt placeholdere.
+ * Din octombrie 2026: cele șapte articole de lansare, publicate, cu textul din
+ * `src/content/posts.ts` (blocajul §7.12 s-a ridicat).
  */
 
 type SeedStats = { create: number; update: number; skip: number }
@@ -242,9 +241,6 @@ async function seedFaqs(payload: Payload): Promise<void> {
 /* Pachete — cele trei programe individuale                                    */
 /* -------------------------------------------------------------------------- */
 
-/** Marcajul pentru textul care încă nu a fost livrat de clientă. */
-const TODO = '[ DE COMPLETAT ]'
-
 /**
  * Cele trei programe, cu textul aprobat.
  *
@@ -377,71 +373,20 @@ async function seedTestimonials(payload: Payload): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Articole — titlurile din design, ca ciorne                                  */
+/* Articole — textul livrat de clientă, publicat                               */
 /* -------------------------------------------------------------------------- */
 
-/** Document Lexical minim, cu un singur paragraf. */
-function lexicalParagraph(text: string) {
-  return {
-    root: {
-      type: 'root',
-      format: '' as const,
-      indent: 0,
-      version: 1,
-      direction: 'ltr' as const,
-      children: [
-        {
-          type: 'paragraph',
-          format: '' as const,
-          indent: 0,
-          version: 1,
-          direction: 'ltr' as const,
-          textFormat: 0,
-          children: [
-            {
-              type: 'text',
-              detail: 0,
-              format: 0,
-              mode: 'normal',
-              style: '',
-              text,
-              version: 1,
-            },
-          ],
-        },
-      ],
-    },
-  }
-}
-
-async function seedPosts(payload: Payload, categories: Map<string, number | string>): Promise<void> {
-  for (const post of homeContent.blog.posts) {
-    const slug = post.href.replace('/blog/', '')
-    const category = categories.get(post.category)
-
-    if (!category) {
-      console.warn(`  ! Categoria „${post.category}" lipsește; articolul „${post.title}" a fost sărit.`)
-      record('posts', 'skip')
-      continue
-    }
-
-    await upsert(payload, {
-      collection: 'posts',
-      keyField: 'slug',
-      keyValue: slug,
-      createOnly: true,
-      draft: true,
-      data: {
-        title: post.title,
-        slug,
-        excerpt: post.excerpt,
-        category,
-        publishedAt: new Date(`${post.publishedAt}T09:00:00.000Z`).toISOString(),
-        content: lexicalParagraph(`${TODO} Textul articolului nu a fost încă livrat de clientă.`),
-        _status: 'draft',
-      },
-    })
-  }
+/**
+ * Cele șapte articole de lansare. Logica stă în `src/seed/posts.ts`, pentru că
+ * o folosește și migrația care le-a publicat pe bazele existente.
+ */
+async function seedPosts(payload: Payload): Promise<void> {
+  const report = await seedLaunchPosts(payload)
+  const posts = (stats.posts ??= { create: 0, update: 0, skip: 0 })
+  posts.create += report.created
+  posts.update += report.published
+  posts.skip += report.skipped.length
+  for (const reason of report.skipped) console.log(`  · articol sărit: ${reason}`)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -639,12 +584,12 @@ async function seed(): Promise<void> {
   console.log('\nPopulez baza de date...\n')
 
   await seedAdminUser(payload)
-  const categories = await seedCategories(payload)
+  await seedCategories(payload)
   await seedFaqs(payload)
   await seedPackages(payload)
   await seedWorkshops(payload)
   await seedTestimonials(payload)
-  await seedPosts(payload, categories)
+  await seedPosts(payload)
   await seedSiteSettings(payload)
   await seedHomePage(payload)
   await seedAboutPage(payload)

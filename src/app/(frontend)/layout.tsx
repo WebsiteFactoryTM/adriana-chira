@@ -7,7 +7,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { PageLight } from '@/components/ui/PageLight'
 import { RevealFallback } from '@/components/ui/RevealFallback'
 import { buildConsentBootstrap } from '@/lib/consent'
-import { getPackages, getSiteSettings, getWorkshops } from '@/lib/content'
+import { getCategories, getPackages, getSiteSettings, getWorkshops } from '@/lib/content'
 import { navWithSubmenus } from '@/lib/nav'
 import { SITE_URL } from '@/lib/site-url'
 import { graph, personSchema } from '@/lib/schema'
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   creator: 'Adriana Chira',
   publisher: 'Adriana Chira',
   formatDetection: { email: false, address: false, telephone: false },
-  alternates: { canonical: '/' },
+  alternates: { canonical: '/', types: { 'application/rss+xml': '/rss.xml' } },
   openGraph: {
     type: 'website',
     locale: 'ro_RO',
@@ -67,10 +67,11 @@ export const viewport: Viewport = {
 export const revalidate = 3600
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [settings, packages, workshops] = await Promise.all([
+  const [settings, packages, workshops, categories] = await Promise.all([
     getSiteSettings(),
     getPackages(),
     getWorkshops(),
+    getCategories(),
   ])
 
   /*
@@ -80,8 +81,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   */
   const navSettings = {
     ...settings,
-    nav: navWithSubmenus(settings.nav, { packages, workshops }),
-    mobileNav: navWithSubmenus(settings.mobileNav, { packages, workshops }),
+    nav: navWithSubmenus(settings.nav, { packages, workshops, categories }),
+    mobileNav: navWithSubmenus(settings.mobileNav, { packages, workshops, categories }),
   }
 
   return (

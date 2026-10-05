@@ -4,6 +4,7 @@ import * as migration_20260907_135248_rol_optional_la_recomandari from './202609
 import * as migration_20260925_075050_pret_la_cerere from './20260925_075050_pret_la_cerere';
 import * as migration_20260925_120000_texte_pozitive from './20260925_120000_texte_pozitive';
 import * as migration_20261001_115147_resurse_descarcabile from './20261001_115147_resurse_descarcabile';
+import * as migration_20261005_120000_articole_lansare from './20261005_120000_articole_lansare';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261001_115147_resurse_descarcabile.up,
     down: migration_20261001_115147_resurse_descarcabile.down,
-    name: '20261001_115147_resurse_descarcabile'
+    name: '20261001_115147_resurse_descarcabile',
+  },
+  {
+    up: migration_20261005_120000_articole_lansare.up,
+    down: migration_20261005_120000_articole_lansare.down,
+    name: '20261005_120000_articole_lansare',
   },
 ];

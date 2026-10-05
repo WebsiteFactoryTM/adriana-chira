@@ -13,8 +13,8 @@ import { WORKSHOPS_PATH } from '@/lib/workshops'
  * un `<form method="post">` obișnuit către adresa asta (vezi `CheckoutButton`).
  * Browserul trimite formularul, ruta răspunde cu o redirectare 303, browserul o
  * urmează — și cumpărătorul ajunge la Stripe fără să fi rulat o linie de cod de
- * client. Site-ul are exact patru componente de client (STATUS §2, regula 2),
- * iar butonul de plată nu avea de ce să fie a cincea.
+ * client. Site-ul are exact cinci componente de client (STATUS §2, regula 2),
+ * iar butonul de plată nu avea de ce să fie a șasea.
  *
  * O Server Action ar fi cerut React pe client ca să funcționeze, deci exact ce
  * evităm.

@@ -1,4 +1,4 @@
-import type { NavItem, PackageDetail, Workshop } from '@/content/types'
+import type { CategorySummary, NavItem, PackageDetail, Workshop } from '@/content/types'
 import { WORKSHOPS_PATH } from '@/lib/workshops'
 
 /**
@@ -30,12 +30,20 @@ import { WORKSHOPS_PATH } from '@/lib/workshops'
 /** Intrarea din navigație sub care atârnă programele. */
 const SERVICES_HREF = '/servicii'
 
+/** Intrarea sub care atârnă categoriile blogului. */
+export const BLOG_HREF = '/blog'
+
 export function navWithSubmenus(
   items: NavItem[],
-  { packages, workshops }: { packages: PackageDetail[]; workshops: Workshop[] },
+  {
+    packages,
+    workshops,
+    categories,
+  }: { packages: PackageDetail[]; workshops: Workshop[]; categories: CategorySummary[] },
 ): NavItem[] {
   const services = packageSubmenu(packages)
   const catalog = workshopSubmenu(workshops)
+  const topics = categorySubmenu(categories)
 
   return items.map((item) => {
     if (item.href === SERVICES_HREF && services.length > 0) {
@@ -43,6 +51,9 @@ export function navWithSubmenus(
     }
     if (item.href === WORKSHOPS_PATH && catalog.length > 0) {
       return { ...item, children: catalog }
+    }
+    if (item.href === BLOG_HREF && topics.length > 0) {
+      return { ...item, children: topics }
     }
     return item
   })
@@ -71,4 +82,27 @@ function workshopSubmenu(workshops: Workshop[]): NavItem[] {
     // și singure nu spun despre ce e workshopul.
     detail: workshop.subtitle,
   }))
+}
+
+/**
+ * Categoriile blogului care au cel puțin un articol publicat — `getCategories`
+ * le filtrează deja pe cele goale. Un submeniu care duce la o pagină fără
+ * articole ar fi o promisiune încălcată, la fel ca un filtru gol.
+ */
+function categorySubmenu(categories: CategorySummary[]): NavItem[] {
+  return categories.map((category) => ({
+    label: category.name,
+    href: `${BLOG_HREF}/categorie/${category.slug}`,
+    // Descrierea spune despre ce sunt textele; numărul le spune cât de multe.
+    detail: [category.description, articleCount(category.count)]
+      .filter((part): part is string => part !== null && part.length > 0)
+      .join(' · '),
+  }))
+}
+
+/** „1 articol", „7 articole", „20 de articole" — acordul numeralului în română. */
+function articleCount(count: number): string {
+  if (count === 1) return '1 articol'
+  const rest = count % 100
+  return rest === 0 || rest >= 20 ? `${count} de articole` : `${count} articole`
 }

@@ -6,11 +6,11 @@ import { cn } from '@/lib/cn'
 /**
  * Submeniul din antetul de desktop. **Server Component, zero JavaScript.**
  *
- * ## De ce nu e a cincea componentă de client
+ * ## De ce nu e o componentă de client
  *
  * Un meniu care se deschide pare, din reflex, o chestiune de stare. Nu este:
  * `:hover` rezolvă mouse-ul, iar `:focus-within` rezolvă tastatura, amândouă
- * din CSS. Site-ul are exact patru componente de client (STATUS §2, regula 2)
+ * din CSS. Site-ul are exact cinci componente de client (STATUS §2, regula 2)
  * și niciuna nu se justifică prin „meniul trebuie să se deschidă".
  *
  * ## De ce panoul e ascuns din `opacity`, nu din `display` sau `visibility`

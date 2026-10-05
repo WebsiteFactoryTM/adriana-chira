@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CLIENT COMPONENT 4/4 din tot site-ul — justificare.
+ * CLIENT COMPONENT 4/5 din tot site-ul — justificare.
  *
  * Promptul §5.1 enumeră componentele de client permise; aceasta nu e pe listă,
  * deci are nevoie de justificare scrisă (regula 2 din STATUS §2).

@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
  * method="post">` obișnuit către `/api/stripe/checkout`; ruta creează sesiunea
  * și răspunde cu o redirectare 303, pe care browserul o urmează singur.
  *
- * De ce contează: site-ul are exact patru componente de client (STATUS §2,
+ * De ce contează: site-ul are exact cinci componente de client (STATUS §2,
  * regula 2), și niciuna nu se justifică prin „butonul trebuie să cheme o rută".
  * Un `onClick` cu `fetch` ar fi adus React pe client pe pagina de servicii și
  * pe cea de workshopuri, adică fix pe paginile care trebuie să se încarce

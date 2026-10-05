@@ -295,7 +295,7 @@ function mergeHome(
         ...fallback.blog,
         posts:
           collections.posts.length > 0
-            ? collections.posts.slice(0, 3).map(toPostPreview)
+            ? collections.posts.map(toPostPreview)
             : fallback.blog.posts,
       },
       faq: { ...fallback.faq, items: mergeFaqItems(collections.faqs, fallback.faq.items) },
@@ -434,12 +434,12 @@ function mergeHome(
     eyebrow: eyebrow(cms.blog?.eyebrow, fallback.blog.eyebrow),
     heading: text(cms.blog?.heading, fallback.blog.heading),
     link: link(cms.blog?.link, fallback.blog.link),
-    // Cele mai recente trei articole PUBLICATE. Cât timp toate sunt ciorne —
-    // titlurile există, textul nu (STATUS §7.12) — lista e goală și secțiunea
-    // rămâne cea din designul aprobat.
+    // Cele mai recente articole PUBLICATE (până la `HOME_POSTS_LIMIT`), pentru
+    // caruselul de pe homepage. Fără niciun articol publicat, secțiunea rămâne
+    // cea din designul aprobat.
     posts:
       collections.posts.length > 0
-        ? collections.posts.slice(0, 3).map(toPostPreview)
+        ? collections.posts.map(toPostPreview)
         : fallback.blog.posts,
   }
 
@@ -478,6 +478,13 @@ const fetchHomeGlobal = cache(async (): Promise<HomePage | null> => {
   }
 })
 
+/**
+ * Câte articole intră în caruselul de pe homepage. Pe desktop se văd trei;
+ * restul sunt la o săgeată distanță. Peste opt, caruselul devine arhivă, iar
+ * arhiva este `/blog`.
+ */
+const HOME_POSTS_LIMIT = 8
+
 export async function getHomeContent(): Promise<HomeContent> {
   const payload = await getPayloadClientSafe()
   if (!payload) return homeContent
@@ -505,7 +512,7 @@ export async function getHomeContent(): Promise<HomeContent> {
         // filtrul e singurul lucru care ține ciornele în afara homepage-ului.
         where: { _status: { equals: 'published' } },
         sort: '-publishedAt',
-        limit: 3,
+        limit: HOME_POSTS_LIMIT,
         depth: 1,
       }),
     ])

@@ -6,10 +6,32 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **1 octombrie 2026** |
-| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 1 octombrie 2026 |
-| Ultimul commit | vezi `git log` — Favicon, imagine de share pe toate paginile, SEO local Timișoara |
+| Ultima actualizare | **5 octombrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · **blogul e viu: 7 articole publicate, carusel pe homepage, submeniu pe categorii, `/rss.xml`** · **Stripe pe chei live în producție** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 5 octombrie 2026 |
+| Ultimul commit | vezi `git log` — Blogul legat: articolele de lansare, carusel, submeniu, RSS |
+
+> **Ce s-a schimbat pe 5 octombrie 2026 — blogul și Stripe live.**
+>
+> 1. **Stripe live.** Cheile live sunt pe Vercel (Production); redeploy verificat:
+>    butonul de plată deschide sesiuni `cs_live_…`. Endpointul de webhook din
+>    contul live trebuie să fie pe **`https://www.adrianachira.ro/api/stripe/webhook`**
+>    — domeniul fără `www` răspunde 308, iar Stripe nu urmează redirectări.
+>    `pnpm stripe:sync` cu cheia live **nu e rulat încă** (plata merge și fără,
+>    pe `price_data`, vezi §4 faza 4).
+> 2. **Blogul era gol în producție**: cele 3 articole din design stăteau ca ciorne
+>    `[ DE COMPLETAT ]`, deci `/blog` arăta starea goală și cardurile de pe homepage
+>    duceau la 404. Textele erau livrate (`../perspective .docx`, 7 articole) și
+>    acum sunt în `src/content/posts.ts`. Le publică **migrația de date**
+>    `20261005_120000_articole_lansare` la deploy, plus `pnpm seed` pe baze noi —
+>    ambele prin `src/seed/posts.ts`, care nu atinge un articol scris în admin.
+> 3. **Caruselul de pe homepage** (§9.39): până la 8 articole, trei vizibile pe
+>    desktop, exact grila din design. Pistă `scroll-snap` pe server + săgețile
+>    `CarouselControls`, **a cincea componentă de client** (justificarea, în fișier).
+> 4. **Submeniu „Blog"** în antet și în meniul mobil: categoriile cu articole
+>    publicate, cu descriere și număr (`src/lib/nav.ts`).
+> 5. **`/rss.xml`** (cerut de brief, lipsea) + `<link rel="alternate">` pe toate paginile.
+> 6. **`verify:faza2` depublica un articol la fiecare rulare** — vezi §10.
 
 > **Ce s-a schimbat pe 1 octombrie 2026, runda a doua — SEO și identitate.**
 > **Favicon nou**: monograma „AC" în Cormorant, crem pe cerneală, cu firul
@@ -300,9 +322,9 @@ hero → problema → metoda → pentru-cine → univers → despre
 
 Layout: `src/components/layout/` — `Header`, `MobileNav`, `Footer`.
 
-**Componente de client — exact patru în tot site-ul.** Dacă adaugi a cincea,
+**Componente de client — exact cinci în tot site-ul.** Dacă adaugi a șasea,
 justifică în comentariu, în fișier. Trei dintre ele sunt pe lista din promptul §5.1;
-a patra, `CopyLinkButton`, nu este — de aceea are justificarea din §9.10:
+`CopyLinkButton` și `CarouselControls` nu sunt — de aceea au justificarea în fișier:
 
 | Componentă | Unde | De ce nu poate fi pe server |
 |---|---|---|
@@ -310,6 +332,7 @@ a patra, `CopyLinkButton`, nu este — de aceea are justificarea din §9.10:
 | `ConsentBanner` | pe toate paginile | scrie cookie și schimbă starea Consent Mode |
 | `ContactForm` | `/contact` | validare pe client, stări de trimitere, `aria-live` |
 | `CopyLinkButton` | `/blog/[slug]` | `navigator.clipboard`; ~700 B, vezi §9.10 |
+| `CarouselControls` | `/` (secțiunea Blog) | săgețile caruselului: `scrollBy` + starea primei/ultimei pagini. Pista însăși e pe server și merge fără JS; fără depășire, săgețile nu se randează |
 
 Header-ul a rămas pe server pentru că designul v3 nu are stare de scroll.
 Link-ul „Setări cookie-uri" din footer funcționează prin delegare pe
@@ -1911,7 +1934,7 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 9 | GA4 + Search Console | Se completează în admin, în `site-settings` → Analytics. Gol → GA4 nu se încarcă niciodată (intenționat) | Analytics |
 | 10 | **Lectură juridică a paginilor legale** — 🟡 textele sunt complete (1 oct. 2026) | Nota de draft e oprită. Două valori sunt alegeri rezonabile, nu cerințe primite, și trebuie confirmate de clientă: retenția notelor din colaborare (3 ani după încheiere) și răspunsul la reclamații (30 de zile). O lectură a unui jurist rămâne recomandată | Lansare |
 | 11 | **Decizia privind crawlerele AI** | `src/app/robots.ts` le permite explicit | Vezi mai jos |
-| 12 | **Textul celor 3 articole de lansare** | Titlurile, rezumatele și categoriile din design sunt în CMS, ca **ciorne**; corpul e `[ DE COMPLETAT ]`. `/blog` afișează starea goală („Primele articole sunt în lucru"), iar secțiunea Blog de pe homepage rămâne cea din design. Prima publicare le aduce automat în ambele | Conținutul blogului, RSS |
+| 12 | ~~**Textul articolelor de lansare**~~ ✅ **rezolvat pe 5 octombrie 2026** | 7 articole din `perspective .docx`, publicate prin migrația `articole_lansare`. **De confirmat cu clienta:** titlurile date de noi celor patru articole fără titlu clar în document („Perspectiva, în șapte definiții", „Ce înseamnă pentru tine un refuz?"), subtitlurile `h2` adăugate, datele de publicare (cele 3 din design + 14, 21, 28 sept. și 5 oct.) și imaginile de copertă (lipsesc; cardul arată placeholderul crem) | — |
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
 | 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
 | 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile ȘI resursele descărcabile s-ar pierde la fiecare deploy**, iar orice fișier peste 4,5 MB ar fi respins de platformă. Cu tokenul, încărcarea merge direct în Blob (`clientUploads`) | Încărcarea de imagini și documente în producție |
@@ -2331,6 +2354,16 @@ impusă de prima dintre ele.
     CUI-ul lipsă rămâne vizibil ca placeholder, nu e ascuns de notă. Comutatorul
     `LEGAL_DRAFT` a rămas, pentru o eventuală revizie.
 
+39. **Secțiunea Blog de pe homepage e carusel** (5 octombrie 2026, cerut).
+    Designul are o grilă fixă de trei carduri. Pe desktop se văd tot trei, cu
+    aceeași lățime și același spațiu dintre ele, iar cu ≤ 3 articole secțiunea e
+    identică cu designul (săgețile nu apar). Peste trei: săgeți-pilulă de 44 px
+    lângă „Toate articolele", în limbajul butoanelor existente. Pe telefon, un
+    card la 82% și marginea următorului. Cardurile din carusel nu mai au reveal
+    individual (cronologia `view()` ar fi legată de pista orizontală); pista se
+    animă o dată, întreagă. Submeniul „Blog" urmează tiparul submeniurilor din
+    §4 „Submeniurile din navigație", fără nimic nou vizual.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -2338,6 +2371,14 @@ pe homepage și nu au pagină proprie.
 ---
 
 ## 10. Capcane deja rezolvate — nu le reintroduce
+
+> **5 octombrie 2026 — `verify:faza2` depublica un articol.** Verificarea 2c
+> („Redactorul poate publica") lua primul articol, îl publica și apoi îl trecea
+> **forțat pe ciornă**, pentru că atunci articolele nu aveau text. Cu articole
+> reale, fiecare rulare scotea un text de pe site. Acum restaurează starea
+> inițială. Verificarea 4 cerea „zero articole publice" — acum cere ca publicul
+> să vadă exact articolele publicate, nicio ciornă. Același tip de capcană ca la
+> pachete: **verifică regula, nu starea de moment.**
 
 | Problemă | Cauză | Soluție aplicată |
 |---|---|---|

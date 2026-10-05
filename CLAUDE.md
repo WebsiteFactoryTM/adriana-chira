@@ -33,10 +33,11 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 38.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 39.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
-  Astăzi există exact patru: `MobileNav`, `ConsentBanner`, `ContactForm`,
-  `CopyLinkButton`. **Butonul de plată nu e printre ele**: e un `<form method="post">`
+  Astăzi există exact cinci: `MobileNav`, `ConsentBanner`, `ContactForm`,
+  `CopyLinkButton`, `CarouselControls` (doar săgețile; pista caruselului e pe
+  server). **Butonul de plată nu e printre ele**: e un `<form method="post">`
   către `/api/stripe/checkout`, deci zero JS. Nu îl transforma în `onClick`.
 - Zero bibliotecă de animație. Zero bibliotecă de componente. Zero bibliotecă de
   iconuri — semnele se desenează în `ui/Glyph.tsx`, linie de 1px, ca restul
@@ -97,7 +98,8 @@ paginilor publice. Nu le scoate.
 Orice câmp gol, `null` sau listă goală cade pe `src/content/*.ts`, adică pe textul
 verificat la px față de designul aprobat. Acele fișiere **nu se șterg**: sunt și
 fallback-ul, și sursa din care `pnpm seed` populează CMS-ul. Conținutul real al
-clientei stă în `packages.ts`, `workshops.ts` și `testimonials.ts`.
+clientei stă în `packages.ts`, `workshops.ts`, `testimonials.ts` și `posts.ts`
+(articolele de lansare, publicate prin migrația `articole_lansare`).
 
 **Prețul nu vine niciodată din cerere.** Butonul de plată trimite doar `tip` și
 `slug`; suma se citește pe server, în `src/lib/checkout.ts`. Fără cheie Stripe,

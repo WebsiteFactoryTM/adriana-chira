@@ -28,20 +28,23 @@ type Props = {
   post: PostCardContent
   index: number
   sizes?: string
+  /**
+   * `false` în caruselul de pe homepage. Reveal-ul rulează pe `view()`, adică
+   * pe cel mai apropiat container derulabil — într-o pistă orizontală, acela e
+   * pista, nu pagina, iar cronologia nu s-ar mai mișca. Acolo se animă pista
+   * întreagă, o dată.
+   */
+  reveal?: boolean
 }
 
 export function PostCard({
   post,
   index,
   sizes = '(max-width: 700px) 100vw, (max-width: 1200px) 50vw, 33vw',
+  reveal = true,
 }: Props) {
-  return (
-    <Reveal
-      as="article"
-      start={`${index * 4}%`}
-      end={`${26 + index * 4}%`}
-      className="ac-media"
-    >
+  const body = (
+    <>
       <ImageSlot content={post.cover} sizes={sizes} />
 
       {post.categoryLabel &&
@@ -70,6 +73,19 @@ export function PostCard({
         {' · '}
         {post.readingTime} min
       </p>
+    </>
+  )
+
+  if (!reveal) return <article className="ac-media">{body}</article>
+
+  return (
+    <Reveal
+      as="article"
+      start={`${index * 4}%`}
+      end={`${26 + index * 4}%`}
+      className="ac-media"
+    >
+      {body}
     </Reveal>
   )
 }
