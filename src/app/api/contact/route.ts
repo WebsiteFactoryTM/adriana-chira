@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { sendEmail } from '@/lib/email'
+import { adminRecipients, sendEmail } from '@/lib/email'
 import { getPayloadClient } from '@/lib/payload'
 import { clientIp, rateLimit } from '@/lib/rate-limit'
 import { contactSchema, fieldErrors } from '@/lib/validation/contact'
@@ -97,11 +97,11 @@ async function notify({
   phone?: string
   message: string
 }): Promise<void> {
-  const admin = process.env.EMAIL_TO_ADMIN
+  const admins = adminRecipients()
 
-  if (admin) {
+  if (admins.length > 0) {
     const result = await sendEmail({
-      to: admin,
+      to: admins,
       replyTo: email,
       subject: `Mesaj nou de la ${name}`,
       text: [

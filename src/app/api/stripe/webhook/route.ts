@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 
-import { sendEmail } from '@/lib/email'
+import { adminRecipients, sendEmail } from '@/lib/email'
 import { getPayloadClientSafe } from '@/lib/payload'
 import { getStripe } from '@/lib/stripe'
 import { formatSessionDate } from '@/lib/workshops'
@@ -229,7 +229,7 @@ async function notify(args: {
       : null
 
   if (email) {
-    await sendEmail({
+    const confirmation = await sendEmail({
       to: email,
       subject: `Confirmare — ${name}`,
       text: [
@@ -249,12 +249,15 @@ async function notify(args: {
         .filter((line) => line !== null)
         .join('\n'),
     })
+    if (confirmation.status === 'error') {
+      console.error('[stripe] confirmarea către cumpărător a eșuat:', confirmation.message)
+    }
   }
 
-  const admin = process.env.EMAIL_TO_ADMIN
-  if (admin) {
-    await sendEmail({
-      to: admin,
+  const admins = adminRecipients()
+  if (admins.length > 0) {
+    const notice = await sendEmail({
+      to: admins,
       subject: `Comandă nouă — ${name}`,
       ...(email ? { replyTo: email } : {}),
       text: [
@@ -273,6 +276,9 @@ async function notify(args: {
         .filter((line) => line !== null)
         .join('\n'),
     })
+    if (notice.status === 'error') {
+      console.error('[stripe] notificarea către administrator a eșuat:', notice.message)
+    }
   }
 }
 

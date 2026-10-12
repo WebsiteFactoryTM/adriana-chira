@@ -23,6 +23,7 @@ import { Workshops } from '@/collections/Workshops'
 import { AboutPage } from '@/globals/AboutPage'
 import { HomePage } from '@/globals/HomePage'
 import { SiteSettings } from '@/globals/SiteSettings'
+import { resendEmailAdapter } from '@/lib/email'
 import { RESOURCE_MAX_BYTES } from '@/lib/resources'
 import { siteUrlOr } from '@/lib/site-url'
 
@@ -127,6 +128,10 @@ export default buildConfig({
   globals: [SiteSettings, HomePage, AboutPage],
 
   editor: lexicalEditor(),
+
+  // „Ai uitat parola?" din panou, prin Resend. Fără cheie rămâne adaptorul de
+  // consolă al Payload: linkul de resetare apare în log, nu într-un inbox.
+  email: resendEmailAdapter(),
 
   // Plafonul pentru încărcările care trec prin server (local, sau fără Blob).
   // Cu Blob, documentele ocolesc serverul — vezi `clientUploads` mai sus.

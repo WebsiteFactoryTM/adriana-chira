@@ -33,7 +33,7 @@ câștigă designul. Pe orice altceva, câștigă brief-ul.
 ## Reguli care nu se încalcă
 
 - Designul aprobat e lege. Ai o obiecție? `// NOTĂ DESIGN:` și implementezi varianta aprobată.
-  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 39.
+  Excepțiile cerute de clientă sunt numerotate în `STATUS.md` §9 — astăzi 40.
 - Server Components implicit. `use client` cere justificare scrisă în fișier.
   Astăzi există exact cinci: `MobileNav`, `ConsentBanner`, `ContactForm`,
   `CopyLinkButton`, `CarouselControls` (doar săgețile; pista caruselului e pe

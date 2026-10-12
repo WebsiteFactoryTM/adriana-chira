@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { Glyph } from '@/components/ui/Glyph'
 import { TextLink } from '@/components/ui/TextLink'
 import type { SiteSettings } from '@/content/types'
 
@@ -156,7 +157,28 @@ export function Footer({ settings }: { settings: SiteSettings }) {
             </ComplianceBadge>
           </div>
 
-          <p className="text-center text-xs text-[rgba(250,245,236,.55)]">Website Factory</p>
+          {/*
+            Semnătura executantului, cerută pe 12 octombrie 2026. În engleză,
+            cum a fost formulată, deci `lang="en"` — altfel cititorul de ecran
+            o pronunță cu fonetica română. Inima e `aria-hidden` (ca toate
+            semnele din `Glyph`); cuvântul ei e în textul ascuns de alături.
+          */}
+          <p
+            lang="en"
+            className="flex flex-wrap items-center justify-center gap-[0.45em] text-xs text-[rgba(250,245,236,.55)]"
+          >
+            Made with{' '}
+            <Glyph name="heart" size="sm" className="text-ac-accent" />
+            <span className="ac-sr-only"> love </span> by{' '}
+            <a
+              href="https://websitefactory.ro"
+              target="_blank"
+              rel="noopener"
+              className="ac-underline leading-[normal] transition-colors duration-[320ms] hover:text-ac-paper"
+            >
+              Website Factory
+            </a>
+          </p>
         </div>
       </div>
     </footer>

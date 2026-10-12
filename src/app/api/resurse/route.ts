@@ -1,5 +1,5 @@
 import { privacyPage } from '@/content/pages'
-import { sendEmail } from '@/lib/email'
+import { adminRecipients, sendEmail } from '@/lib/email'
 import { getPayloadClient } from '@/lib/payload'
 import { clientIp, rateLimit } from '@/lib/rate-limit'
 import {
@@ -145,11 +145,11 @@ async function notify(args: {
     console.error('[resurse] emailul către vizitator a eșuat:', confirmation.message)
   }
 
-  const admin = process.env.EMAIL_TO_ADMIN
-  if (!admin) return
+  const admins = adminRecipients()
+  if (admins.length === 0) return
 
   const notice = await sendEmail({
-    to: admin,
+    to: admins,
     replyTo: args.email,
     subject: `Descărcare: ${args.title} — ${args.firstName} ${args.lastName}`,
     text: [

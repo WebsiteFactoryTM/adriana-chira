@@ -80,24 +80,26 @@ export const siteSettings: SiteSettings = {
     { label: 'Politica de retur', href: '/politica-de-retur' },
   ],
 
+  // Conturile Adrianei, trimise pe 12 octombrie 2026. Alimentează și `sameAs`
+  // din schema Person. Ordinea din design, cu YouTube adăugat la capăt.
   social: [
-    { label: 'LinkedIn', href: '#', pending: true },
-    { label: 'Instagram', href: '#', pending: true },
-    { label: 'Facebook', href: '#', pending: true },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/adriana-chira-63ab2b89/' },
+    { label: 'Instagram', href: 'https://www.instagram.com/chira_adriana/' },
+    { label: 'Facebook', href: 'https://www.facebook.com/adriana.chira.56/' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@adrianachira887' },
   ],
 
   /**
-   * Operatorul de date și vânzătorul. Denumirea și sediul vin din modelul de
-   * politică de confidențialitate trimis de clientă pe 1 octombrie 2026 (același
-   * telefon ca al Adrianei). CUI-ul și nr. de înregistrare NU apar acolo și nu
-   * se ghicesc: rămân placeholdere vizibile până se completează în admin
-   * (blocaj §7.6 din STATUS.md).
+   * Operatorul de date și vânzătorul. CUI-ul a venit de la clientă pe 12
+   * octombrie 2026; denumirea, nr. Reg. Com. și sediul sunt cele din registrul
+   * ANAF pentru acel CUI, la aceeași dată. Sediul din modelul de politică
+   * (Vulcan, jud. Hunedoara) era vechi: firma s-a mutat în Timiș pe 22.02.2024.
    */
   company: {
     legalName: 'Adrenalin Mirific Concept SRL',
-    cui: null, // [ DE CONFIRMAT ] brief §13.6
-    regCom: null, // [ DE CONFIRMAT ] brief §13.6
-    registeredAddress: 'Str. Nicolae Titulescu nr. 62, Vulcan, jud. Hunedoara',
+    cui: '24767460',
+    regCom: 'J35/792/2024',
+    registeredAddress: 'Sat Seceani nr. 294, com. Ortișoara, jud. Timiș',
   },
 
   bookingUrl: null, // Cal.com / Calendly — se încarcă doar la click (brief §10.2)

@@ -6,10 +6,28 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **5 octombrie 2026** |
-| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · **blogul e viu: 7 articole publicate, carusel pe homepage, submeniu pe categorii, `/rss.xml`** · **Stripe pe chei live în producție** · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 5 octombrie 2026 |
-| Ultimul commit | vezi `git log` — Blogul legat: articolele de lansare, carusel, submeniu, RSS |
+| Ultima actualizare | **12 octombrie 2026** |
+| Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · **blogul e viu: 7 articole publicate, carusel pe homepage, submeniu pe categorii, `/rss.xml`** · **Stripe pe chei live în producție** · **emailurile pleacă prin Resend** (confirmări + notificări la `contact@adrianachira.ro`, resetarea parolei din admin) · **subsolul are CUI, Reg. Com. și rețelele reale** · fazele 5b–7 neîncepute |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 12 octombrie 2026 |
+| Ultimul commit | vezi `git log` — Emailuri prin Resend, date de firmă și rețele în subsol |
+
+> **Ce s-a schimbat pe 12 octombrie 2026 — emailurile și subsolul.**
+>
+> 1. **Resend conectat.** Domeniul `adrianachira.ro` e verificat în Resend
+>    (eu-west-1, DKIM publicat, urmărirea deschiderilor și a clickurilor
+>    **oprită**). Cheia e în `.env.local` și pe Vercel, cu `EMAIL_FROM` =
+>    „Adriana Chira <contact@adrianachira.ro>" și `EMAIL_TO_ADMIN` =
+>    `contact@adrianachira.ro` (cutie Zoho Mail). Pe producție intră în vigoare
+>    de la primul deploy de după 12 octombrie: variabilele noi nu ajung într-un
+>    deploy deja făcut. Toate cele șapte emailuri sunt testate cap-coadă, vezi
+>    §4 „Emailurile".
+> 2. **Panoul Payload trimite acum emailuri.** Fără adaptor, „Ai uitat parola?"
+>    doar scria mesajul în log. Adaptorul e în `src/lib/email.ts`, tot pe `fetch`.
+> 3. **Subsolul**: CUI 24767460, Reg. Com. J35/792/2024, LinkedIn / Instagram /
+>    Facebook / YouTube, „Made with ♥ by Website Factory" cu link. **Sediul
+>    firmei s-a corectat** după registrul ANAF: Sat Seceani nr. 294, com.
+>    Ortișoara, jud. Timiș — cel din modelul de politică (Vulcan, Hunedoara)
+>    era vechi. `LEGAL_UPDATED` = 12 octombrie 2026.
 
 > **Ce s-a schimbat pe 5 octombrie 2026 — blogul și Stripe live.**
 >
@@ -179,7 +197,8 @@ translations) · Stripe 22.5.0 · Zod 4.4.3 · Postgres 17
 ```
 
 Zod se importă **exclusiv ca `zod/mini`**, niciodată ca `zod` — vezi §9.11.
-Emailurile nu au SDK: `src/lib/email.ts` cheamă API-ul HTTP al Resend cu `fetch`.
+Emailurile nu au SDK: `src/lib/email.ts` cheamă API-ul HTTP al Resend cu `fetch` —
+inclusiv pentru panoul Payload (`resendEmailAdapter`), fără `@payloadcms/email-*`.
 
 Versiunile `next`, `react`, `react-dom`, `tailwindcss`, `stripe` și **toate** pachetele
 `payload*` sunt **fixate exact**, fără caret — compatibilitatea Payload ↔ Next este
@@ -1120,7 +1139,8 @@ alta a ei.
 
 #### 3. Pictogramele sunt desenate, nu importate
 
-`src/components/ui/Glyph.tsx`, douăsprezece semne, **zero dependențe**. Regula 4
+`src/components/ui/Glyph.tsx`, paisprezece semne (douăsprezece din 8 septembrie,
+plus `document` pe 1 octombrie și `heart` pe 12 octombrie), **zero dependențe**. Regula 4
 din §2 interzice bibliotecile de componente, dar motivul real e de design:
 seturile obișnuite sunt desenate la 1.5–2px, cu colțuri rotunjite și cu un
 vocabular de aplicație. Peste Cormorant Garamond și peste hairline-urile de 1px
@@ -1433,6 +1453,58 @@ descriere, iar tabelul consultanță / coaching / psihoterapie din FAQ e fragmen
 făcut pentru ele. Titlurile programelor vin din CMS (`seo.metaTitle`, din
 documentele clientei) și nu au fost atinse.
 
+### Runda din 12 octombrie 2026 ✅
+
+#### Emailurile — Resend, conectat
+
+Codul de trimitere exista din fazele 3b și 4; lipseau cheia, expeditorul și
+destinatarul. Acum toate trei sunt puse, local și pe Vercel.
+
+| Flux | Vizitatorul primește | `EMAIL_TO_ADMIN` primește | Unde |
+|---|---|---|---|
+| Formular de contact (și cererea de ofertă, rezervarea fără plată, lista de așteptare — toate trec prin el) | „Am primit mesajul tău" | „Mesaj nou de la …", cu `reply_to` = vizitatorul | `api/contact` |
+| Document după formular | „Documentul tău: …", cu linkul de 7 zile | „Descărcare: …" | `api/resurse` |
+| Plată reușită | „Confirmare — …" (total, data ediției) | „Comandă nouă — …" | `api/stripe/webhook` |
+| „Ai uitat parola?" în admin | — | linkul de resetare, la utilizatorul panoului | adaptorul Payload |
+
+| Variabilă | Valoare | De ce |
+|---|---|---|
+| `RESEND_API_KEY` | cheia contului în care `adrianachira.ro` e verificat | — |
+| `EMAIL_FROM` | `Adriana Chira <contact@adrianachira.ro>` | numele apare în inbox; răspunsurile la confirmări ajung în cutia Zoho |
+| `EMAIL_TO_ADMIN` | `contact@adrianachira.ro` (local: `delivered@resend.dev`) | listă, separată prin virgulă; local, testele nu ajung la clientă |
+
+**Ce s-a schimbat în cod:**
+
+- `adminRecipients()` — `EMAIL_TO_ADMIN` poate avea mai multe adrese.
+- Subiectul se trimite pe un singur rând. Un nume scris pe două rânduri în
+  formular făcea Resend să refuze tot mesajul, iar refuzul nu se vedea nicăieri.
+- Webhook-ul Stripe loghează acum emailurile eșuate, ca celelalte două rute.
+  Înainte le ignora în tăcere.
+- `resendEmailAdapter()` în `payload.config.ts`. Fără cheie, Payload rămâne pe
+  adaptorul lui de consolă. Aici o eroare **aruncă**, invers decât la formulare:
+  nu există un mesaj salvat în altă parte.
+
+**DNS-ul e pe Cloudflare** (nu pe Vercel): MX la Zoho pe rădăcină, SPF
+`include:zohomail.eu`, DKIM-ul Resend (`resend._domainkey`), `send.` pentru
+Resend. **Lipsește DMARC** — vezi §7.18.
+
+#### Subsolul — firmă, rețele, semnătură
+
+- CUI 24767460 (de la clientă). Denumirea, Reg. Com. **J35/792/2024** și sediul
+  sunt din registrul ANAF, interogat pentru acel CUI. Sediul din modelul de
+  politică era vechi: firma s-a mutat din Vulcan (HD) în Timiș pe 22.02.2024.
+  ANAF mai spune ceva util pentru §7.7: firma **nu e înregistrată în scop de
+  TVA**, deci prețurile nu au TVA de adăugat.
+- Rețelele: LinkedIn, Instagram, Facebook, **YouTube** (nou), ca text, ca în
+  design. Alimentează și `sameAs` din schema `Person`, gol până acum.
+- „Made with ♥ by Website Factory", cu link spre `websitefactory.ro` în tab nou.
+  Inima e semnul nou `heart` din `ui/Glyph` (linie de 1px, în accent).
+  Paragraful are `lang="en"`, iar cuvântul „love" e în text ascuns, pentru
+  cititoarele de ecran.
+
+Toate stau în `src/content/site.ts`: câmpurile din `site-settings` sunt goale,
+deci se aplică textul din fișier. Completate în admin, ar avea întâietate.
+
 ---
 
 ## 5. CE NU ESTE FĂCUT
@@ -1533,6 +1605,10 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **1 oct.: `pnpm verify:faza2`** | ✅ 14/14 (două verificări noi: resursele și solicitările nu se citesc public) |
 | **1 oct.: homepage + SPA + CLAR, HEAD vs. acum, text vizibil** | ✅ doar subsolul: email, telefon, firma, `[ CUI ]`, `[ Reg. Com. ]` |
 | **1 oct., runda 2: `/favicon.ico`, `/icon-*.svg`, `/apple-icon-*.png`, `/manifest.webmanifest`, `/og.png`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`** | ✅ toate 200, tipurile corecte; `og:image` 1200×630 pe `/` ȘI pe `/servicii` (înainte: lipsă) |
+| **12 oct.: cele 7 emailuri, local, către `delivered@resend.dev`** | ✅ toate `delivered` în Resend: contact (admin + vizitator), document (vizitator + admin), două plăți simulate pe sesiuni reale din sandbox (confirmare + comandă, pachet și workshop), resetarea parolei pe un utilizator temporar. Re-livrarea webhook-ului → 200, zero emailuri în plus |
+| **12 oct.: un email real către `contact@adrianachira.ro`** | ✅ `delivered` — acceptat de Zoho |
+| **12 oct.: homepage + politică + SPA + contact, HEAD vs. acum, text vizibil** | ✅ doar subsolul (rețele, CUI · Reg. Com., „Made with love by"); pe politică în plus data și blocul de identificare cu sediul nou. Zero alte linii |
+| **12 oct.: `sameAs` în JSON-LD** | ✅ cele patru adrese |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -1922,10 +1998,10 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 1 | ~~**Pachetele de servicii**~~ ✅ **rezolvat pe 7 septembrie 2026** | Cele trei programe reale sunt în CMS, vizibile, cu preț în lei. Vezi §4, „Conținutul real". | — |
 | 2 | ~~**Portret profesional**~~ ✅ **rezolvat** | Fotografiile din ședința foto a clientei sunt în `public/images/`, câte una pe pagină. Placeholderul filigranat din pachetul de design a fost șters. | — |
 | 3 | Domeniul | `NEXT_PUBLIC_SITE_URL` are ca implicit `https://adrianachira.ro` | Deploy, canonical |
-| 4 | ~~Email, telefon~~ ✅ **rezolvat pe 1 octombrie 2026** | `contact@adrianachira.ro`, `+40 723 573 123`, în `src/content/site.ts`; se pot suprascrie din `site-settings`. **`EMAIL_FROM` / `RESEND_API_KEY` / `EMAIL_TO_ADMIN` trebuie puse pe Vercel**, altfel emailurile (inclusiv linkul de descărcare) nu pleacă — linkul e oricum afișat pe pagina de mulțumire | — |
-| 5 | Conturi social media | `[ LinkedIn ]`, `[ Instagram ]`, `[ Facebook ]`; `sameAs` lipsește din `Person` | Schema Person |
-| 6 | **CUI, reg. com.** — 🟡 denumirea și sediul sunt puse (1 oct. 2026) | Adrenalin Mirific Concept SRL, Str. Nicolae Titulescu nr. 62, Vulcan, jud. Hunedoara — din modelul de politică trimis de clientă (același telefon). **De confirmat că aceasta e firma prin care vinde Adriana.** CUI și Reg. Com. nu apar în model și nu se găsesc public; subsolul și paginile legale arată `[ CUI ]`, `[ Reg. Com. ]`. Se completează în `site-settings` | ANPC, Termeni |
-| 7 | **Regim TVA, PFA sau SRL** | Prețurile se afișează ca sume simple, fără mențiune de TVA. Documentul CLAR cere explicit confirmarea: 5.100 lei este cu TVA inclus sau „+ TVA"? Se aplică la toate cele patru prețuri. | Afișarea prețurilor, configurarea Stripe |
+| 4 | ~~Email, telefon~~ ✅ **rezolvat pe 1 octombrie 2026** | `contact@adrianachira.ro`, `+40 723 573 123`, în `src/content/site.ts`; se pot suprascrie din `site-settings`. Variabilele de email sunt puse pe Vercel din 12 oct. 2026 (§4, „Runda din 12 octombrie") | — |
+| 5 | ~~Conturi social media~~ ✅ **rezolvat pe 12 octombrie 2026** | LinkedIn, Instagram, Facebook, YouTube în subsol și în `sameAs` | — |
+| 6 | ~~**CUI, reg. com.**~~ ✅ **rezolvat pe 12 octombrie 2026** | CUI 24767460 de la clientă; ANAF confirmă Adrenalin Mirific Concept SRL, J35/792/2024, sediul în Sat Seceani nr. 294, com. Ortișoara, jud. Timiș (cel din Vulcan era vechi). Toate în `src/content/site.ts` | — |
+| 7 | **Regim TVA, PFA sau SRL** — 🟡 SRL, **neplătitor de TVA** după ANAF (12 oct. 2026) | Prețurile se afișează ca sume simple, fără mențiune de TVA — corect pentru un neplătitor. Rămâne de confirmat cu clienta că firma nu urmează să se înregistreze în scop de TVA. | Afișarea prețurilor |
 | 8 | **Cont Stripe + chei** — 🟡 **sandbox conectat local pe 25 septembrie 2026**; lipsesc cheile LIVE ale clientei și endpointul de producție | Codul e complet și verificat (§4, faza 4). Fără ele, butonul de plată duce pe calea de rezervare fără plată — funcțional, dar site-ul nu încasează. Endpointul de webhook se abonează la `checkout.session.completed`, `checkout.session.async_payment_succeeded` și `charge.refunded`. | Încasările |
 | 8b | **Acordul scris al celor șase autori de recomandări** | Recomandările sunt publicate integral, cu nume și funcție, pe `/testimoniale` și, trei dintre ele, pe prima pagină, pe `/despre` și pe `/servicii`. Fiecare autor trebuie să confirme în scris publicarea. Se retrage instant din admin, debifând „Vizibil pe site". De confirmat și corectura de diacritice din recomandarea lui Paul Ștefănescu. | Lansare |
 | 8d | **Funcția lui Bogdan Vasiliu** | Documentul primit semnează doar cu numele. Câmpul e gol, iar rândul nu se randează — nu inventăm o funcție pentru un om real. Se completează în admin, la recomandarea lui. | — (recomandarea e publicabilă și fără) |
@@ -1939,6 +2015,8 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
 | 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile ȘI resursele descărcabile s-ar pierde la fiecare deploy**, iar orice fișier peste 4,5 MB ar fi respins de platformă. Cu tokenul, încărcarea merge direct în Blob (`clientUploads`) | Încărcarea de imagini și documente în producție |
 | 17 | **Insigna „SOL" din subsol** | Platforma europeană ODR a fost închisă pe 20 iulie 2025; insigna duce încă la `ec.europa.eu/consumers/odr`. Subsolul e pe homepage, deci nu am atins-o fără decizie: propunerea e să rămână doar insigna ANPC · SAL | Conformitate ANPC |
+| 18 | **DMARC lipsește pe `adrianachira.ro`** | SPF (Zoho) și DKIM (Resend) există; `_dmarc` nu. Fără el, Gmail și Yahoo tratează domeniul mai sever. DNS-ul e pe Cloudflare, la care nu avem acces din proiect. Propunerea: TXT `_dmarc` = `v=DMARC1; p=none; rua=mailto:contact@adrianachira.ro`, apoi `p=quarantine` după câteva săptămâni curate | Livrabilitatea emailurilor |
+| 19 | **Confirmarea de contact repetă mesajul vizitatorului** | „Am primit mesajul tău" conține numele și mesajul, trimise de pe `contact@adrianachira.ro` la orice adresă scrisă în formular. Cineva poate folosi formularul ca să trimită text propriu, de pe domeniul clientei, către terți. Plafonul de rată e în memorie, deci nu ține pe mai multe instanțe Vercel. Variante: confirmarea fără ecou, sau ecoul doar în notificarea către Adriana | Reputația domeniului |
 | 15 | ~~**Postgres pentru producție**~~ ✅ **rezolvat pe 25 septembrie 2026** | Neon (`ep-purple-surf-b1lnsbgm`, eu-central-1), string POOLED în `DATABASE_URI` pe Vercel. Migrat (4 migrații), seed rulat, prețurile legate de aceleași produse Stripe din sandbox ca baza locală. Admin: `admin@adrianachira.ro`, parola generată de seed — **se schimbă la prima autentificare** | — |
 
 > ### ⚠️ Decizie deschisă: crawlerele AI
@@ -1994,8 +2072,8 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Treizeci și opt, toate documentate în cod prin comentarii. **37–38 sunt din
-1 octombrie 2026; 31–36, din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
+Patruzeci, toate documentate în cod prin comentarii. **40 e din 12 octombrie
+2026; 39, din 5 octombrie; 37–38, din 1 octombrie; 31–36, din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
 din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
 fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
 paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
@@ -2364,6 +2442,13 @@ impusă de prima dintre ele.
     animă o dată, întreagă. Submeniul „Blog" urmează tiparul submeniurilor din
     §4 „Submeniurile din navigație", fără nimic nou vizual.
 
+40. **Subsolul: semnătura executantului și o a patra rețea** (12 octombrie
+    2026, cerut). Designul are „Website Factory" ca text simplu, în colțul
+    benzii de jos; acum „Made with ♥ by Website Factory", cu link în tab nou.
+    Aceeași mărime și culoare ca restul benzii. Inima e un semn `Glyph`, nu un
+    caracter: ar fi luat culoarea și forma fontului de sistem. Rețelele rămân
+    text, ca în design. YouTube e a patra intrare.
+
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
 pe homepage și nu au pagină proprie.
@@ -2438,6 +2523,9 @@ pe homepage și nu au pagină proprie.
 | `grep` de sedile găsește ceva în `src/` | Un PNG din `src/app` (`apple-icon.png`) conține întâmplător octeții lui `ş` | `grep -rnI` — `-I` sare peste fișierele binare |
 | Build: „Dynamic filesystem access causes tracing of the whole project" | `path.resolve(process.cwd(), …)` într-o rută: Turbopack nu știe ce fișiere se citesc și le include pe toate în funcție — pe Vercel, funcția s-ar umfla cu tot repo-ul | `path.resolve(/* turbopackIgnore: true */ process.cwd(), …)`. Vezi ruta de descărcare a resurselor |
 | `pnpm build` pe HEAD cade cu `Cannot find module …/resurse/…/page.js` după `git stash -u` | `.next/dev/types/validator.ts` rămâne din build-ul precedent și trimite la rutele care tocmai au dispărut | `rm -rf .next` înainte de build-ul de comparație |
+| `vercel env update` atârnă fără niciun mesaj | Cu `--value` dat, CLI-ul tot citește `stdin`; din Git Bash, `stdin` rămâne deschis și comanda așteaptă | `vercel env update NUME production --value … --sensitive --yes < /dev/null`. O variabilă cu țintele Production + Preview e o singură înregistrare: actualizarea pe `production` o schimbă pe amândouă |
+| `payload run` pe un script din afara repo-ului cade („Top-level await … cjs", apoi `Cannot find package 'payload'`) | Fișierul nu e sub `package.json`-ul cu `"type": "module"`, iar pachetele se rezolvă relativ la locul fișierului, nu la directorul curent | Scripturile de test temporare stau în `scripts/` (și se șterg după), nu în directorul temporar |
+| `next dev` servește conținutul vechi după o schimbare în `src/content/site.ts` | Turbopack recompilează („Compiled in …ms"), dar modulul de pe server nu se reîncarcă în arborele randat. Nicio eroare | Verifică textul pe `pnpm build && pnpm start`, nu pe dev. Sau repornește dev-ul |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---

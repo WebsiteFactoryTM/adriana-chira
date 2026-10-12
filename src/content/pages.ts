@@ -231,8 +231,9 @@ export const canceledPage = {
  * formular, plata prin Stripe, emailurile prin Resend, GA4 doar după
  * consimțământ. Modelul era șablonul WordPress (comentarii, Gravatar,
  * conturi de utilizator) — nimic din toate acestea nu există aici, deci nu a
- * fost preluat; a rămas ce era adevărat: operatorul, sediul, telefonul,
- * partajarea cu firma care administrează site-ul, rețelele sociale.
+ * fost preluat; a rămas ce era adevărat: operatorul, telefonul, partajarea
+ * cu firma care administrează site-ul, rețelele sociale. Sediul din model era
+ * vechi și a fost înlocuit, pe 12 octombrie 2026, cu cel din registrul ANAF.
  *
  * Fiecare afirmație de aici trebuie să rămână adevărată despre cod. Dacă
  * adaugi un script terț, un cookie sau un formular, actualizează textul ȘI
@@ -255,7 +256,7 @@ export const LEGAL_DRAFT = false
  * salvează și pe fiecare solicitare de resursă, ca dovadă a versiunii
  * acceptate (`resource-requests.policyVersion`).
  */
-const LEGAL_UPDATED = '2026-10-01'
+const LEGAL_UPDATED = '2026-10-12'
 
 const CONTACT_EMAIL = 'contact@adrianachira.ro'
 const CONTACT_PHONE = '+40 723 573 123'

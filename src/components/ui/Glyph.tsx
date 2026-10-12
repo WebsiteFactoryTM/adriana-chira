@@ -55,6 +55,8 @@ export type GlyphName =
   | 'layers'
   /** Un document de descărcat: ghid, fișă de lucru. */
   | 'document'
+  /** „Made with love" din subsol — singurul semn care stă în text, nu lângă un bloc. */
+  | 'heart'
 
 /**
  * Căile, în coordonate de casetă 24×24.
@@ -85,6 +87,9 @@ const PATHS: Record<GlyphName, string> = {
   // Foaie cu colțul îndoit și două rânduri — documentul, fără săgeată de
   // descărcare: acțiunea o spune butonul, semnul spune ce primești.
   document: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16.5h6',
+  // Două semicercuri de rază 4 și două curbe care coboară spre vârf, cu
+  // tangentă verticală la îmbinare — conturul curge fără colț pe laterale.
+  heart: 'M12 9A4 4 0 0 0 4 9c0 4 5 7.5 8 11 3-3.5 8-7 8-11a4 4 0 0 0-8 0z',
 }
 
 type Props = {
