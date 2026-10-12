@@ -16,10 +16,15 @@ type Props = {
   items: NavItem[]
   cta: NavItem
   availability: string
+  /**
+   * Rândul de rețele de la finalul panoului, randat pe server (`SocialLinks`)
+   * și primit gata făcut — ca brandul din `children`, nu intră în bundle.
+   */
+  social?: ReactNode
   children: ReactNode
 }
 
-export function MobileNav({ items, cta, availability, children }: Props) {
+export function MobileNav({ items, cta, availability, social, children }: Props) {
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -210,6 +215,8 @@ export function MobileNav({ items, cta, availability, children }: Props) {
             <p className="mt-5 font-medium text-[11px] tracking-[0.18em] uppercase text-ac-ink-50">
               {availability}
             </p>
+
+            {social && <div className="mt-6 border-t border-ac-line pt-6">{social}</div>}
           </nav>
         </div>
       )}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Glyph } from '@/components/ui/Glyph'
+import { SocialLinks } from '@/components/ui/SocialLinks'
 import { TextLink } from '@/components/ui/TextLink'
 import type { SiteSettings } from '@/content/types'
 
@@ -71,28 +72,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
               </li>
             </ul>
 
-            <ul className="mt-6 flex flex-wrap gap-4 leading-[normal]">
-              {settings.social.map((item) =>
-                item.pending ? (
-                  <li key={item.label}>
-                    <span className="text-body-sm leading-[normal]">
-                      <Placeholder>[ {item.label} ]</Placeholder>
-                    </span>
-                  </li>
-                ) : (
-                  <li key={item.label}>
-                    <a
-                      href={item.href}
-                      rel="me noopener"
-                      target="_blank"
-                      className="ac-underline text-body-sm leading-[normal] text-ac-cream-100"
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ),
-              )}
-            </ul>
+            <SocialLinks links={settings.social} tone="dark" placeholders className="mt-6" />
           </div>
 
           <div>

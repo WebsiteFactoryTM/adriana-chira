@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { MobileNav } from './MobileNav'
 import { NavDropdown } from './NavDropdown'
+import { SocialLinks } from '@/components/ui/SocialLinks'
 import type { NavItem, SiteSettings } from '@/content/types'
 import { BLOG_HREF } from '@/lib/nav'
 import { WORKSHOPS_PATH } from '@/lib/workshops'
@@ -38,7 +39,12 @@ export function Header({ settings }: { settings: SiteSettings }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(225,215,198,.9)] bg-[rgba(250,245,236,.82)] backdrop-blur-[14px] backdrop-saturate-[1.1]">
-      <MobileNav items={settings.mobileNav} cta={cta} availability={settings.availability}>
+      <MobileNav
+        items={settings.mobileNav}
+        cta={cta}
+        availability={settings.availability}
+        social={<SocialLinks links={settings.social} />}
+      >
         <Link href="/" className="block">
           <span className="block font-display text-[21px] leading-[1.1] font-normal tracking-[0.01em]">
             {settings.siteName}

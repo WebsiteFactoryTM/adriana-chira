@@ -1139,8 +1139,9 @@ alta a ei.
 
 #### 3. Pictogramele sunt desenate, nu importate
 
-`src/components/ui/Glyph.tsx`, paisprezece semne (douăsprezece din 8 septembrie,
-plus `document` pe 1 octombrie și `heart` pe 12 octombrie), **zero dependențe**. Regula 4
+`src/components/ui/Glyph.tsx`, nouăsprezece semne (douăsprezece din 8 septembrie,
+`document` pe 1 octombrie, `heart` și cele cinci rețele pe 12 octombrie), **zero
+dependențe**. Regula 4
 din §2 interzice bibliotecile de componente, dar motivul real e de design:
 seturile obișnuite sunt desenate la 1.5–2px, cu colțuri rotunjite și cu un
 vocabular de aplicație. Peste Cormorant Garamond și peste hairline-urile de 1px
@@ -1495,8 +1496,17 @@ Resend. **Lipsește DMARC** — vezi §7.18.
   politică era vechi: firma s-a mutat din Vulcan (HD) în Timiș pe 22.02.2024.
   ANAF mai spune ceva util pentru §7.7: firma **nu e înregistrată în scop de
   TVA**, deci prețurile nu au TVA de adăugat.
-- Rețelele: LinkedIn, Instagram, Facebook, **YouTube** (nou), ca text, ca în
-  design. Alimentează și `sameAs` din schema `Person`, gol până acum.
+- Rețelele: LinkedIn, Instagram, Facebook, **YouTube** (nou). Alimentează și
+  `sameAs` din schema `Person`, gol până acum.
+- **Rețelele sunt pictograme** (runda a doua, aceeași zi), în trei locuri:
+  subsol, finalul meniului mobil, pagina de contact („Urmărește-mă", în
+  coloana „Sau direct"). O singură componentă, `ui/SocialLinks` (Server
+  Component): pastilă de 44px cu hairline, forma lui `GlyphBadge`, ton `dark`
+  pe subsol și `light` pe hârtie și crem. Semnele (`linkedin`, `instagram`,
+  `facebook`, `youtube`, plus `tiktok`, care e opțiune în admin) sunt
+  desenate în `ui/Glyph`, cu linie de 1px — fără bibliotecă de iconuri. Numele
+  rețelei e în text ascuns și în `title`. **`MobileNav` primește rândul gata
+  randat**, prin propul `social`, deci semnele nu intră în bundle-ul de client.
 - „Made with ♥ by Website Factory", cu link spre `websitefactory.ro` în tab nou.
   Inima e semnul nou `heart` din `ui/Glyph` (linie de 1px, în accent).
   Paragraful are `lang="en"`, iar cuvântul „love" e în text ascuns, pentru
@@ -1609,6 +1619,7 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **12 oct.: un email real către `contact@adrianachira.ro`** | ✅ `delivered` — acceptat de Zoho |
 | **12 oct.: homepage + politică + SPA + contact, HEAD vs. acum, text vizibil** | ✅ doar subsolul (rețele, CUI · Reg. Com., „Made with love by"); pe politică în plus data și blocul de identificare cu sediul nou. Zero alte linii |
 | **12 oct.: `sameAs` în JSON-LD** | ✅ cele patru adrese |
+| **12 oct., runda 2: pictogramele, față de `ff13cdc`** | ✅ homepage și SPA: zero noduri schimbate înaintea subsolului, text vizibil identic; contact: în plus doar „Urmărește-mă". Capturi Chrome headless (CDP, fără extensie) la 1440 și 390: subsol, contact, meniul mobil deschis. Componente de client: tot cinci |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
 
@@ -2072,8 +2083,8 @@ curl -s http://localhost:3000/ -o /tmp/h.html
 
 ## 9. Abateri conștiente de la literă
 
-Patruzeci, toate documentate în cod prin comentarii. **40 e din 12 octombrie
-2026; 39, din 5 octombrie; 37–38, din 1 octombrie; 31–36, din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
+Patruzeci și una, toate documentate în cod prin comentarii. **40–41 sunt din
+12 octombrie 2026; 39, din 5 octombrie; 37–38, din 1 octombrie; 31–36, din 25 septembrie 2026.** **Ultimele șase (25–30) sunt
 din 8 septembrie 2026**: submeniurile din navigație, CTA-urile proprii ale
 fiecărui program, pictogramele desenate de mână, desenele de antet și trecerea
 paginilor lungi pe benzi — toate cerute de clientă — plus `revalidate` pe layout,
@@ -2446,8 +2457,17 @@ impusă de prima dintre ele.
     2026, cerut). Designul are „Website Factory" ca text simplu, în colțul
     benzii de jos; acum „Made with ♥ by Website Factory", cu link în tab nou.
     Aceeași mărime și culoare ca restul benzii. Inima e un semn `Glyph`, nu un
-    caracter: ar fi luat culoarea și forma fontului de sistem. Rețelele rămân
-    text, ca în design. YouTube e a patra intrare.
+    caracter: ar fi luat culoarea și forma fontului de sistem. YouTube e a
+    patra rețea.
+
+41. **Rețelele sociale sunt pictograme, nu text** (12 octombrie 2026, cerut).
+    Designul are etichete de text în subsol (`[ LinkedIn ]` …). Acum sunt
+    pastile de 44px cu semnul rețelei: în subsol, la finalul meniului mobil și
+    pe pagina de contact. Semnele sunt mărci, deci păstrează forma după care se
+    recunosc, dar sunt redesenate în linia de 1px a paginii, ca restul setului
+    `Glyph`. Verificat prin diff: zero noduri schimbate înaintea subsolului pe
+    homepage și pe SPA; text vizibil identic (numele rețelelor au rămas în
+    pagină, ascunse vizual).
 
 De asemenea: ancorele din navigație au fost înlocuite cu rutele reale la faza 3b.
 Singura ancoră rămasă este `/#faq` în meniul mobil — întrebările frecvente trăiesc
@@ -2589,6 +2609,7 @@ adriana-chira-repo/
 │  │                               ui/ProgramMotif.tsx ← antetul fiecărui program
 │  │                               ui/PackageBody.tsx  ← benzile paginilor lungi
 │  │                               ui/BackToTop.tsx    ← „Înapoi sus", zero JS
+│  │                               ui/SocialLinks.tsx  ← rețelele, ca pictograme
 │  │                               layout/NavDropdown.tsx ← submeniul din antet
 │  ├─ content/                     types.ts · site.ts · home.ts · pages.ts
 │  │                               packages.ts · workshops.ts · testimonials.ts

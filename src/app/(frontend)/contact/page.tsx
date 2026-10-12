@@ -6,6 +6,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { Breadcrumb, type Crumb } from '@/components/ui/Breadcrumb'
 import { Arrow, Button } from '@/components/ui/Button'
 import { Rule, Section, Shell } from '@/components/ui/Section'
+import { SocialLinks } from '@/components/ui/SocialLinks'
 import { TextLink } from '@/components/ui/TextLink'
 import { contactPage } from '@/content/pages'
 import { getPackageBySlug, getSiteSettings, getWorkshopBySlug } from '@/lib/content'
@@ -178,6 +179,14 @@ export default async function ContactPage({ searchParams }: Props) {
                   {settings.city}, {settings.country}
                 </li>
               </ul>
+
+              {settings.social.some((item) => !item.pending) && (
+                <>
+                  <Rule className="my-9" />
+                  <p className="font-medium text-label uppercase text-ac-accent-ink">Urmărește-mă</p>
+                  <SocialLinks links={settings.social} className="mt-5" />
+                </>
+              )}
 
               <Rule className="my-9" />
 

@@ -57,6 +57,17 @@ export type GlyphName =
   | 'document'
   /** „Made with love" din subsol — singurul semn care stă în text, nu lângă un bloc. */
   | 'heart'
+  /*
+   * Rețelele sociale — singurele semne care NU sunt ale noastre, ci mărci.
+   * Păstrează forma după care se recunoaște fiecare (pătratul rotunjit cu „in",
+   * camera, „f", ecranul cu triunghi, nota), redesenată în linia de 1px a
+   * paginii, fără umplere. Pe Facebook cercul îl dă pastila din `SocialLinks`.
+   */
+  | 'linkedin'
+  | 'instagram'
+  | 'facebook'
+  | 'youtube'
+  | 'tiktok'
 
 /**
  * Căile, în coordonate de casetă 24×24.
@@ -90,6 +101,16 @@ const PATHS: Record<GlyphName, string> = {
   // Două semicercuri de rază 4 și două curbe care coboară spre vârf, cu
   // tangentă verticală la îmbinare — conturul curge fără colț pe laterale.
   heart: 'M12 9A4 4 0 0 0 4 9c0 4 5 7.5 8 11 3-3.5 8-7 8-11a4 4 0 0 0-8 0z',
+  // Punctele (al lui „i", blițul camerei) sunt cercuri mici, nu capete de
+  // linie: un capăt rotund de 1 unitate dispare la 22px.
+  linkedin:
+    'M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 10.5V17M9 7.6a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM11.5 17v-6.5M11.5 13.6c0-2 1.2-3.1 2.8-3.1 1.7 0 2.7 1.1 2.7 3.1V17',
+  instagram:
+    'M8.5 4h7A4.5 4.5 0 0 1 20 8.5v7a4.5 4.5 0 0 1-4.5 4.5h-7A4.5 4.5 0 0 1 4 15.5v-7A4.5 4.5 0 0 1 8.5 4zM15.6 12a3.6 3.6 0 1 1-7.2 0 3.6 3.6 0 0 1 7.2 0zM17.3 6.9a.6.6 0 1 1-1.2 0 .6.6 0 0 1 1.2 0z',
+  facebook: 'M11.5 20.5V9.6c0-2.7 1.5-4.1 4.2-4.1M8.3 11h6.9',
+  youtube:
+    'M6 6h12a3.5 3.5 0 0 1 3.5 3.5v5A3.5 3.5 0 0 1 18 18H6a3.5 3.5 0 0 1-3.5-3.5v-5A3.5 3.5 0 0 1 6 6zM10 8.8v6.4l5.4-3.2z',
+  tiktok: 'M13.5 4v10.5a3.5 3.5 0 1 1-3.5-3.5M13.5 4c.4 2.3 2 3.8 4.5 4',
 }
 
 type Props = {
