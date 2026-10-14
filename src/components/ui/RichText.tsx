@@ -200,20 +200,27 @@ function internalHref(doc: { relationTo?: string; value?: unknown } | null | und
 
 /** Imagine încărcată în editor. `alt` este blocant în colecția `media`. */
 function RenderUpload({ node }: { node: LexicalNode }) {
+  type Variant = { url?: string | null; width?: number | null; height?: number | null }
   const value = node.value as
-    | { url?: string | null; alt?: string | null; width?: number | null; height?: number | null; caption?: string | null }
+    | (Variant & { alt?: string | null; caption?: string | null; sizes?: { hero?: Variant | null } | null })
     | null
     | undefined
 
-  if (!value || typeof value.url !== 'string') return null
+  if (!value) return null
 
-  const width = typeof value.width === 'number' ? value.width : 1200
-  const height = typeof value.height === 'number' ? value.height : 800
+  // Varianta de 1600px, ca la coperte (`mediaImage` în `lib/content.ts`):
+  // originalul poate fi o fotografie de câțiva MB, urcată ca atare.
+  const hero = value.sizes?.hero
+  const image: Variant = typeof hero?.url === 'string' && hero.url.length > 0 ? hero : value
+  if (typeof image.url !== 'string' || image.url.length === 0) return null
+
+  const width = typeof image.width === 'number' ? image.width : 1200
+  const height = typeof image.height === 'number' ? image.height : 800
 
   return (
     <figure>
       <Image
-        src={value.url}
+        src={image.url}
         alt={typeof value.alt === 'string' ? value.alt : ''}
         width={width}
         height={height}

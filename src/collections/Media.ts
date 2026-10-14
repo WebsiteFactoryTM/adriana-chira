@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminOrEditor } from '@/access'
 
 /**
- * Fișierele încărcate din admin.
+ * Imaginile încărcate din admin.
  *
  * `alt` este OBLIGATORIU, nu recomandat (prompt §4.1). O imagine fără text
  * alternativ este o pagină inaccesibilă, iar validarea la nivel de CMS este
@@ -17,18 +17,29 @@ import { anyone, isAdmin, isAdminOrEditor } from '@/access'
  *
  * Stocarea: Vercel Blob în producție, disc local când lipsește tokenul —
  * comutarea se face în `src/payload.config.ts`, nu aici.
+ *
+ * ## Doar imagini, și doar formatele pe care le poate afișa site-ul
+ *
+ * Fiecare câmp care trimite aici e un loc de imagine (copertă, portret,
+ * imagine de partajare), iar `RichText` randează orice încărcare drept
+ * `<Image>`. Un PDF ales drept copertă ar fi fost o imagine spartă; HEIC (pozele
+ * de pe iPhone) și SVG nu le poate procesa `sharp`, respectiv afișa
+ * `next/image`. Documentele de descărcat stau în „Resurse descărcabile".
  */
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']
+
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: {
-    singular: 'Fișier',
-    plural: 'Fișiere',
+    singular: 'Imagine',
+    plural: 'Imagini',
   },
   admin: {
     useAsTitle: 'filename',
     defaultColumns: ['filename', 'alt', 'updatedAt'],
     group: 'Conținut',
-    description: 'Imaginile și fișierele folosite pe site.',
+    description:
+      'Imaginile folosite pe site: JPG, PNG, WebP, AVIF sau GIF. Documentele (PDF, Word…) se încarcă la „Resurse descărcabile".',
   },
   access: {
     read: anyone,
@@ -38,13 +49,12 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: 'public/media',
-    mimeTypes: ['image/*', 'application/pdf'],
-    // AVIF nu se generează aici: `next/image` îl produce la cerere din original
-    // (next.config.ts, `formats`). Ce stocăm sunt variantele de dimensiune.
-    formatOptions: {
-      format: 'webp',
-      options: { quality: 82 },
-    },
+    mimeTypes: IMAGE_MIME_TYPES,
+    // Fără `formatOptions`, deliberat. Cu Blob, originalul urcă direct din
+    // browser (`clientUploads`), iar pluginul de stocare NU îl mai urcă a doua
+    // oară. O conversie aici (ex. JPG → WebP) schimba numele în bază, dar nu și
+    // fișierul din Blob: adresa originalului ducea la 404. Formatul de livrare
+    // (AVIF / WebP) îl produce oricum `next/image`, la cerere (next.config.ts).
     imageSizes: [
       {
         name: 'thumbnail',

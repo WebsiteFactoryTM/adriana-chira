@@ -163,7 +163,7 @@ export interface Post {
    */
   excerpt: string;
   /**
-   * Raport 16:9. Fără imagine, cardul afișează un placeholder crem.
+   * JPG, PNG sau WebP, ideal cel puțin 1600px lățime. Se afișează în raport 4:3; ce rămâne în cadru alegi cu punctul focal, la încărcare. Fără imagine, cardul afișează un placeholder crem.
    */
   cover?: (number | null) | Media;
   category: number | Category;
@@ -237,7 +237,7 @@ export interface Post {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Imaginile și fișierele folosite pe site.
+ * Imaginile folosite pe site: JPG, PNG, WebP, AVIF sau GIF. Documentele (PDF, Word…) se încarcă la „Resurse descărcabile".
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".

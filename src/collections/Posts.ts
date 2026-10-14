@@ -83,7 +83,8 @@ export const Posts: CollectionConfig = {
       relationTo: 'media',
       label: 'Imagine de copertă',
       admin: {
-        description: 'Raport 16:9. Fără imagine, cardul afișează un placeholder crem.',
+        description:
+          'JPG, PNG sau WebP, ideal cel puțin 1600px lățime. Se afișează în raport 4:3; ce rămâne în cadru alegi cu punctul focal, la încărcare. Fără imagine, cardul afișează un placeholder crem.',
       },
     },
     {

@@ -107,6 +107,12 @@ ruta nu dă eroare — trimite cumpărătorul pe calea de rezervare fără plat�
 la `/contact`, cu produsul precompletat. Aceea e o funcționalitate cerută, nu un
 fallback de avarie: nu o scoate.
 
+**Panoul nu are `serverURL`, intenționat.** Gazdele de pe care adminul poate scrie
+sunt lista `csrf` din `trustedOrigins()` (`payload.config.ts`). Cu `serverURL` pus pe
+domeniul fără `www`, producția (servită pe `www`) a pierdut cookie-ul la fiecare
+salvare: 401 / 403 peste tot. Pluginul Blob se înregistrează mereu (`enabled`),
+altfel `importMap.js` nu conține încărcarea din browser. Vezi `STATUS.md` §10.
+
 Atingi UI-ul sau stratul de conținut? Refă diff-ul CMS ↔ fallback din `STATUS.md` §6.
 Atingi o componentă folosită și de homepage? Refă și diff-ul HEAD ↔ acum, tot §6 —
 homepage-ul e verificat la pixel și nu are voie să se schimbe pe tăcute.

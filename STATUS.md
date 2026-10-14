@@ -6,10 +6,48 @@ e următorul pas concret.
 
 | | |
 |---|---|
-| Ultima actualizare | **12 octombrie 2026** |
+| Ultima actualizare | **14 octombrie 2026** |
 | Stadiu general | Fazele 1, 2, 3b **și 4 (Stripe)** complete · **17 rute publice** + paginile resurselor descărcabile · **paginile legale complete** (confidențialitate, cookie-uri, termeni), date de contact reale · **conținutul real al clientei este în site**: 3 programe individuale (unul cu preț afișat, două pe ofertă), 14 workshopuri, 6 recomandări · **plata online funcționează, cu o cale paralelă de rezervare fără plată** · **paginile de program sunt pagini de vânzare complete, iar navigația are submeniuri** · **layout adaptat pentru laptopuri de 14"** · **blogul e viu: 7 articole publicate, carusel pe homepage, submeniu pe categorii, `/rss.xml`** · **Stripe pe chei live în producție** · **emailurile pleacă prin Resend** (confirmări + notificări la `contact@adrianachira.ro`, resetarea parolei din admin) · **subsolul are CUI, Reg. Com. și rețelele reale** · fazele 5b–7 neîncepute |
-| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 12 octombrie 2026 |
-| Ultimul commit | vezi `git log` — Emailuri prin Resend, date de firmă și rețele în subsol |
+| Build | ✅ trece (`pnpm build`, `pnpm typecheck`) · `pnpm verify:faza2` **14/14**, rulat pe 14 octombrie 2026 |
+| Ultimul commit | vezi `git log` — Panoul scrie din nou pe www: CSRF, încărcări în Blob, imagini |
+
+> **Ce s-a schimbat pe 14 octombrie 2026 — panoul nu putea salva nimic în producție.**
+>
+> Clienta a raportat: resursa descărcabilă se încarcă, dar nu se salvează;
+> „Alegeți dintre cele existente" nu merge; coperta rămâne pe „încărcare";
+> „Nu aveți voie să efectuați această acțiune" la o întrebare frecventă.
+> Logurile Vercel au arătat cauza comună: pe `www.adrianachira.ro`, **orice
+> scriere din panou** pleca fără utilizator — `POST /admin/…` (starea
+> formularului) **401**, `PATCH /api/posts/8` (salvarea automată) **403**.
+>
+> 1. **CSRF.** `serverURL` era `NEXT_PUBLIC_SITE_URL` = `https://adrianachira.ro`,
+>    dar Vercel servește site-ul pe `www` (domeniul fără `www` → 308). Payload
+>    acceptă cookie-ul la o cerere cu `Origin` doar dacă originea e în `csrf`,
+>    care era doar adresa fără `www`. Acum `serverURL` lipsește (panoul vorbește
+>    relativ cu gazda lui), iar `csrf` e o listă explicită: adresa canonică,
+>    perechea ei cu/fără `www`, adresele Vercel ale deploy-ului, `localhost` în
+>    dezvoltare (`trustedOrigins()` în `payload.config.ts`). Vezi §10.
+> 2. **Încărcarea directă în Blob nu exista în producție.** Pluginul Blob era
+>    înregistrat doar cu token, deci `importMap.js` (generat local, fără token)
+>    nu conținea componenta care urcă fișierul din browser. Acum pluginul e
+>    mereu înregistrat, oprit din `enabled`. Plus: ruta de semnare se construia
+>    pe `serverURL`, adică cross-origin față de `www` — de aici coperta agățată.
+> 3. **Imaginile ar fi dus la 404 după reparație.** `formatOptions: webp`
+>    redenumea originalul în bază, dar fișierul urcat direct din browser nu se
+>    mai urcă a doua oară. `formatOptions` a ieșit (`next/image` livrează oricum
+>    AVIF/WebP). `media` servește acum adrese Blob directe
+>    (`disablePayloadAccessControl`) — singura gazdă din `remotePatterns`.
+> 4. **Frontendul folosește variantele generate**: `hero` (1600px) pentru
+>    coperte, portrete și imaginile din articol, `og` (1200×630) pentru imaginea
+>    de partajare din SEO. Coperta respectă punctul focal ales în panou.
+> 5. **„Imagini" acceptă doar JPG, PNG, WebP, AVIF, GIF.** PDF-ul ales drept
+>    copertă devenea imagine spartă; HEIC și SVG nu se pot afișa. Documentele
+>    stau în „Resurse descărcabile".
+>
+> **Neverificat cap-coadă:** urcarea propriu-zisă în Blob. Tokenul e
+> *Sensitive* pe Vercel, deci nu se poate trage local. Verificat local:
+> semnarea (cu token fictiv) și tot restul fluxului pe disc, în panou, în
+> browser. Primul test real e prima copertă încărcată pe producție.
 
 > **Ce s-a schimbat pe 12 octombrie 2026 — emailurile și subsolul.**
 >
@@ -656,7 +694,7 @@ Baza de date locală rulează în **Docker** (`docker-compose.yml`, Postgres 17 
 | `categories` | Performanță, Decizie, Perspectivă, Mindset | public |
 | `packages` | pachetele, cu sincronizare Stripe la salvare | public doar `active` |
 | `faqs` | întrebările, cu tabelul comparativ opțional | public |
-| `media` | fișierele; `alt` **blocant** | public |
+| `media` | imaginile (JPG, PNG, WebP, AVIF, GIF); `alt` **blocant** | public |
 | `orders` | comenzile — doar citire, doar `admin` | nimeni public |
 | `submissions` | mesajele din formular — doar `admin`, retenție 12 luni | nimeni public |
 | `users` | `admin` și `editor`; rolul nu se poate schimba de un editor | doar propriul cont |
@@ -1388,8 +1426,11 @@ prin funcție. Compromis acceptat conștient: cine are linkul Blob îl poate da
 mai departe — formularul e un schimb, nu DRM. Se aplică și la `media`
 (fotografii peste 4,5 MB).
 
-> **Neverificat:** încărcarea directă în Blob (local nu există token). Se
-> testează pe Preview, cu un PDF de 6–10 MB, după ce se pune tokenul (§7.14).
+> **Pe 14 octombrie 2026 s-a aflat că încărcarea directă în Blob nu funcționase
+> niciodată în producție** (componenta lipsea din `importMap.js`, iar ruta de
+> semnare era cross-origin). Reparat — vezi blocul de la începutul fișierului.
+> **Neverificat încă:** urcarea reală în Blob, cu un PDF de 6–10 MB, pe
+> producție. Semnarea e verificată local, cu token fictiv.
 
 #### Paginile legale
 
@@ -1619,6 +1660,12 @@ Lighthouse pe toate cele 5 pagini, axe DevTools, test cu NVDA/VoiceOver,
 | **12 oct.: un email real către `contact@adrianachira.ro`** | ✅ `delivered` — acceptat de Zoho |
 | **12 oct.: homepage + politică + SPA + contact, HEAD vs. acum, text vizibil** | ✅ doar subsolul (rețele, CUI · Reg. Com., „Made with love by"); pe politică în plus data și blocul de identificare cu sediul nou. Zero alte linii |
 | **12 oct.: `sameAs` în JSON-LD** | ✅ cele patru adrese |
+| **14 oct.: logurile Vercel, înainte de reparație** | ❌ pe `www`: `POST /admin/collections/posts/8` 401 („error building form state"), `PATCH /api/posts/8` 403, `POST /api/payload-preferences/…` 401 — cauza tuturor celor patru simptome raportate |
+| **14 oct.: `csrf` calculat pentru valorile reale** | ✅ `adrianachira.ro` → ambele variante + `*.vercel.app` al deploy-ului; `www` ca principal → ambele variante; `serverURL` gol |
+| **14 oct.: API, local, 21 de verificări** | ✅ autosave cu întrebare frecventă: `Origin` străin → 403 (CSRF activ), de încredere → 200 · preferințe 200 · imagine 2400×1800 → 201, originalul rămâne `.jpg`, URL relativ, `hero` generat · PDF în „Imagini" → 400 · resursă PDF → 201 · listă resurse 200 · coperta în pagină prin `next/image` (AVIF), `og:image` = `hero` · descărcare resursă liberă → PDF · totul restaurat/șters |
+| **14 oct.: ruta de semnare Blob, token fictiv** | ✅ fără cookie → refuz · cookie + `Origin` străin → refuz · cookie + `Origin` de încredere → `clientToken`, pentru copertă și pentru PDF · `/admin/collections/media/create` 200, fără erori de import map |
+| **14 oct.: panoul în browser (Chrome), local** | ✅ copertă: „Creați unul nou" → „Imagine creat(ă) cu succes"; resursă: ecranul de încărcare în masă → „Salvează" → salvată; „Alegeți dintre cele existente" se deschide; întrebare frecventă adăugată, autosave 200 ×3; publicare → articolul public are coperta (varianta 1600), întrebarea și cardul resursei. Utilizatorul temporar și fișierele de test, șterse |
+| **14 oct.: HEAD vs. acum, aceeași bază, build curat** | ✅ zero linii diferite pe `/`, `/blog`, un articol, `/despre`, SPA, `/contact` |
 | **12 oct., runda 2: pictogramele, față de `ff13cdc`** | ✅ homepage și SPA: zero noduri schimbate înaintea subsolului, text vizibil identic; contact: în plus doar „Urmărește-mă". Capturi Chrome headless (CDP, fără extensie) la 1440 și 390: subsol, contact, meniul mobil deschis. Componente de client: tot cinci |
 
 ### ✅ Comparația vizuală cu designul aprobat — rulată pe 24 august 2026
@@ -2024,10 +2071,11 @@ fără redeploy: globalul `site-settings` pentru datele de contact și firmă, c
 | 12 | ~~**Textul articolelor de lansare**~~ ✅ **rezolvat pe 5 octombrie 2026** | 7 articole din `perspective .docx`, publicate prin migrația `articole_lansare`. **De confirmat cu clienta:** titlurile date de noi celor patru articole fără titlu clar în document („Perspectiva, în șapte definiții", „Ce înseamnă pentru tine un refuz?"), subtitlurile `h2` adăugate, datele de publicare (cele 3 din design + 14, 21, 28 sept. și 5 oct.) și imaginile de copertă (lipsesc; cardul arată placeholderul crem) | — |
 | 13 | Locația sesiunilor | FAQ spune deja „online sau față în față, în Timișoara" | De confirmat |
 | 16 | **Link de programare** (Cal.com / Calendly) | `site-settings` → `bookingUrl`. Gol → pagina de contact afișează `[ link de programare ]`. Completat → apare butonul „Vezi intervalele libere" | Programarea directă |
-| 14 | **Cont Vercel + `BLOB_READ_WRITE_TOKEN`** | Fără el, fișierele încărcate în admin se salvează pe disc. Local e suficient; pe Vercel filesystem-ul e efemer, deci **imaginile ȘI resursele descărcabile s-ar pierde la fiecare deploy**, iar orice fișier peste 4,5 MB ar fi respins de platformă. Cu tokenul, încărcarea merge direct în Blob (`clientUploads`) | Încărcarea de imagini și documente în producție |
+| 14 | ~~**Cont Vercel + `BLOB_READ_WRITE_TOKEN`**~~ ✅ **tokenul e pe Vercel** (Production + Preview, *Sensitive*) | Încărcarea merge direct în Blob (`clientUploads`) din 14 oct. 2026 — până atunci panoul nu putea scrie deloc pe `www` (§4, blocul din 14 octombrie). Local nu există token și nu se poate trage (*Sensitive*), deci fișierele rămân pe disc | — |
 | 17 | **Insigna „SOL" din subsol** | Platforma europeană ODR a fost închisă pe 20 iulie 2025; insigna duce încă la `ec.europa.eu/consumers/odr`. Subsolul e pe homepage, deci nu am atins-o fără decizie: propunerea e să rămână doar insigna ANPC · SAL | Conformitate ANPC |
 | 18 | **DMARC lipsește pe `adrianachira.ro`** | SPF (Zoho) și DKIM (Resend) există; `_dmarc` nu. Fără el, Gmail și Yahoo tratează domeniul mai sever. DNS-ul e pe Cloudflare, la care nu avem acces din proiect. Propunerea: TXT `_dmarc` = `v=DMARC1; p=none; rua=mailto:contact@adrianachira.ro`, apoi `p=quarantine` după câteva săptămâni curate | Livrabilitatea emailurilor |
 | 19 | **Confirmarea de contact repetă mesajul vizitatorului** | „Am primit mesajul tău" conține numele și mesajul, trimise de pe `contact@adrianachira.ro` la orice adresă scrisă în formular. Cineva poate folosi formularul ca să trimită text propriu, de pe domeniul clientei, către terți. Plafonul de rată e în memorie, deci nu ține pe mai multe instanțe Vercel. Variante: confirmarea fără ecou, sau ecoul doar în notificarea către Adriana | Reputația domeniului |
+| 20 | **Domeniul canonic: `www` sau fără `www`** | Vercel servește site-ul pe `www.adrianachira.ro` (domeniul fără `www` → 308), dar `NEXT_PUBLIC_SITE_URL` = `https://adrianachira.ro`. Toate adresele absolute — `canonical`, `sitemap.xml`, `og:url`, JSON-LD, RSS, linkurile din emailuri — trimit deci la o adresă care redirecționează. Panoul nu mai depinde de asta (14 oct. 2026), dar Search Console va raporta „Pagină cu redirecționare". Propunerea: `NEXT_PUBLIC_SITE_URL` = `https://www.adrianachira.ro` + redeploy (webhook-ul Stripe e deja pe `www`). Invers (fără `www` principal) ar cere și mutarea endpointului Stripe | SEO |
 | 15 | ~~**Postgres pentru producție**~~ ✅ **rezolvat pe 25 septembrie 2026** | Neon (`ep-purple-surf-b1lnsbgm`, eu-central-1), string POOLED în `DATABASE_URI` pe Vercel. Migrat (4 migrații), seed rulat, prețurile legate de aceleași produse Stripe din sandbox ca baza locală. Admin: `admin@adrianachira.ro`, parola generată de seed — **se schimbă la prima autentificare** | — |
 
 > ### ⚠️ Decizie deschisă: crawlerele AI
@@ -2503,7 +2551,7 @@ pe homepage și nu au pagină proprie.
 | Hook care scrie înapoi → buclă infinită | `update` declanșează din nou `afterChange` | `context: { skipStripeSync: true }`, verificat la intrarea în hook. În plus, nu se scrie deloc dacă valorile n-ar schimba nimic |
 | `pnpm seed` pare blocat, fără niciun mesaj | După o schimbare de schemă, `push` din drizzle pune o întrebare interactivă (coloană creată sau redenumită?) și așteaptă la `stdin` | Rulează comanda fără pipe, ca să vezi întrebarea; sau resetează baza locală și aplică migrațiile: e oricum calea din producție |
 | Erori TS pe `importMap.js` | Fișierul e generat ca JavaScript, iar `allowJs` e `false` (regula 8) | `src/app/(payload)/admin/importMap.d.ts`, scris de mână. Generatorul atinge doar `.js`-ul de alături |
-| Panoul de admin nu autentifică pe alt host decât cel din `serverURL` | Nu e un bug al site-ului: cu un token pus manual pe cookie, Payload refuză. Autentificarea normală, prin formular, nu e afectată | Deschide adminul pe hostul din `NEXT_PUBLIC_SITE_URL`. Vezi și capcana cu `localhost` de mai sus |
+| Panoul de admin nu autentifică pe alt host decât cel din `serverURL` | **Era chiar un bug, și ținea tot panoul de producție blocat** (vezi rândul „Panoul arată omul conectat…" mai jos): orice cerere cu `Origin` din afara `csrf` pierde cookie-ul | Din 14 oct. 2026 nu mai există `serverURL`; gazdele permise sunt în `trustedOrigins()`. Un host nou (alt domeniu) se adaugă acolo |
 | Re-livrarea aceluiași eveniment Stripe dădea **500**, deci Stripe reîncerca 3 zile | Payload transformă încălcarea indexului unic într-un `ValidationError` cu mesaj **tradus** („Următorul câmp nu este valid: stripeSessionId"); regex-ul `unique\|duplicate` nu-l prindea | `isDuplicate` se uită la `data.errors[].path === 'stripeSessionId'`, nu la text |
 | `stripe listen` primește evenimentele altui cont | CLI-ul Stripe de pe mașina de dezvoltare e autentificat pe alt cont (alt client) | `pnpm stripe:listen` pasează `--api-key` din `.env.local`. Nu rula `stripe listen` gol |
 | Webhook-ul local răspunde 308 | Portul 3000 era ocupat de alt proiect, deci `next dev` a pornit pe 3001, iar listener-ul trimitea la celălalt | Citește portul din logul `next dev`; `PORT=3001 pnpm stripe:listen` |
@@ -2546,6 +2594,12 @@ pe homepage și nu au pagină proprie.
 | `vercel env update` atârnă fără niciun mesaj | Cu `--value` dat, CLI-ul tot citește `stdin`; din Git Bash, `stdin` rămâne deschis și comanda așteaptă | `vercel env update NUME production --value … --sensitive --yes < /dev/null`. O variabilă cu țintele Production + Preview e o singură înregistrare: actualizarea pe `production` o schimbă pe amândouă |
 | `payload run` pe un script din afara repo-ului cade („Top-level await … cjs", apoi `Cannot find package 'payload'`) | Fișierul nu e sub `package.json`-ul cu `"type": "module"`, iar pachetele se rezolvă relativ la locul fișierului, nu la directorul curent | Scripturile de test temporare stau în `scripts/` (și se șterg după), nu în directorul temporar |
 | `next dev` servește conținutul vechi după o schimbare în `src/content/site.ts` | Turbopack recompilează („Compiled in …ms"), dar modulul de pe server nu se reîncarcă în arborele randat. Nicio eroare | Verifică textul pe `pnpm build && pnpm start`, nu pe dev. Sau repornește dev-ul |
+| **Panoul arată omul conectat, dar nicio scriere nu trece** (401 / 403, „Nu aveți voie să efectuați această acțiune") | Payload acceptă cookie-ul la o cerere cu `Origin` doar dacă originea e în `csrf`, iar `csrf` = `serverURL`. Adminul era deschis pe `www`, `serverURL` era fără `www`. Paginile (GET, fără `Origin`) se încarcă normal, deci totul pare în regulă până la primul click pe „Salvează" | `serverURL` scos, `csrf` explicit (`trustedOrigins()`): ambele variante `www`, adresele Vercel, `localhost` în dev. **Nu pune `serverURL` înapoi** — și ruta de semnare pentru Blob se construia pe el, cross-origin. Verificare: `PATCH` cu `Origin: https://www.adrianachira.ro` + cookie |
+| Componenta de încărcare în Blob lipsește din `importMap.js` | Pluginul era înregistrat doar când există token, iar harta se generează local, unde tokenul lipsește. Nicio eroare la build | Pluginul se înregistrează mereu, cu `enabled: Boolean(token)`. După orice schimbare de plugin: `pnpm generate:importmap` și `grep VercelBlob importMap.js` |
+| Imagine încărcată direct în Blob → 404 pe original | `formatOptions` (JPG → WebP) schimbă numele în bază, dar pluginul de stocare nu urcă a doua oară un fișier venit din browser (`clientUploadContext`). Variantele se urcă, originalul convertit nu | Fără `formatOptions` pe colecțiile cu `clientUploads`. Formatul de livrare îl face `next/image` |
+| Imagine din CMS refuzată de `next/image` | Prin proxy-ul Payload, adresa e `https://<domeniu>/api/media/file/…` — absolută, pe o gazdă care nu e în `remotePatterns` | `disablePayloadAccessControl` pe `media` → adresă `*.public.blob.vercel-storage.com`. Local, fără `serverURL`, adresa e relativă (`/api/media/file/…`), pe care `next/image` o acceptă |
+| `vercel env pull` dă o valoare goală | Variabilele *Sensitive* nu se pot citi după salvare, nici din CLI | Nu e o eroare. Un test cu Blob real se face pe Preview/producție, nu local |
+| Toast-ul „Successfully saved 1 files" e în engleză | E scris direct în Payload (`ui/dist/elements/BulkUpload/FormsManager`), fără cheie de traducere | Nu se poate traduce din `i18n`. Rămâne până la o versiune Payload care îl traduce |
 | Cu `prefers-reduced-motion`, un element animat de la `opacity: 0` rămâne la intensitatea de vârf | Regula globală din `globals.css` oprește toate animațiile, deci elementul stă în starea finală pe toată pagina — nu dispare, ci devine permanent | Dă-i explicit o opacitate proprie în blocul `prefers-reduced-motion` (aura coboară la jumătate). Verifică fiecare decor animat din opacitate |
 
 ---

@@ -119,10 +119,36 @@ function link(value: unknown, fallback: NavItem): NavItem {
   }
 }
 
-/** URL-ul unui fișier încărcat, dacă relația a fost populată. */
-function mediaUrl(value: number | Media | null | undefined): string | null {
+type MediaSize = keyof NonNullable<Media['sizes']>
+
+/**
+ * O imagine încărcată, în varianta potrivită locului ei.
+ *
+ * Varianta generată de Payload (`Media.ts`, `imageSizes`) are întâietate față
+ * de original. Originalul e exact fișierul urcat — poate fi o fotografie de
+ * 8 MB și 6000px, care ar ajunge sursa lui `next/image` și imaginea de
+ * partajare (Facebook refuză peste 8 MB). Variantele au și decupajul făcut în
+ * panou, pe care originalul urcat direct în Blob nu îl poartă. Lipsesc când
+ * imaginea e mai mică decât varianta; atunci originalul e oricum mic.
+ */
+function mediaImage(
+  value: number | Media | null | undefined,
+  size: MediaSize,
+): { src: string; width: number | null; height: number | null } | null {
   if (!value || typeof value === 'number') return null
-  return typeof value.url === 'string' ? value.url : null
+
+  const variant = value.sizes?.[size]
+  if (typeof variant?.url === 'string' && variant.url.length > 0) {
+    return { src: variant.url, width: variant.width ?? null, height: variant.height ?? null }
+  }
+  return typeof value.url === 'string' && value.url.length > 0
+    ? { src: value.url, width: value.width ?? null, height: value.height ?? null }
+    : null
+}
+
+/** URL-ul unei imagini încărcate, dacă relația a fost populată. */
+function mediaUrl(value: number | Media | null | undefined, size: MediaSize = 'hero'): string | null {
+  return mediaImage(value, size)?.src ?? null
 }
 
 function mediaAlt(value: number | Media | null | undefined, fallback: string): string {
@@ -616,23 +642,29 @@ function seoOf(value: unknown): SeoOverrides {
   return {
     metaTitle: nullableText(source?.metaTitle, null),
     metaDescription: nullableText(source?.metaDescription, null),
-    ogImage: mediaUrl(source?.ogImage),
+    ogImage: mediaUrl(source?.ogImage, 'og'),
     noIndex: source?.noIndex === true,
   }
 }
 
 /** Coperta unui articol. Fără fișier, rămâne placeholderul crem din design. */
 function coverSlot(value: number | Media | null | undefined): ImageSlotContent {
-  const url = mediaUrl(value)
+  // `hero` (1600px): coperta se întinde până la 1560px pe pagina articolului.
+  const image = mediaImage(value, 'hero')
   const media = value && typeof value !== 'number' ? value : null
 
   return {
     slot: 'post-cover',
-    src: url,
-    alt: url ? mediaAlt(value, '') : '',
-    width: typeof media?.width === 'number' ? media.width : 1200,
-    height: typeof media?.height === 'number' ? media.height : 900,
+    src: image?.src ?? null,
+    alt: image ? mediaAlt(value, '') : '',
+    width: image?.width ?? 1200,
+    height: image?.height ?? 900,
     placeholderLabel: 'Articol',
+    // Slotul e 4:3 indiferent de fotografie; punctul focal ales în panou
+    // decide ce rămâne în cadru. Fără el, centrul — ca până acum.
+    ...(typeof media?.focalX === 'number' && typeof media.focalY === 'number'
+      ? { objectPosition: `${media.focalX}% ${media.focalY}%` }
+      : {}),
   }
 }
 
